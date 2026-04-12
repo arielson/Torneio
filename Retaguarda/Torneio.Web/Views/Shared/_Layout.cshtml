@@ -1,0 +1,264 @@
+@using System.Security.Claims
+@using Torneio.Application.DTOs.Torneio
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Torneio</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+@{
+    var isAuthPage  = ViewData["IsAuthPage"] as bool? == true;
+    var perfil      = User.FindFirst("perfil")?.Value;
+    var isAdmin     = perfil == "AdminGeral" || perfil == "AdminTorneio";
+    var isAdminGeral = perfil == "AdminGeral";
+    var slug        = Context.GetRouteData()?.Values["slug"]?.ToString();
+    var nomeUsuario = User.Identity?.Name;
+    var torneioNav  = ViewBag.Torneio as TorneioDto;
+    var labelItem   = torneioNav?.LabelItem ?? "Item";
+    var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
+
+    bool IsActive(string path) =>
+        (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
+    bool IsExact(string path) =>
+        string.Equals(Context.Request.Path.Value, path, StringComparison.OrdinalIgnoreCase);
+}
+@if (isAuthPage)
+{
+    <body class="auth-page">
+        @RenderBody()
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+}
+else if (isAdmin)
+{
+    <body class="admin-layout">
+        <div id="layout-wrapper">
+
+            <!-- ── Sidebar ─────────────────────────────────────────────── -->
+            <nav id="sidebar">
+                @if (!string.IsNullOrEmpty(slug))
+                {
+                    <!-- Tournament context brand -->
+                    <a class="sidebar-brand" href="/@slug/admin">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span class="text-truncate">@(torneioNav?.NomeTorneio ?? slug)</span>
+                    </a>
+                    <ul class="sidebar-nav">
+                        @if (isAdminGeral)
+                        {
+                            <li>
+                                <a class="nav-link" href="/admin">
+                                    <i class="bi bi-arrow-left-circle"></i> Plataforma
+                                </a>
+                            </li>
+                            <hr class="sidebar-divider" />
+                        }
+                        <li class="sidebar-section-label">Torneio</li>
+                        <li>
+                            <a class="nav-link @(IsExact($"/{slug}/admin") ? "active" : "")" href="/@slug/admin">
+                                <i class="bi bi-house"></i> Painel
+                            </a>
+                        </li>
+                        <hr class="sidebar-divider" />
+                        <li class="sidebar-section-label">Cadastros</li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/anos") ? "active" : "")" href="/@slug/anos">
+                                <i class="bi bi-calendar3"></i> Anos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/itens") ? "active" : "")" href="/@slug/itens">
+                                <i class="bi bi-collection"></i> @labelItem&#x73;
+                            </a>
+                        </li>
+                        <hr class="sidebar-divider" />
+                        <li class="sidebar-section-label">Operações</li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/capturas") ? "active" : "")" href="/@slug/capturas">
+                                <i class="bi bi-camera"></i> @labelCaptura&#x73;
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/sorteio") ? "active" : "")" href="/@slug/sorteio">
+                                <i class="bi bi-shuffle"></i> Sorteio
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/relatorios") ? "active" : "")" href="/@slug/relatorios">
+                                <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
+                            </a>
+                        </li>
+                        @if (isAdminGeral && torneioNav != null)
+                        {
+                            <hr class="sidebar-divider" />
+                            <li class="sidebar-section-label">Acesso</li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/admin/torneios/{torneioNav.Id}/admins") ? "active" : "")"
+                                   href="/admin/torneios/@torneioNav.Id/admins">
+                                    <i class="bi bi-people"></i> Admins do Torneio
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <!-- Platform context brand -->
+                    <a class="sidebar-brand" href="/admin">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                        <span>Plataforma</span>
+                    </a>
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-section-label">Geral</li>
+                        <li>
+                            <a class="nav-link @(IsExact("/admin") ? "active" : "")" href="/admin">
+                                <i class="bi bi-speedometer2"></i> Painel
+                            </a>
+                        </li>
+                        <hr class="sidebar-divider" />
+                        <li class="sidebar-section-label">Torneios</li>
+                        <li>
+                            <a class="nav-link @(IsActive("/admin/torneios/criar") ? "active" : "")"
+                               href="/admin/torneios/criar">
+                                <i class="bi bi-plus-circle"></i> Novo Torneio
+                            </a>
+                        </li>
+                        <hr class="sidebar-divider" />
+                        <li class="sidebar-section-label">Acesso</li>
+                        <li>
+                            <a class="nav-link @(IsActive("/admin/admins") ? "active" : "")" href="/admin/admins">
+                                <i class="bi bi-shield-check"></i> Admins Gerais
+                            </a>
+                        </li>
+                    </ul>
+                }
+            </nav>
+
+            <!-- ── Page content ──────────────────────────────────────────── -->
+            <div id="page-content">
+
+                <!-- Top bar -->
+                <div id="topbar">
+                    <button id="sidebarToggle" title="Menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="topbar-user">
+                        <span class="topbar-user-name d-none d-sm-inline">@nomeUsuario</span>
+                        <span class="topbar-user-role">@perfil</span>
+                        <form method="post" action="/logout" class="d-inline m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span class="d-none d-sm-inline ms-1">Sair</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Main content -->
+                <main class="page-main">
+                    @if (TempData["Sucesso"] is string sucesso)
+                    {
+                        <div class="flash-area">
+                            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+                                <i class="bi bi-check-circle-fill"></i>
+                                @sucesso
+                                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                    }
+                    @if (TempData["Erro"] is string erro)
+                    {
+                        <div class="flash-area">
+                            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                @erro
+                                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                    }
+                    @RenderBody()
+                </main>
+
+                <footer class="page-footer">
+                    &copy; @DateTime.Now.Year — Torneio
+                </footer>
+            </div>
+
+        </div>
+        <div id="sidebar-overlay"></div>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+}
+else
+{
+    <!-- Public layout -->
+    <body>
+        <nav class="navbar navbar-expand-sm navbar-dark public-navbar border-bottom mb-4">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="/">
+                    <i class="bi bi-trophy-fill me-2" style="color:#3b82f6"></i>Torneio
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPublic">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse" id="navPublic">
+                    <ul class="navbar-nav ms-auto">
+                        @if (!string.IsNullOrEmpty(slug))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/@slug/login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container pb-5">
+            @if (TempData["Sucesso"] is string sucesso)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @sucesso
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Erro"] is string erro)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @erro
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            <main role="main">@RenderBody()</main>
+        </div>
+        <footer class="border-top py-3 mt-4">
+            <div class="container">
+                <small class="text-muted">&copy; @DateTime.Now.Year — Torneio</small>
+            </div>
+        </footer>
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+}
+</html>

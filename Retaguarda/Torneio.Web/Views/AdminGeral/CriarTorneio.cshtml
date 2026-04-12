@@ -1,0 +1,141 @@
+@model CriarTorneioDto
+@{
+    ViewData["Title"] = "Novo Torneio";
+    var modosSorteio = (ModoSorteio[])ViewBag.ModosSorteio;
+    var tiposTorneio = (TipoTorneio[])ViewBag.TiposTorneio;
+    var presetsJson  = (string)ViewBag.PresetsJson;
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Novo Torneio</h1>
+    </div>
+</div>
+<a asp-action="Index" class="back-link">
+    <i class="bi bi-arrow-left"></i> Voltar ao painel
+</a>
+
+<div class="form-card">
+    <form asp-action="CriarTorneio" method="post">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="form-section-title">Identificação</div>
+        <div class="mb-3">
+            <label asp-for="Slug" class="form-label">
+                Slug <small class="text-muted fw-normal">(URL amigável)</small>
+            </label>
+            <div class="input-group">
+                <span class="input-group-text text-muted small">/</span>
+                <input asp-for="Slug" class="form-control" placeholder="meu-torneio" />
+            </div>
+            <span asp-validation-for="Slug" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="NomeTorneio" class="form-label">Nome do Torneio</label>
+            <input asp-for="NomeTorneio" class="form-control" placeholder="Ex: Amigos da Pesca 2026" />
+            <span asp-validation-for="NomeTorneio" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="LogoUrl" class="form-label">URL do Logo <small class="text-muted fw-normal">(opcional)</small></label>
+            <input asp-for="LogoUrl" class="form-control" placeholder="https://..." />
+        </div>
+        <div class="mb-3">
+            <label asp-for="TipoTorneio" class="form-label">Tipo de Torneio</label>
+            <select asp-for="TipoTorneio" id="tipoTorneio" class="form-select">
+                @foreach (var t in tiposTorneio)
+                {
+                    <option value="@((int)t)">@t</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-section-title">
+            Terminologia
+            <span class="fw-normal text-muted ms-1">— definida pelo tipo, somente leitura</span>
+        </div>
+        <div class="row g-3 mb-2">
+            <div class="col-md-4">
+                <label class="form-label">Equipe / Grupo</label>
+                <input id="labelEquipe" class="form-control bg-light" readonly value="" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Membro</label>
+                <input id="labelMembro" class="form-control bg-light" readonly value="" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Supervisor</label>
+                <input id="labelSupervisor" class="form-control bg-light" readonly value="" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Item</label>
+                <input id="labelItem" class="form-control bg-light" readonly value="" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Captura</label>
+                <input id="labelCaptura" class="form-control bg-light" readonly value="" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Unidade de Medida</label>
+                <input id="medidaCaptura" class="form-control bg-light" readonly value="" />
+            </div>
+        </div>
+
+        <div class="form-section-title">Regras</div>
+        <div class="mb-3">
+            <label asp-for="ModoSorteio" class="form-label">Modo de Sorteio</label>
+            <select asp-for="ModoSorteio" class="form-select">
+                <option value="" disabled selected>— Selecione —</option>
+                @foreach (var m in modosSorteio)
+                {
+                    <option value="@((int)m)">@m</option>
+                }
+            </select>
+            <span asp-validation-for="ModoSorteio" class="text-danger small"></span>
+        </div>
+        <div id="regrasPesca">
+            <div class="form-check mb-2">
+                <input asp-for="UsarFatorMultiplicador" class="form-check-input" type="checkbox" />
+                <label asp-for="UsarFatorMultiplicador" class="form-check-label">Usar Fator Multiplicador</label>
+            </div>
+            <div class="form-check mb-3">
+                <input asp-for="PermitirCapturaOffline" class="form-check-input" type="checkbox" />
+                <label asp-for="PermitirCapturaOffline" class="form-check-label">Permitir Captura Offline</label>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Criar Torneio
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const presets = @Html.Raw(presetsJson);
+        const TIPO_PESCA = @((int)TipoTorneio.Pesca);
+
+        function aplicarTipo(valor) {
+            const p = presets[valor];
+            if (!p) return;
+            document.getElementById('labelEquipe').value    = p.labelEquipe;
+            document.getElementById('labelMembro').value    = p.labelMembro;
+            document.getElementById('labelSupervisor').value = p.labelSupervisor;
+            document.getElementById('labelItem').value      = p.labelItem;
+            document.getElementById('labelCaptura').value   = p.labelCaptura;
+            document.getElementById('medidaCaptura').value  = p.medidaCaptura;
+            document.getElementById('regrasPesca').style.display =
+                parseInt(valor) === TIPO_PESCA ? '' : 'none';
+        }
+
+        const sel = document.getElementById('tipoTorneio');
+        sel.addEventListener('change', () => aplicarTipo(sel.value));
+        aplicarTipo(sel.value);
+    </script>
+}

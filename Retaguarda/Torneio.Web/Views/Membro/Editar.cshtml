@@ -1,0 +1,45 @@
+@model AtualizarMembroDto
+@{
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var anoId   = (Guid)ViewBag.AnoId;
+    var membro  = (MembroDto)ViewBag.Membro;
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var label   = torneio?.LabelMembro ?? "Membro";
+    ViewData["Title"] = $"Editar {label} — {membro.Nome}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Editar @label — @membro.Nome</h1>
+    </div>
+</div>
+<a href="/@slug/membros/@anoId" class="back-link">
+    <i class="bi bi-arrow-left"></i> @label&#x73;
+</a>
+
+<div class="form-card">
+    <form asp-controller="Membro" asp-action="Editar" asp-route-slug="@slug" asp-route-anoId="@anoId" asp-route-id="@membro.Id" method="post" enctype="multipart/form-data">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+        <div class="form-section-title">Dados do @label</div>
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome do @label</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+        <div class="form-section-title">Foto</div>
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto do {label}" }, { "fotoUrl", membro.FotoUrl } })' />
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+            </button>
+            <a href="/@slug/membros/@anoId" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

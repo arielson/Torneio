@@ -1,0 +1,66 @@
+using FluentValidation;
+using Torneio.Application.DTOs.Membro;
+using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Entities;
+using Torneio.Domain.Interfaces.Repositories;
+
+namespace Torneio.Application.Services.Implementations;
+
+public class MembroServico : IMembroServico
+{
+    private readonly IMembroRepositorio _repositorio;
+    private readonly IValidator<CriarMembroDto> _validador;
+
+    public MembroServico(IMembroRepositorio repositorio, IValidator<CriarMembroDto> validador)
+    {
+        _repositorio = repositorio;
+        _validador = validador;
+    }
+
+    public async Task<MembroDto?> ObterPorId(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id);
+        return entidade is null ? null : ParaDto(entidade);
+    }
+
+    public async Task<IEnumerable<MembroDto>> ListarPorAnoTorneio(Guid anoTorneioId)
+    {
+        var lista = await _repositorio.ListarPorAnoTorneio(anoTorneioId);
+        return lista.Select(ParaDto);
+    }
+
+    public async Task<MembroDto> Criar(CriarMembroDto dto)
+    {
+        await _validador.ValidateAndThrowAsync(dto);
+
+        var entidade = Membro.Criar(dto.TorneioId, dto.AnoTorneioId, dto.Nome, dto.FotoUrl);
+        await _repositorio.Adicionar(entidade);
+        return ParaDto(entidade);
+    }
+
+    public async Task Atualizar(Guid id, AtualizarMembroDto dto)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Membro '{id}' não encontrado.");
+
+        entidade.AtualizarNome(dto.Nome);
+        if (dto.FotoUrl is not null) entidade.AtualizarFoto(dto.FotoUrl);
+        await _repositorio.Atualizar(entidade);
+    }
+
+    public async Task Remover(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Membro '{id}' não encontrado.");
+        await _repositorio.Remover(entidade.Id);
+    }
+
+    private static MembroDto ParaDto(Membro e) => new()
+    {
+        Id = e.Id,
+        TorneioId = e.TorneioId,
+        AnoTorneioId = e.AnoTorneioId,
+        Nome = e.Nome,
+        FotoUrl = e.FotoUrl
+    };
+}

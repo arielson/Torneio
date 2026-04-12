@@ -1,0 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using Torneio.Domain.Entities;
+using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Infrastructure.Data;
+
+namespace Torneio.Infrastructure.Repositories;
+
+public class FiscalRepositorio : RepositorioBase<Fiscal>, IFiscalRepositorio
+{
+    public FiscalRepositorio(TorneioDbContext context) : base(context) { }
+
+    public async Task<Fiscal?> ObterPorUsuario(string usuario, Guid torneioId) =>
+        await _dbSet.FirstOrDefaultAsync(f => f.Usuario == usuario && f.TorneioId == torneioId);
+
+    public async Task<IEnumerable<Fiscal>> ListarPorAnoTorneio(Guid anoTorneioId) =>
+        await _dbSet.Where(f => f.AnoTorneioId == anoTorneioId).ToListAsync();
+}

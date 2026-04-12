@@ -1,0 +1,21 @@
+@* Parâmetros: inputName (string), label (string), fotoUrl (string?) *@
+@{
+    var inputName = ViewData["inputName"] as string ?? "foto";
+    var label = ViewData["label"] as string ?? "Foto";
+    var fotoUrl = ViewData["fotoUrl"] as string;
+    var storageBase = ViewBag.StorageBaseUrl as string ?? "";
+    var urlExibir = !string.IsNullOrEmpty(fotoUrl)
+        ? (fotoUrl.StartsWith("http") ? fotoUrl : $"{storageBase}/{fotoUrl.TrimStart('/')}")
+        : null;
+}
+<div class="mb-3">
+    <label class="form-label">@label</label>
+    @if (!string.IsNullOrEmpty(urlExibir))
+    {
+        <div class="mb-2">
+            <img src="@urlExibir" alt="@label" style="max-height:120px;max-width:200px;border-radius:6px;border:1px solid #dee2e6;" />
+            <div class="form-text">Envie uma nova imagem para substituir.</div>
+        </div>
+    }
+    <input type="file" name="@inputName" class="form-control" accept="image/*" />
+</div>

@@ -1,0 +1,72 @@
+@model IEnumerable<FiscalDto>
+@{
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var anoId   = Context.GetRouteData().Values["anoId"]?.ToString();
+    var ano     = (AnoTorneioDto)ViewBag.Ano;
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var labelSupervisor = torneio?.LabelSupervisor ?? "Fiscal";
+    ViewData["Title"] = $"{labelSupervisor}s — {ano.Ano}";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>@labelSupervisor&#x73; — @ano.Ano</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/fiscais/@anoId/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Novo @labelSupervisor
+        </a>
+    </div>
+</div>
+<a href="/@slug/admin" class="back-link">
+    <i class="bi bi-arrow-left"></i> Painel
+</a>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-person-badge me-2"></i>@labelSupervisor&#x73; cadastrados</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">
+            Nenhum @labelSupervisor.ToLower() cadastrado. <a href="/@slug/fiscais/@anoId/criar">Criar o primeiro</a>.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in lista)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@f.Nome</td>
+                            <td><code class="text-muted small">@f.Usuario</code></td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/fiscais/@anoId/@f.Id/senha" class="btn btn-sm btn-outline-secondary" title="Alterar Senha">
+                                        <i class="bi bi-key"></i>
+                                    </a>
+                                    <form asp-controller="Fiscal" asp-action="Remover" asp-route-slug="@slug" asp-route-anoId="@anoId" asp-route-id="@f.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @f.Nome?')" title="Remover">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

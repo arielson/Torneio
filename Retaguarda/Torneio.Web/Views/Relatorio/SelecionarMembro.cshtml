@@ -1,0 +1,64 @@
+@model IEnumerable<MembroDto>
+@{
+    var slug         = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio      = (TorneioDto)ViewBag.Torneio;
+    var ano          = (AnoTorneioDto)ViewBag.Ano;
+    var anoTorneioId = ano.Id;
+    ViewData["Title"] = $"Relatório de {torneio.LabelMembro} — {ano.Ano}";
+    var lista = Model.OrderBy(x => x.Nome).ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Relatório de @torneio.LabelMembro — @ano.Ano</h1>
+    </div>
+</div>
+<a href="/@slug/relatorios" class="back-link">
+    <i class="bi bi-arrow-left"></i> Relatórios
+</a>
+
+@if (!lista.Any())
+{
+    <div class="alert alert-info d-flex gap-2 align-items-center">
+        <i class="bi bi-info-circle-fill"></i>
+        Nenhum @torneio.LabelMembro.ToLower() cadastrado.
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-person me-2"></i>@torneio.LabelMembro&#x73;</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@torneio.LabelMembro</th>
+                        <th class="text-end">Relatórios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in lista)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@m.Nome</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/relatorios/membro/download?anoTorneioId=@anoTorneioId&membroId=@m.Id&analitico=false"
+                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Sintético">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintético
+                                    </a>
+                                    <a href="/@slug/relatorios/membro/download?anoTorneioId=@anoTorneioId&membroId=@m.Id&analitico=true"
+                                       class="btn btn-sm btn-secondary" target="_blank" title="Analítico">
+                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analítico
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

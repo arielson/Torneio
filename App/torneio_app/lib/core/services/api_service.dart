@@ -1,0 +1,56 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class ApiException implements Exception {
+  final int statusCode;
+  final String message;
+  const ApiException(this.statusCode, this.message);
+
+  @override
+  String toString() => 'ApiException($statusCode): $message';
+}
+
+class ApiService {
+  final http.Client _client;
+
+  ApiService({http.Client? client}) : _client = client ?? http.Client();
+
+  Map<String, String> _headers({String? token}) => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+  Future<dynamic> get(String url, {String? token}) async {
+    final response = await _client.get(
+      Uri.parse(url),
+      headers: _headers(token: token),
+    );
+    return _handle(response);
+  }
+
+  Future<dynamic> post(String url, dynamic body, {String? token}) async {
+    final response = await _client.post(
+      Uri.parse(url),
+      headers: _headers(token: token),
+      body: json.encode(body),
+    );
+    return _handle(response);
+  }
+
+  dynamic _handle(http.Response response) {
+    final body = utf8.decode(response.bodyBytes);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (body.isEmpty) return null;
+      return json.decode(body);
+    }
+    String message = 'Erro ${response.statusCode}';
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map) {
+        message = decoded['erro'] ?? decoded['title'] ?? message;
+      }
+    } catch (_) {}
+    throw ApiException(response.statusCode, message);
+  }
+}

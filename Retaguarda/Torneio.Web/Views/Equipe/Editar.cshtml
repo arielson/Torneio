@@ -1,0 +1,56 @@
+@model AtualizarEquipeDto
+@{
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var anoId   = (Guid)ViewBag.AnoId;
+    var equipe  = (EquipeDto)ViewBag.Equipe;
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var label   = torneio?.LabelEquipe ?? "Equipe";
+    ViewData["Title"] = $"Editar {label} — {equipe.Nome}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Editar @label — @equipe.Nome</h1>
+    </div>
+</div>
+<a href="/@slug/equipes/@anoId" class="back-link">
+    <i class="bi bi-arrow-left"></i> @label&#x73;
+</a>
+
+<div class="form-card">
+    <form asp-controller="Equipe" asp-action="Editar" asp-route-slug="@slug" asp-route-anoId="@anoId" asp-route-id="@equipe.Id" method="post" enctype="multipart/form-data">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+        <div class="form-section-title">Dados da @label</div>
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome da @label</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Capitao" class="form-label">Capitão</label>
+            <input asp-for="Capitao" class="form-control" />
+            <span asp-validation-for="Capitao" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="QtdVagas" class="form-label">Quantidade de Vagas</label>
+            <input asp-for="QtdVagas" class="form-control" type="number" min="1" style="max-width:160px" />
+            <span asp-validation-for="QtdVagas" class="text-danger small"></span>
+        </div>
+        <div class="form-section-title">Fotos</div>
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto da {label}" }, { "fotoUrl", equipe.FotoUrl } })' />
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "fotoCapitao" }, { "label", "Foto do Capitão" }, { "fotoUrl", equipe.FotoCapitaoUrl } })' />
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+            </button>
+            <a href="/@slug/equipes/@anoId" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

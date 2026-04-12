@@ -1,0 +1,164 @@
+@model IEnumerable<AnoTorneioDto>
+@{
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = torneio.NomeTorneio;
+    var anos = Model.OrderByDescending(x => x.Ano).ToList();
+    var liberado   = anos.Count(a => a.Status == "Liberado");
+    var finalizado = anos.Count(a => a.Status == "Finalizado");
+    var emPreparo  = anos.Count - liberado - finalizado;
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>@torneio.NomeTorneio</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/anos/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Nova Edição
+        </a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-calendar3"></i></div>
+            <div>
+                <div class="stat-value">@anos.Count</div>
+                <div class="stat-label">Edições</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-play-circle"></i></div>
+            <div>
+                <div class="stat-value">@liberado</div>
+                <div class="stat-label">Em andamento</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="stat-card">
+            <div class="stat-icon amber"><i class="bi bi-clock"></i></div>
+            <div>
+                <div class="stat-value">@emPreparo</div>
+                <div class="stat-label">Em preparo</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="stat-card">
+            <div class="stat-icon gray"><i class="bi bi-check2-all"></i></div>
+            <div>
+                <div class="stat-value">@finalizado</div>
+                <div class="stat-label">Finalizados</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick actions -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <a href="/@slug/itens" class="action-card">
+            <div class="action-icon blue"><i class="bi bi-collection"></i></div>
+            <div>
+                <div class="action-label">@torneio.LabelItem&#x73;</div>
+                <div class="action-desc">Cadastrar e editar</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="/@slug/capturas" class="action-card">
+            <div class="action-icon teal"><i class="bi bi-camera"></i></div>
+            <div>
+                <div class="action-label">@torneio.LabelCaptura&#x73;</div>
+                <div class="action-desc">Visualizar e remover</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="/@slug/sorteio" class="action-card">
+            <div class="action-icon purple"><i class="bi bi-shuffle"></i></div>
+            <div>
+                <div class="action-label">Sorteio</div>
+                <div class="action-desc">Gerenciar sorteio</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="/@slug/relatorios" class="action-card">
+            <div class="action-icon amber"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <div>
+                <div class="action-label">Relatórios</div>
+                <div class="action-desc">Gerar PDFs</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Edições table -->
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-calendar3 me-2"></i>Edições</h5>
+        <a href="/@slug/anos/criar" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nova
+        </a>
+    </div>
+    @if (!anos.Any())
+    {
+        <div class="card-body-pad text-muted">
+            Nenhuma edição cadastrada. <a href="/@slug/anos/criar">Criar a primeira</a>.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ano</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in anos)
+                    {
+                        var badgeClass = a.Status switch
+                        {
+                            "Liberado"   => "bg-success-subtle text-success border-success-subtle",
+                            "Finalizado" => "bg-secondary-subtle text-secondary border-secondary-subtle",
+                            _            => "bg-warning-subtle text-warning border-warning-subtle"
+                        };
+                        <tr>
+                            <td class="fw-semibold">@a.Ano</td>
+                            <td>
+                                <span class="badge border @badgeClass">@a.Status</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                    <a href="/@slug/equipes/@a.Id" class="btn btn-sm btn-outline-secondary" title="@torneio.LabelEquipe&#x73;">
+                                        <i class="bi bi-people me-1"></i>@torneio.LabelEquipe&#x73;
+                                    </a>
+                                    <a href="/@slug/membros/@a.Id" class="btn btn-sm btn-outline-secondary" title="@torneio.LabelMembro&#x73;">
+                                        <i class="bi bi-person me-1"></i>@torneio.LabelMembro&#x73;
+                                    </a>
+                                    <a href="/@slug/fiscais/@a.Id" class="btn btn-sm btn-outline-secondary" title="@torneio.LabelSupervisor&#x73;">
+                                        <i class="bi bi-person-badge me-1"></i>@torneio.LabelSupervisor&#x73;
+                                    </a>
+                                    <a href="/@slug/sorteio/@a.Id" class="btn btn-sm btn-outline-primary" title="Sorteio">
+                                        <i class="bi bi-shuffle"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

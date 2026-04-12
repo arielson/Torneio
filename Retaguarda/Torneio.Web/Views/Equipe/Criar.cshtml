@@ -1,0 +1,68 @@
+@model CriarEquipeDto
+@{
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var ano     = (AnoTorneioDto)ViewBag.Ano;
+    var fiscais = (IEnumerable<FiscalDto>)ViewBag.Fiscais;
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var label   = torneio?.LabelEquipe ?? "Equipe";
+    var labelSupervisor = torneio?.LabelSupervisor ?? "Fiscal";
+    ViewData["Title"] = $"Nova {label}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Nova @label — @ano.Ano</h1>
+    </div>
+</div>
+<a href="/@slug/equipes/@ano.Id" class="back-link">
+    <i class="bi bi-arrow-left"></i> @label&#x73;
+</a>
+
+<div class="form-card">
+    <form asp-controller="Equipe" asp-action="Criar" asp-route-slug="@slug" asp-route-anoId="@ano.Id" method="post" enctype="multipart/form-data">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+        <div class="form-section-title">Dados da @label</div>
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome da @label</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Capitao" class="form-label">Capitão</label>
+            <input asp-for="Capitao" class="form-control" />
+            <span asp-validation-for="Capitao" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="FiscalId" class="form-label">@labelSupervisor</label>
+            <select asp-for="FiscalId" class="form-select">
+                <option value="">— Selecione —</option>
+                @foreach (var f in fiscais)
+                {
+                    <option value="@f.Id">@f.Nome (@f.Usuario)</option>
+                }
+            </select>
+            <span asp-validation-for="FiscalId" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="QtdVagas" class="form-label">Quantidade de Vagas</label>
+            <input asp-for="QtdVagas" class="form-control" type="number" min="1" style="max-width:160px" />
+            <span asp-validation-for="QtdVagas" class="text-danger small"></span>
+        </div>
+        <div class="form-section-title">Fotos</div>
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto da {label}" } })' />
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "fotoCapitao" }, { "label", "Foto do Capitão" } })' />
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Criar @label
+            </button>
+            <a href="/@slug/equipes/@ano.Id" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

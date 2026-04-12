@@ -1,0 +1,96 @@
+@model IEnumerable<SorteioEquipeDto>
+@{
+    var slug  = Context.GetRouteData().Values["slug"]?.ToString();
+    var anoId = Context.GetRouteData().Values["anoId"]?.ToString();
+    var ano   = (AnoTorneioDto)ViewBag.Ano;
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    ViewData["Title"] = $"Sorteio — {ano.Ano}";
+    var lista = Model.OrderBy(x => x.Posicao).ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Sorteio — @ano.Ano</h1>
+    </div>
+    <div class="page-header-actions">
+        <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" asp-route-anoId="@anoId" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-success btn-sm" onclick="return confirm('Realizar novo sorteio? O resultado anterior será substituído.')">
+                <i class="bi bi-shuffle me-1"></i>Sortear
+            </button>
+        </form>
+        @if (lista.Any())
+        {
+            <form asp-controller="Sorteio" asp-action="Limpar" asp-route-slug="@slug" asp-route-anoId="@anoId" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Limpar o sorteio?')">
+                    <i class="bi bi-trash me-1"></i>Limpar
+                </button>
+            </form>
+        }
+    </div>
+</div>
+<a href="/@slug/sorteio" class="back-link">
+    <i class="bi bi-arrow-left"></i> Sorteio
+</a>
+
+@if (!lista.Any())
+{
+    <div class="content-card" style="max-width:480px">
+        <div class="card-body-pad">
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-shuffle" style="font-size:2.5rem;opacity:.3"></i>
+                <p class="mt-2 mb-3">Nenhum sorteio realizado ainda.</p>
+                <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" asp-route-anoId="@anoId" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-primary">
+                        <i class="bi bi-shuffle me-1"></i>Realizar Sorteio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-list-ol me-2"></i>Resultado — @lista.Count registros</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Posição</th>
+                        <th>@labelEquipe</th>
+                        <th>@labelMembro</th>
+                        <th style="width:160px">Ajustar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in lista)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">@s.Posicao</span></td>
+                            <td class="fw-semibold">@s.NomeEquipe</td>
+                            <td>@s.NomeMembro</td>
+                            <td>
+                                <form asp-controller="Sorteio" asp-action="Ajustar"
+                                      asp-route-slug="@slug" asp-route-anoId="@anoId"
+                                      asp-route-sorteioEquipeId="@s.Id"
+                                      method="post" class="d-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="number" name="novaPosicao" value="@s.Posicao" min="1"
+                                           class="form-control form-control-sm" style="width:70px" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">OK</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

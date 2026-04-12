@@ -1,0 +1,49 @@
+@model IEnumerable<TorneioDto>
+@{
+    ViewData["Title"] = "Torneios";
+    var lista = Model.ToList();
+}
+
+<h1 class="fw-bold mb-1">Torneios</h1>
+<p class="text-muted mb-4">Selecione um torneio para acessar.</p>
+
+@if (!lista.Any())
+{
+    <p class="text-muted">Nenhum torneio disponível no momento.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var t in lista.Where(x => x.Ativo))
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    @if (!string.IsNullOrEmpty(t.LogoUrl))
+                    {
+                        <img src="@t.LogoUrl" class="card-img-top p-3" alt="@t.NomeTorneio"
+                             style="max-height:160px;object-fit:contain;background:#f8fafc" />
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="height:100px;background:#f8fafc;color:#94a3b8;font-size:2.5rem">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">@t.NomeTorneio</h5>
+                        <p class="card-text text-muted small">
+                            <i class="bi bi-link-45deg me-1"></i>@t.Slug
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 pb-3">
+                        <div class="d-flex gap-2">
+                            <a href="/@t.Slug" class="btn btn-primary btn-sm flex-fill">Ver torneio</a>
+                            <a href="/@t.Slug/login" class="btn btn-outline-secondary btn-sm">Entrar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

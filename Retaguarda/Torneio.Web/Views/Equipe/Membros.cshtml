@@ -1,0 +1,88 @@
+@model IEnumerable<MembroDto>
+@{
+    var slug        = Context.GetRouteData().Values["slug"]?.ToString();
+    var anoId       = (Guid)ViewBag.AnoId;
+    var equipe      = (EquipeDto)ViewBag.Equipe;
+    var torneio     = (TorneioDto)ViewBag.Torneio;
+    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    ViewData["Title"] = $"{labelMembro}s — {equipe.Nome}";
+    var lista = Model.ToList();
+    var cheio = equipe.QtdMembros >= equipe.QtdVagas;
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>@labelMembro&#x73; — @equipe.Nome</h1>
+    </div>
+</div>
+<a href="/@slug/equipes/@anoId" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelEquipe&#x73;
+</a>
+
+<div class="d-flex gap-3 mb-4 flex-wrap">
+    <div class="stat-card" style="flex:0 0 auto">
+        <div class="stat-icon @(cheio ? "green" : "amber")">
+            <i class="bi bi-people"></i>
+        </div>
+        <div>
+            <div class="stat-value">@equipe.QtdMembros / @equipe.QtdVagas</div>
+            <div class="stat-label">vagas preenchidas</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-person-plus me-2"></i>Gerenciar @labelMembro&#x73;</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">
+            Nenhum @labelMembro.ToLower() disponível para adicionar.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@labelMembro</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in lista)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@m.Nome</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <form asp-controller="Equipe" asp-action="AdicionarMembro"
+                                          asp-route-slug="@slug" asp-route-anoId="@anoId"
+                                          asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
+                                          method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-success" title="Adicionar">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-controller="Equipe" asp-action="RemoverMembro"
+                                          asp-route-slug="@slug" asp-route-anoId="@anoId"
+                                          asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
+                                          method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" title="Remover">
+                                            <i class="bi bi-dash-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

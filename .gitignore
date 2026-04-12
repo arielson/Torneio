@@ -1,0 +1,44 @@
+# ── .NET ────────────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+TestResults/
+publish/
+
+# ── ASP.NET ─────────────────────────────────────────────────────────────────
+wwwroot/lib/
+
+# ── Entity Framework migrations snapshot (manter apenas se quiser versionar)
+# Descomente para ignorar migrations geradas automaticamente:
+# **/Migrations/
+
+# ── Flutter / Dart ───────────────────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.g.dart
+*.freezed.dart
+pubspec.lock
+
+# ── Secrets / ambiente ───────────────────────────────────────────────────────
+appsettings.Development.json
+appsettings.Production.json
+*.pfx
+*.p12
+secrets.json
+
+# ── Storage local ────────────────────────────────────────────────────────────
+Storage/
+
+# ── Claude ───────────────────────────────────────────────────────────────────
+.claude/
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

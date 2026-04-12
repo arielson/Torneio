@@ -1,0 +1,45 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Entrar";
+    ViewData["IsAuthPage"] = true;
+}
+
+<div class="auth-card">
+    <div class="auth-logo">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+    </div>
+    <h2>Admin Geral</h2>
+    <p class="auth-subtitle">Acesse o painel da plataforma</p>
+
+    <form asp-action="Login" method="post">
+        <input type="hidden" asp-for="ReturnUrl" />
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="mb-3">
+            <label asp-for="Usuario" class="form-label">Usuário</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                <input asp-for="Usuario" class="form-control border-start-0 ps-0" autocomplete="username" placeholder="seu usuário" />
+            </div>
+            <span asp-validation-for="Usuario" class="text-danger small"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Senha" class="form-label">Senha</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                <input asp-for="Senha" class="form-control border-start-0 ps-0" autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            <span asp-validation-for="Senha" class="text-danger small"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

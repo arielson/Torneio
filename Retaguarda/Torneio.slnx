@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Torneio.API/Torneio.API.csproj" />
+  <Project Path="Torneio.Application/Torneio.Application.csproj" />
+  <Project Path="Torneio.Domain/Torneio.Domain.csproj" />
+  <Project Path="Torneio.Infrastructure/Torneio.Infrastructure.csproj" />
+  <Project Path="Torneio.Web/Torneio.Web.csproj" />
+</Solution>
