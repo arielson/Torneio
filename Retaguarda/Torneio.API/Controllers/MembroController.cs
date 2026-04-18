@@ -8,7 +8,7 @@ namespace Torneio.API.Controllers;
 /// <summary>
 /// /api/{slug}/membros — AdminTorneio
 /// </summary>
-[Authorize(Policy = "AdminTorneio")]
+[Authorize]
 [Route("api/{slug}/membros")]
 public class MembroController : BaseController
 {
@@ -27,6 +27,7 @@ public class MembroController : BaseController
         return dto is null ? NotFound() : Ok(dto);
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpPost]
     public async Task<IActionResult> Criar([FromBody] CriarMembroDto dto)
     {
@@ -34,6 +35,7 @@ public class MembroController : BaseController
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarMembroDto dto)
     {
@@ -41,6 +43,7 @@ public class MembroController : BaseController
         return NoContent();
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id)
     {

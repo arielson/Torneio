@@ -9,7 +9,7 @@ namespace Torneio.API.Controllers;
 /// <summary>
 /// /api/{slug}/itens — AdminTorneio
 /// </summary>
-[Authorize(Policy = "AdminTorneio")]
+[Authorize]
 [Route("api/{slug}/itens")]
 public class ItemController : BaseController
 {
@@ -33,6 +33,7 @@ public class ItemController : BaseController
         return dto is null ? NotFound() : Ok(dto);
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpPost]
     public async Task<IActionResult> Criar([FromBody] CriarItemDto dto)
     {
@@ -47,6 +48,7 @@ public class ItemController : BaseController
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarItemDto dto)
     {
@@ -54,6 +56,7 @@ public class ItemController : BaseController
         return NoContent();
     }
 
+    [Authorize(Policy = "AdminTorneio")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id)
     {

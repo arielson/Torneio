@@ -1,7 +1,6 @@
 class Captura {
   final String id;
   final String torneioId;
-  final String anoTorneioId;
   final String itemId;
   final String nomeItem;
   final String membroId;
@@ -18,7 +17,6 @@ class Captura {
   const Captura({
     required this.id,
     required this.torneioId,
-    required this.anoTorneioId,
     required this.itemId,
     required this.nomeItem,
     required this.membroId,
@@ -36,7 +34,6 @@ class Captura {
   factory Captura.fromJson(Map<String, dynamic> json) => Captura(
         id: json['id'] as String,
         torneioId: json['torneioId'] as String,
-        anoTorneioId: json['anoTorneioId'] as String,
         itemId: json['itemId'] as String,
         nomeItem: json['nomeItem'] as String,
         membroId: json['membroId'] as String,
@@ -52,7 +49,6 @@ class Captura {
       );
 }
 
-/// Usado para registrar uma nova captura (online ou offline)
 class RegistrarCapturaRequest {
   final String torneioId;
   final String itemId;

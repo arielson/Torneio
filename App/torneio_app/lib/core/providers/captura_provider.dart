@@ -92,8 +92,11 @@ class CapturaProvider extends ChangeNotifier {
     String token,
     String equipeId,
   ) async {
+    final url = equipeId.trim().isEmpty
+        ? ApiConstants.capturas(slug)
+        : '${ApiConstants.capturas(slug)}?equipeId=$equipeId';
     final data = await _api.get(
-      '${ApiConstants.capturas(slug)}?equipeId=$equipeId',
+      url,
       token: token,
     );
     if (data is List) {

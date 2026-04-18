@@ -60,6 +60,7 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
     final capProv = context.watch<CapturaProvider>();
     final pendentes = capProv.pendentesSync;
     final equipes = capProv.equipes;
+    final exibirContagemMembros = config?.modoSorteio != 'Nenhum';
 
     // Equipe do fiscal (filtra por fiscalId)
     final fiscalId = auth.usuario?.id ?? '';
@@ -164,9 +165,10 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text('Capitão: ${minhaEquipe.capitao}'),
-                              Text(
-                                '${minhaEquipe.qtdMembros}/${minhaEquipe.qtdVagas} ${config?.labelMembro ?? "membros"}',
-                              ),
+                              if (exibirContagemMembros)
+                                Text(
+                                  '${minhaEquipe.qtdMembros}/${minhaEquipe.qtdVagas} ${config?.labelMembro ?? "membros"}',
+                                ),
                             ],
                           ),
                         ),

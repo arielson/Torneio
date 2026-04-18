@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
@@ -18,7 +19,6 @@ class AuthProvider extends ChangeNotifier {
   String? get erro => _erro;
   bool get autenticado => _usuario != null && !(_usuario!.tokenExpirado);
 
-  /// Restaura sessão salva no SharedPreferences
   Future<void> restaurarSessao() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(StorageKeys.token);
@@ -34,7 +34,7 @@ class AuthProvider extends ChangeNotifier {
     }
 
     _usuario = UsuarioAutenticado(
-      id: prefs.getString(StorageKeys.userId) ?? '',
+      id: prefs.getString(StorageKeys.userId) ?? _extrairUserIdDoToken(token),
       nome: prefs.getString(StorageKeys.userName) ?? '',
       perfil: prefs.getString(StorageKeys.perfil) ?? '',
       torneioId: prefs.getString(StorageKeys.torneioId),
@@ -45,8 +45,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Login para qualquer perfil de torneio (Fiscal, AdminTorneio).
-  /// O backend determina o perfil com base nas credenciais.
   Future<void> loginTorneio(String slug, String usuario, String senha) async {
     await _login(
       url: ApiConstants.login(slug),
@@ -56,7 +54,6 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  /// Mantido por compatibilidade — use [loginTorneio].
   Future<void> loginFiscal(String slug, String usuario, String senha) =>
       loginTorneio(slug, usuario, senha);
 
@@ -77,15 +74,16 @@ class AuthProvider extends ChangeNotifier {
         if (slug != null) 'slug': slug,
       });
 
+      final token = data['token'] as String;
       final expiraEm = DateTime.parse(data['expiraEm'] as String);
 
       _usuario = UsuarioAutenticado(
-        id: '', // JWT sub não é retornado no body; não necessário no app
+        id: _extrairUserIdDoToken(token),
         nome: data['nome'] as String,
         perfil: data['perfil'] as String,
         torneioId: data['torneioId'] as String?,
         slug: data['slug'] as String?,
-        token: data['token'] as String,
+        token: token,
         expiraEm: expiraEm,
       );
 
@@ -93,7 +91,7 @@ class AuthProvider extends ChangeNotifier {
     } on ApiException catch (e) {
       _erro = e.message;
     } catch (e) {
-      _erro = 'Erro de conexão. Verifique sua internet.';
+      _erro = 'Erro de conexao. Verifique sua internet.';
     } finally {
       _carregando = false;
       notifyListeners();
@@ -110,6 +108,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _salvarPrefs(UsuarioAutenticado u) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(StorageKeys.token, u.token);
+    await prefs.setString(StorageKeys.userId, u.id);
     await prefs.setString(StorageKeys.perfil, u.perfil);
     await prefs.setString('auth_expira_em', u.expiraEm.toIso8601String());
     await prefs.setString(StorageKeys.userName, u.nome);
@@ -125,5 +124,18 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove(StorageKeys.userName);
     await prefs.remove(StorageKeys.torneioId);
     await prefs.remove(StorageKeys.slug);
+  }
+
+  String _extrairUserIdDoToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return '';
+      final normalized = base64Url.normalize(parts[1]);
+      final payload = utf8.decode(base64Url.decode(normalized));
+      final data = json.decode(payload) as Map<String, dynamic>;
+      return data['sub'] as String? ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 }
