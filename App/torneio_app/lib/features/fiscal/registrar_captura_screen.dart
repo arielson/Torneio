@@ -149,7 +149,9 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
                     .map((i) => DropdownMenuItem(
                           value: i.id,
                           child: Text(
-                            '${i.nome} (mín. ${i.comprimento.toStringAsFixed(1)} ${config?.medidaCaptura ?? "cm"})',
+                            i.comprimento != null
+                                ? '${i.nome} (mín. ${i.comprimento!.toStringAsFixed(1)} ${config?.medidaCaptura ?? "cm"})'
+                                : i.nome,
                           ),
                         ))
                     .toList(),

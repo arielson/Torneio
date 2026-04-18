@@ -55,11 +55,11 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     final configProv = context.watch<ConfigProvider>();
     final config = configProv.config;
 
-    final labelEquipe = config?.labelEquipe ?? 'Equipe';
-    final labelMembro = config?.labelMembro ?? 'Membro';
-    final labelItem = config?.labelItem ?? 'Item';
-    final labelFiscal = config?.labelSupervisor ?? 'Fiscal';
-    final labelCaptura = config?.labelCaptura ?? 'Captura';
+    final labelEquipePlural = config?.labelEquipePlural ?? 'Equipes';
+    final labelMembroPlural = config?.labelMembroPlural ?? 'Membros';
+    final labelItemPlural = config?.labelItemPlural ?? 'Itens';
+    final labelFiscalPlural = config?.labelSupervisorPlural ?? 'Fiscais';
+    final labelCapturaPlural = config?.labelCapturaPlural ?? 'Capturas';
 
     return Scaffold(
       appBar: AppBar(
@@ -104,25 +104,25 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               _NavGrid(items: [
                 _NavItem(
                   icon: Icons.groups,
-                  label: '${labelEquipe}s',
+                  label: labelEquipePlural,
                   color: Colors.indigo,
                   onTap: () => _abrirSecao('/admin/equipes'),
                 ),
                 _NavItem(
                   icon: Icons.person,
-                  label: '${labelMembro}s',
+                  label: labelMembroPlural,
                   color: Colors.teal,
                   onTap: () => _abrirSecao('/admin/membros'),
                 ),
                 _NavItem(
                   icon: Icons.inventory_2,
-                  label: '${labelItem}s',
+                  label: labelItemPlural,
                   color: Colors.brown,
                   onTap: () => _abrirSecao('/admin/itens'),
                 ),
                 _NavItem(
                   icon: Icons.badge,
-                  label: '${labelFiscal}s',
+                  label: labelFiscalPlural,
                   color: Colors.purple,
                   onTap: () => _abrirSecao('/admin/fiscais'),
                 ),
@@ -135,7 +135,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               _NavGrid(items: [
                 _NavItem(
                   icon: Icons.list_alt,
-                  label: '${labelCaptura}s',
+                  label: labelCapturaPlural,
                   color: Colors.green,
                   onTap: () => _abrirSecao('/admin/capturas'),
                 ),

@@ -7,6 +7,7 @@ class ApiConstants {
   static String login(String slug) => '$_base/api/$slug/auth/login';
   static String loginAdminGeral() => '$_base/api/auth/login';
   static String equipes(String slug) => '$_base/api/$slug/equipes';
+  static String fiscais(String slug) => '$_base/api/$slug/fiscais';
   static String membros(String slug) => '$_base/api/$slug/membros';
   static String itens(String slug) => '$_base/api/$slug/itens';
   static String capturas(String slug) => '$_base/api/$slug/capturas';

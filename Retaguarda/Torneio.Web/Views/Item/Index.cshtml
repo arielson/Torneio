@@ -54,7 +54,7 @@
                     {
                         <tr>
                             <td class="fw-semibold">@i.Nome</td>
-                            <td>@i.Comprimento.ToString("F2")</td>
+                            <td>@(i.Comprimento?.ToString("F2") ?? "-")</td>
                             @if (usarFator)
                             {
                                 <td>

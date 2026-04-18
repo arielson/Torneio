@@ -314,7 +314,7 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("Comprimento")
+                    b.Property<decimal?>("Comprimento")
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("comprimento");
 

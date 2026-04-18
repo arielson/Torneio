@@ -34,4 +34,6 @@ public class Fiscal
     public void AtualizarFoto(string fotoUrl) => FotoUrl = fotoUrl;
 
     public void AtualizarNome(string nome) => Nome = nome;
+
+    public void AtualizarUsuario(string usuario) => Usuario = usuario;
 }

@@ -1,0 +1,302 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants.dart';
+import '../../core/flavor_config.dart';
+import '../../core/models/equipe.dart';
+import '../../core/models/fiscal.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/config_provider.dart';
+import '../../core/services/api_service.dart';
+import 'widgets/admin_photo_picker.dart';
+
+class EquipeFormScreen extends StatefulWidget {
+  final Equipe? equipe;
+
+  const EquipeFormScreen({
+    super.key,
+    this.equipe,
+  });
+
+  @override
+  State<EquipeFormScreen> createState() => _EquipeFormScreenState();
+}
+
+class _EquipeFormScreenState extends State<EquipeFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _api = ApiService();
+  final _nomeController = TextEditingController();
+  final _capitaoController = TextEditingController();
+  final _qtdVagasController = TextEditingController(text: '1');
+  final _picker = ImagePicker();
+
+  bool _salvando = false;
+  bool _carregandoFiscais = true;
+  String? _fiscalId;
+  String? _fotoEquipePath;
+  String? _fotoCapitaoPath;
+  List<Fiscal> _fiscais = const [];
+
+  bool get _editando => widget.equipe != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final equipe = widget.equipe;
+    if (equipe != null) {
+      _nomeController.text = equipe.nome;
+      _capitaoController.text = equipe.capitao;
+      _qtdVagasController.text = equipe.qtdVagas.toString();
+      _fiscalId = equipe.fiscalId;
+    }
+    _carregarFiscais();
+  }
+
+  Future<void> _carregarFiscais() async {
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null || auth?.token == null) return;
+
+    try {
+      final data = await _api.get(
+        ApiConstants.fiscais(auth!.slug!),
+        token: auth.token,
+      );
+
+      final fiscais = data is List
+          ? data.map((e) => Fiscal.fromJson(e as Map<String, dynamic>)).toList()
+          : <Fiscal>[];
+
+      if (!mounted) return;
+      setState(() => _fiscais = fiscais);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nao foi possivel carregar os fiscais.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _carregandoFiscais = false);
+    }
+  }
+
+  Future<void> _selecionarFoto({
+    required bool capitao,
+    required ImageSource source,
+  }) async {
+    final foto = await _picker.pickImage(
+      source: source,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 85,
+    );
+    if (foto != null && mounted) {
+      setState(() {
+        if (capitao) {
+          _fotoCapitaoPath = foto.path;
+        } else {
+          _fotoEquipePath = foto.path;
+        }
+      });
+    }
+  }
+
+  Future<void> _abrirSeletorFoto({required bool capitao}) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Escolher da galeria'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _selecionarFoto(capitao: capitao, source: ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Tirar foto'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _selecionarFoto(capitao: capitao, source: ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _salvar() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final auth = context.read<AuthProvider>().usuario;
+    final config = context.read<ConfigProvider>().config;
+    if (auth?.slug == null || auth?.token == null || config == null) return;
+
+    setState(() => _salvando = true);
+
+    final exibirVagas = config.modoSorteio != 'Nenhum';
+    final qtdVagas = exibirVagas ? int.parse(_qtdVagasController.text) : 1;
+
+    try {
+      final fields = {
+        'nome': _nomeController.text.trim(),
+        'capitao': _capitaoController.text.trim(),
+        'qtdVagas': '$qtdVagas',
+        if (!_editando) 'fiscalId': _fiscalId ?? '',
+      };
+
+      final files = {
+        if (_fotoEquipePath != null) 'foto': _fotoEquipePath!,
+        if (_fotoCapitaoPath != null) 'fotoCapitao': _fotoCapitaoPath!,
+      };
+
+      if (_editando) {
+        await _api.putMultipart(
+          '${ApiConstants.equipes(auth!.slug!)}/${widget.equipe!.id}',
+          fields: fields,
+          files: files.isEmpty ? null : files,
+          token: auth.token,
+        );
+      } else {
+        await _api.postMultipart(
+          ApiConstants.equipes(auth!.slug!),
+          fields: fields,
+          files: files.isEmpty ? null : files,
+          token: auth.token,
+        );
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _salvando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = context.watch<ConfigProvider>().config;
+    final label = config?.labelEquipe ?? 'Equipe';
+    final labelSupervisor = config?.labelSupervisor ?? 'Fiscal';
+    final exibirVagas = config?.modoSorteio != 'Nenhum';
+    final fotoEquipeAtualUrl = AppConfig.resolverUrl(widget.equipe?.fotoUrl);
+    final fotoCapitaoAtualUrl = AppConfig.resolverUrl(widget.equipe?.fotoCapitaoUrl);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_editando ? 'Editar $label' : 'Nova $label'),
+      ),
+      body: _carregandoFiscais
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  TextFormField(
+                    controller: _nomeController,
+                    decoration: InputDecoration(
+                      labelText: 'Nome da ${label.toLowerCase()}',
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty) ? 'Informe o nome.' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _capitaoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Capitao',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty) ? 'Informe o capitao.' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  if (!_editando)
+                    DropdownButtonFormField<String>(
+                      initialValue: _fiscalId,
+                      decoration: InputDecoration(
+                        labelText: labelSupervisor,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: _fiscais
+                          .map(
+                            (f) => DropdownMenuItem<String>(
+                              value: f.id,
+                              child: Text('${f.nome} (${f.usuario})'),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) => setState(() => _fiscalId = value),
+                      validator: (value) =>
+                          (value == null || value.isEmpty) ? 'Selecione um $labelSupervisor.' : null,
+                    ),
+                  if (!_editando) const SizedBox(height: 16),
+                  if (exibirVagas)
+                    TextFormField(
+                      controller: _qtdVagasController,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantidade de vagas',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        final vagas = int.tryParse(value ?? '');
+                        if (vagas == null || vagas <= 0) {
+                          return 'Informe ao menos 1 vaga.';
+                        }
+                        return null;
+                      },
+                    ),
+                  const SizedBox(height: 16),
+                  AdminPhotoPicker(
+                    titulo: 'Foto da ${label.toLowerCase()}',
+                    fotoLocalPath: _fotoEquipePath,
+                    fotoAtualUrl: fotoEquipeAtualUrl,
+                    onTap: () => _abrirSeletorFoto(capitao: false),
+                  ),
+                  const SizedBox(height: 16),
+                  AdminPhotoPicker(
+                    titulo: 'Foto do capitao',
+                    fotoLocalPath: _fotoCapitaoPath,
+                    fotoAtualUrl: fotoCapitaoAtualUrl,
+                    onTap: () => _abrirSeletorFoto(capitao: true),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _salvando ? null : _salvar,
+                    icon: _salvando
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save),
+                    label: Text(_salvando ? 'Salvando...' : 'Salvar'),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _capitaoController.dispose();
+    _qtdVagasController.dispose();
+    super.dispose();
+  }
+}

@@ -52,6 +52,28 @@ public class FiscalServico : IFiscalServico
         return ParaDto(entidade);
     }
 
+    public async Task Atualizar(Guid id, AtualizarFiscalDto dto)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Fiscal '{id}' não encontrado.");
+
+        if (!string.Equals(entidade.Usuario, dto.Usuario, StringComparison.OrdinalIgnoreCase))
+        {
+            var existente = await _repositorio.ObterPorUsuario(dto.Usuario, entidade.TorneioId);
+            if (existente is not null && existente.Id != id)
+                throw new InvalidOperationException($"Usuário '{dto.Usuario}' já existe neste torneio.");
+        }
+
+        entidade.AtualizarNome(dto.Nome);
+        entidade.AtualizarUsuario(dto.Usuario);
+        if (dto.FotoUrl is not null)
+            entidade.AtualizarFoto(dto.FotoUrl);
+        if (!string.IsNullOrWhiteSpace(dto.Senha))
+            entidade.AtualizarSenha(_passwordHasher.Hash(dto.Senha));
+
+        await _repositorio.Atualizar(entidade);
+    }
+
     public async Task AtualizarSenha(Guid id, AtualizarSenhaDto dto)
     {
         var entidade = await _repositorio.ObterPorId(id)

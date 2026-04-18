@@ -12,7 +12,7 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
 
         builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
         builder.Property(e => e.FotoUrl).HasMaxLength(500);
-        builder.Property(e => e.Comprimento).HasColumnType("numeric(10,2)").IsRequired();
+        builder.Property(e => e.Comprimento).HasColumnType("numeric(10,2)");
         builder.Property(e => e.FatorMultiplicador).HasColumnType("numeric(10,4)").IsRequired();
 
         builder.HasOne<TorneioEntity>()

@@ -15,6 +15,10 @@ import 'features/fiscal/registrar_captura_screen.dart';
 import 'features/fiscal/capturas_screen.dart';
 import 'features/fiscal/sync_screen.dart';
 import 'features/admin/home_screen.dart';
+import 'features/admin/equipes_screen.dart';
+import 'features/admin/fiscais_screen.dart';
+import 'features/admin/itens_screen.dart';
+import 'features/admin/membros_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
 import 'features/admin/section_placeholder_screen.dart';
@@ -80,10 +84,10 @@ class _TorneioAppState extends State<TorneioApp> {
           '/fiscal/capturas': (_) => const CapturasScreen(),
           '/fiscal/sync': (_) => const SyncScreen(),
           '/admin/home': (_) => const HomeAdminScreen(),
-          '/admin/equipes': (_) => const AdminSectionPlaceholderScreen(titulo: 'Equipes'),
-          '/admin/membros': (_) => const AdminSectionPlaceholderScreen(titulo: 'Membros'),
-          '/admin/itens': (_) => const AdminSectionPlaceholderScreen(titulo: 'Itens'),
-          '/admin/fiscais': (_) => const AdminSectionPlaceholderScreen(titulo: 'Fiscais'),
+          '/admin/equipes': (_) => const EquipesAdminScreen(),
+          '/admin/membros': (_) => const MembrosAdminScreen(),
+          '/admin/itens': (_) => const ItensAdminScreen(),
+          '/admin/fiscais': (_) => const FiscaisAdminScreen(),
           '/admin/capturas': (_) => const AdminSectionPlaceholderScreen(titulo: 'Capturas'),
           '/admin/sorteio': (_) => const AdminSectionPlaceholderScreen(titulo: 'Sorteio'),
           '/admin/relatorios': (_) => const RelatoriosAdminScreen(),

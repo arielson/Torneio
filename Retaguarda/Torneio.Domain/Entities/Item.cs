@@ -6,7 +6,7 @@ public class Item
     public Guid TorneioId { get; private set; }
     public string Nome { get; private set; } = null!;
     public string? FotoUrl { get; private set; }
-    public decimal Comprimento { get; private set; }
+    public decimal? Comprimento { get; private set; }
     public decimal FatorMultiplicador { get; private set; }
 
     private Item() { }
@@ -14,7 +14,7 @@ public class Item
     public static Item Criar(
         Guid torneioId,
         string nome,
-        decimal comprimento,
+        decimal? comprimento,
         decimal fatorMultiplicador = 1.0m,
         string? fotoUrl = null)
     {
@@ -29,7 +29,7 @@ public class Item
         };
     }
 
-    public void Atualizar(string nome, decimal comprimento, decimal fatorMultiplicador, string? fotoUrl = null)
+    public void Atualizar(string nome, decimal? comprimento, decimal fatorMultiplicador, string? fotoUrl = null)
     {
         Nome = nome;
         Comprimento = comprimento;

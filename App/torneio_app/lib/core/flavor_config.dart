@@ -1,13 +1,20 @@
-/// Configuração global do app.
+/// Configuracao global do app.
 class AppConfig {
-  //static const String apiBaseUrl = 'https://torneioapi.ari.net.br';
+  // static const String apiBaseUrl = 'https://torneioapi.ari.net.br';
   static const String apiBaseUrl = 'http://192.168.1.4:5053';
+  static const String mediaBasePath = '/media';
 
-  /// Converte URLs relativas (ex: /media/logos/x.jpg) em absolutas.
-  /// A API serve os mesmos arquivos estáticos em /media, então apiBaseUrl é suficiente.
+  /// Converte URLs relativas em absolutas.
+  /// Exemplo: `fotos/equipes/x.jpg` -> `http://host/media/fotos/equipes/x.jpg`.
   static String? resolverUrl(String? url) {
     if (url == null || url.isEmpty) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return '${apiBaseUrl.trimRight()}/${url.trimLeft().replaceFirst(RegExp(r'^/'), '')}';
+
+    final normalizada = url.trimLeft().replaceFirst(RegExp(r'^/'), '');
+    final relativa = normalizada.startsWith('media/')
+        ? normalizada
+        : '${mediaBasePath.replaceFirst(RegExp(r'^/'), '')}/$normalizada';
+
+    return '${apiBaseUrl.trimRight()}/$relativa';
   }
 }

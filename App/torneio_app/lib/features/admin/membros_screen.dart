@@ -1,0 +1,206 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/constants.dart';
+import '../../core/flavor_config.dart';
+import '../../core/models/membro.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/config_provider.dart';
+import '../../core/services/api_service.dart';
+import 'membro_form_screen.dart';
+
+class MembrosAdminScreen extends StatefulWidget {
+  const MembrosAdminScreen({super.key});
+
+  @override
+  State<MembrosAdminScreen> createState() => _MembrosAdminScreenState();
+}
+
+class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
+  final ApiService _api = ApiService();
+  bool _carregando = true;
+  String? _erro;
+  List<Membro> _membros = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null || auth?.token == null) return;
+
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+
+    try {
+      final data = await _api.get(
+        ApiConstants.membros(auth!.slug!),
+        token: auth.token,
+      );
+
+      final lista = data is List
+          ? data.map((e) => Membro.fromJson(e as Map<String, dynamic>)).toList()
+          : <Membro>[];
+
+      setState(() {
+        _membros = lista..sort((a, b) => a.nome.compareTo(b.nome));
+      });
+    } on ApiException catch (e) {
+      setState(() => _erro = e.message);
+    } catch (_) {
+      setState(() => _erro = 'Erro ao carregar dados.');
+    } finally {
+      if (mounted) {
+        setState(() => _carregando = false);
+      }
+    }
+  }
+
+  Future<void> _abrirFormulario({Membro? membro}) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MembroFormScreen(membro: membro),
+      ),
+    );
+
+    if (mounted) {
+      await _carregar();
+    }
+  }
+
+  Future<void> _remover(Membro membro) async {
+    final config = context.read<ConfigProvider>().config;
+    final auth = context.read<AuthProvider>().usuario;
+    if (config == null || auth?.slug == null || auth?.token == null) return;
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Remover ${config.labelMembro.toLowerCase()}'),
+        content: Text('Deseja remover ${membro.nome}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remover'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      await _api.delete(
+        '${ApiConstants.membros(auth!.slug!)}/${membro.id}',
+        token: auth.token,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${config.labelMembro} removido com sucesso.')),
+      );
+      await _carregar();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = context.watch<ConfigProvider>().config;
+    final label = config?.labelMembro ?? 'Membro';
+    final labelPlural = config?.labelMembroPlural ?? 'Membros';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(labelPlural),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _abrirFormulario(),
+        icon: const Icon(Icons.add),
+        label: Text('Novo $label'),
+      ),
+      body: _carregando
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _carregar,
+              child: _erro != null
+                  ? ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            _erro!,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    )
+                  : _membros.isEmpty
+                      ? ListView(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Text(
+                                'Nenhum ${label.toLowerCase()} cadastrado.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _membros.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final membro = _membros[index];
+                            final fotoUrl = AppConfig.resolverUrl(membro.fotoUrl);
+                            return Card(
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: fotoUrl != null
+                                      ? NetworkImage(fotoUrl)
+                                      : null,
+                                  child: fotoUrl == null
+                                      ? const Icon(Icons.person)
+                                      : null,
+                                ),
+                                title: Text(membro.nome),
+                                subtitle: fotoUrl != null
+                                    ? Text(fotoUrl)
+                                    : null,
+                                trailing: Wrap(
+                                  spacing: 8,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () => _abrirFormulario(membro: membro),
+                                      icon: const Icon(Icons.edit),
+                                      tooltip: 'Editar',
+                                    ),
+                                    IconButton(
+                                      onPressed: () => _remover(membro),
+                                      icon: const Icon(Icons.delete_outline),
+                                      tooltip: 'Remover',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+    );
+  }
+}
