@@ -19,9 +19,12 @@ import 'features/admin/equipes_screen.dart';
 import 'features/admin/fiscais_screen.dart';
 import 'features/admin/itens_screen.dart';
 import 'features/admin/membros_screen.dart';
+import 'features/admin/relatorios_equipes_screen.dart';
+import 'features/admin/relatorios_membros_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
 import 'features/admin/section_placeholder_screen.dart';
+import 'features/admin/sorteio_screen.dart';
 import 'theme/app_theme.dart';
 
 class TorneioApp extends StatefulWidget {
@@ -89,8 +92,10 @@ class _TorneioAppState extends State<TorneioApp> {
           '/admin/itens': (_) => const ItensAdminScreen(),
           '/admin/fiscais': (_) => const FiscaisAdminScreen(),
           '/admin/capturas': (_) => const AdminSectionPlaceholderScreen(titulo: 'Capturas'),
-          '/admin/sorteio': (_) => const AdminSectionPlaceholderScreen(titulo: 'Sorteio'),
+          '/admin/sorteio': (_) => const SorteioAdminScreen(),
           '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
+          '/admin/relatorios/equipes': (_) => const RelatoriosEquipesScreen(),
+          '/admin/relatorios/membros': (_) => const RelatoriosMembrosScreen(),
           '/admin/relatorios/ganhadores': (_) => const RelatoriosGanhadoresScreen(),
         },
       ),

@@ -9,6 +9,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
     final labelEquipe = config?.labelEquipe ?? 'Embarcação';
+    final labelMembro = config?.labelMembro ?? 'Pescador';
     final qtdGanhadores = config?.qtdGanhadores ?? 3;
 
     return Scaffold(
@@ -16,6 +17,28 @@ class RelatoriosAdminScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.groups_outlined),
+              title: Text('Por $labelEquipe'),
+              subtitle: Text(
+                'Selecione uma ${labelEquipe.toLowerCase()} para gerar o relatório sintético ou analítico.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.pushNamed(context, '/admin/relatorios/equipes'),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: Text('Por $labelMembro'),
+              subtitle: Text(
+                'Selecione um ${labelMembro.toLowerCase()} para gerar o relatório sintético ou analítico.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.pushNamed(context, '/admin/relatorios/membros'),
+            ),
+          ),
           Card(
             child: ListTile(
               leading: const Icon(Icons.emoji_events_outlined),

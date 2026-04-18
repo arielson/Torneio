@@ -37,10 +37,10 @@ public class SorteioAppServico : ISorteioAppServico
         var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
             ?? throw new KeyNotFoundException($"Torneio '{_tenantContext.TorneioId}' não encontrado.");
 
-        if (torneio.Status != StatusTorneio.Liberado)
-            throw new InvalidOperationException("O sorteio só pode ser realizado em torneios com status Liberado.");
+        var sorteioExistente = await _sorteioRepositorio.ListarPorTorneio(torneio.Id);
+        if (sorteioExistente.Any())
+            throw new InvalidOperationException("O sorteio já foi realizado. Limpe o resultado atual antes de sortear novamente.");
 
-        await _sorteioServico.LimparSorteioAsync(torneio.Id);
         var resultado = await _sorteioServico.RealizarSorteioAsync(torneio.Id);
         return await ParaDtoLista(resultado);
     }

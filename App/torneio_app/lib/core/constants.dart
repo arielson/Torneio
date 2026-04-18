@@ -14,6 +14,8 @@ class ApiConstants {
   static String relatoriosGanhadores(String slug) => '$_base/api/$slug/relatorios/ganhadores';
   static String relatorioEquipePdf(String slug, String equipeId, {bool analitico = false}) =>
       '$_base/api/$slug/relatorios/equipe/$equipeId?analitico=$analitico';
+  static String relatorioMembroPdf(String slug, String membroId, {bool analitico = false}) =>
+      '$_base/api/$slug/relatorios/membro/$membroId?analitico=$analitico';
   static String sync(String slug) => '$_base/api/$slug/sync';
   static String sorteio(String slug) => '$_base/api/$slug/sorteio';
   static String anos(String slug) => '$_base/api/$slug/anos';

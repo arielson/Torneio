@@ -13,12 +13,15 @@
         <h1>Sorteio</h1>
     </div>
     <div class="page-header-actions">
-        <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post" class="d-inline">
-            @Html.AntiForgeryToken()
-            <button class="btn btn-success btn-sm" onclick="return confirm('Realizar novo sorteio? O resultado anterior será substituído.')">
-                <i class="bi bi-shuffle me-1"></i>Sortear
-            </button>
-        </form>
+        @if (!lista.Any())
+        {
+            <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-success btn-sm" onclick="return confirm('Realizar sorteio?')">
+                    <i class="bi bi-shuffle me-1"></i>Sortear
+                </button>
+            </form>
+        }
         @if (lista.Any())
         {
             <form asp-controller="Sorteio" asp-action="Limpar" asp-route-slug="@slug" method="post" class="d-inline">
