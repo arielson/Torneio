@@ -136,7 +136,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
             // Login button
             FilledButton.icon(
               icon: const Icon(Icons.login),
-              label: const Text('Entrar no Torneio'),
+              label: const Text('Fiscal/Administração'),
               onPressed: () => Navigator.pushNamed(context, '/login'),
             ),
           ],

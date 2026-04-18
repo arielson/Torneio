@@ -35,4 +35,12 @@ public class FileStorage : IFileStorage
 
     public string ObterUrlPublica(string caminhoRelativo) =>
         $"{_options.BaseUrl.TrimEnd('/')}/{caminhoRelativo}";
+
+    public string? UrlParaCaminhoRelativo(string? urlPublica)
+    {
+        if (string.IsNullOrWhiteSpace(urlPublica)) return null;
+        var prefixo = _options.BaseUrl.TrimEnd('/') + "/";
+        if (!urlPublica.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase)) return null;
+        return urlPublica[prefixo.Length..];
+    }
 }

@@ -69,6 +69,19 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
 app.UseHttpsRedirection();
+
+// Serve arquivos do storage em /media — mesmo diretório físico que o Torneio.Web
+var storagePath = app.Configuration["Storage:BasePath"];
+if (!string.IsNullOrEmpty(storagePath))
+{
+    Directory.CreateDirectory(storagePath);
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(storagePath),
+        RequestPath = "/media"
+    });
+}
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();   // após auth → lê claims; após routing → lê slug da rota

@@ -30,4 +30,9 @@ public class CapturaRepositorio : RepositorioBase<Captura>, ICapturaRepositorio
         await _dbSet
             .OrderByDescending(c => c.DataHora)
             .ToListAsync();
+
+    public async Task<IEnumerable<Captura>> ListarPorTorneio(Guid torneioId) =>
+        await _dbSet.IgnoreQueryFilters()
+            .Where(c => c.TorneioId == torneioId)
+            .ToListAsync();
 }

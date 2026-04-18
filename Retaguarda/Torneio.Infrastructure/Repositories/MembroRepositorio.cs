@@ -12,6 +12,11 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
     public async Task<IEnumerable<Membro>> ListarTodos() =>
         await _dbSet.ToListAsync();
 
+    public async Task<IEnumerable<Membro>> ListarPorTorneio(Guid torneioId) =>
+        await _dbSet.IgnoreQueryFilters()
+            .Where(m => m.TorneioId == torneioId)
+            .ToListAsync();
+
     public async Task<IEnumerable<Membro>> ListarPorEquipe(Guid equipeId) =>
         await _context.Equipes
             .Where(e => e.Id == equipeId)

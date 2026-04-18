@@ -10,5 +10,7 @@ public class ItemRepositorio : RepositorioBase<Item>, IItemRepositorio
     public ItemRepositorio(TorneioDbContext context) : base(context) { }
 
     public async Task<IEnumerable<Item>> ListarPorTorneio(Guid torneioId) =>
-        await _dbSet.Where(i => i.TorneioId == torneioId).ToListAsync();
+        await _dbSet.IgnoreQueryFilters()
+            .Where(i => i.TorneioId == torneioId)
+            .ToListAsync();
 }

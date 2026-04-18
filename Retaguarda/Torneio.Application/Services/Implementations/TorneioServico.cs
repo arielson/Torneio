@@ -4,6 +4,7 @@ using Torneio.Application.DTOs.Torneio;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Domain.Interfaces.Services;
 using Torneio.Domain.Enums;
 
 namespace Torneio.Application.Services.Implementations;
@@ -15,6 +16,10 @@ public class TorneioServico : ITorneioServico
     private readonly IEquipeRepositorio _equipeRepositorio;
     private readonly IMembroRepositorio _membroRepositorio;
     private readonly IPremioRepositorio _premioRepositorio;
+    private readonly IItemRepositorio _itemRepositorio;
+    private readonly ICapturaRepositorio _capturaRepositorio;
+    private readonly IBannerRepositorio _bannerRepositorio;
+    private readonly IFileStorage _fileStorage;
     private readonly IValidator<CriarTorneioDto> _validadorCriar;
     private readonly IValidator<AtualizarTorneioDto> _validadorAtualizar;
 
@@ -24,6 +29,10 @@ public class TorneioServico : ITorneioServico
         IEquipeRepositorio equipeRepositorio,
         IMembroRepositorio membroRepositorio,
         IPremioRepositorio premioRepositorio,
+        IItemRepositorio itemRepositorio,
+        ICapturaRepositorio capturaRepositorio,
+        IBannerRepositorio bannerRepositorio,
+        IFileStorage fileStorage,
         IValidator<CriarTorneioDto> validadorCriar,
         IValidator<AtualizarTorneioDto> validadorAtualizar)
     {
@@ -32,6 +41,10 @@ public class TorneioServico : ITorneioServico
         _equipeRepositorio = equipeRepositorio;
         _membroRepositorio = membroRepositorio;
         _premioRepositorio = premioRepositorio;
+        _itemRepositorio = itemRepositorio;
+        _capturaRepositorio = capturaRepositorio;
+        _bannerRepositorio = bannerRepositorio;
+        _fileStorage = fileStorage;
         _validadorCriar = validadorCriar;
         _validadorAtualizar = validadorAtualizar;
     }
@@ -149,7 +162,41 @@ public class TorneioServico : ITorneioServico
     {
         var entidade = await _repositorio.ObterPorId(id)
             ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
+
+        // Coleta todos os caminhos de arquivos antes de deletar do banco
+        var urls = new List<string?>();
+
+        urls.Add(entidade.LogoUrl);
+
+        var fiscais  = await _fiscalRepositorio.ListarPorTorneio(id);
+        urls.AddRange(fiscais.Select(f => f.FotoUrl));
+
+        var equipes  = await _equipeRepositorio.ListarPorTorneio(id);
+        urls.AddRange(equipes.SelectMany(e => new[] { e.FotoUrl, e.FotoCapitaoUrl }));
+
+        var membros  = await _membroRepositorio.ListarPorTorneio(id);
+        urls.AddRange(membros.Select(m => m.FotoUrl));
+
+        var itens    = await _itemRepositorio.ListarPorTorneio(id);
+        urls.AddRange(itens.Select(i => i.FotoUrl));
+
+        var capturas = await _capturaRepositorio.ListarPorTorneio(id);
+        urls.AddRange(capturas.Select(c => c.FotoUrl));
+
+        var banners  = await _bannerRepositorio.ListarTodos();
+        urls.AddRange(banners.Where(b => b.TorneioId == id).Select(b => (string?)b.ImagemUrl));
+
+        // Remove do banco (cascade deleta todos os filhos)
         await _repositorio.Remover(entidade.Id);
+
+        // Remove arquivos do storage (erros ignorados — não devem bloquear a exclusão)
+        var caminhos = urls
+            .Select(u => _fileStorage.UrlParaCaminhoRelativo(u))
+            .Where(c => c is not null)
+            .Distinct();
+
+        foreach (var caminho in caminhos)
+            await _fileStorage.RemoverAsync(caminho!);
     }
 
     public async Task<TorneioDto> ClonarTorneio(Guid torneioId, string novoSlug, string novoNome)

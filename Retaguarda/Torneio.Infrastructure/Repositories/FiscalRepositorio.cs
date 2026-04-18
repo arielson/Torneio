@@ -14,4 +14,9 @@ public class FiscalRepositorio : RepositorioBase<Fiscal>, IFiscalRepositorio
 
     public async Task<IEnumerable<Fiscal>> ListarTodos() =>
         await _dbSet.ToListAsync();
+
+    public async Task<IEnumerable<Fiscal>> ListarPorTorneio(Guid torneioId) =>
+        await _dbSet.IgnoreQueryFilters()
+            .Where(f => f.TorneioId == torneioId)
+            .ToListAsync();
 }

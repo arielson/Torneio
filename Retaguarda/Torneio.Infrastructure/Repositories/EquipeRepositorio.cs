@@ -12,6 +12,11 @@ public class EquipeRepositorio : RepositorioBase<Equipe>, IEquipeRepositorio
     public async Task<IEnumerable<Equipe>> ListarTodos() =>
         await _dbSet.ToListAsync();
 
+    public async Task<IEnumerable<Equipe>> ListarPorTorneio(Guid torneioId) =>
+        await _dbSet.IgnoreQueryFilters()
+            .Where(e => e.TorneioId == torneioId)
+            .ToListAsync();
+
     public async Task<Equipe?> ObterPorFiscal(Guid fiscalId) =>
         await _dbSet.FirstOrDefaultAsync(e => e.FiscalId == fiscalId);
 
