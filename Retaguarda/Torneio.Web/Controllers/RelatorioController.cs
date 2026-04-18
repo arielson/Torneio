@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
+using Torneio.Web.Models;
 
 namespace Torneio.Web.Controllers;
 
@@ -13,18 +14,21 @@ public class RelatorioController : TorneioBaseController
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ICapturaServico _capturaServico;
 
     public RelatorioController(
         TenantContext tenantContext,
         IRelatorioServico relatorioServico,
         IEquipeServico equipeServico,
         IMembroServico membroServico,
-        ITorneioServico torneioServico) : base(tenantContext)
+        ITorneioServico torneioServico,
+        ICapturaServico capturaServico) : base(tenantContext)
     {
         _relatorioServico = relatorioServico;
         _equipeServico = equipeServico;
         _membroServico = membroServico;
         _torneioServico = torneioServico;
+        _capturaServico = capturaServico;
     }
 
     [HttpGet("")]
@@ -92,5 +96,41 @@ public class RelatorioController : TorneioBaseController
             TempData["Erro"] = ex.Message;
             return RedirectToAction(nameof(SelecionarMembro), new { slug = Slug });
         }
+    }
+
+    [HttpGet("ganhadores")]
+    public async Task<IActionResult> SelecionarGanhadores()
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+
+        var equipes = (await _equipeServico.ListarTodos()).ToList();
+        var capturas = (await _capturaServico.ListarTodos()).ToList();
+
+        var ganhadores = equipes
+            .Select(e => new GanhadorRelatorioViewModel
+            {
+                EquipeId = e.Id,
+                NomeEquipe = e.Nome,
+                Capitao = e.Capitao,
+                TotalPontos = capturas
+                    .Where(c => c.EquipeId == e.Id)
+                    .Sum(c => c.Pontuacao)
+            })
+            .OrderByDescending(x => x.TotalPontos)
+            .ThenBy(x => x.NomeEquipe)
+            .Take(torneio.QtdGanhadores)
+            .Select((x, index) => new GanhadorRelatorioViewModel
+            {
+                Posicao = index + 1,
+                EquipeId = x.EquipeId,
+                NomeEquipe = x.NomeEquipe,
+                Capitao = x.Capitao,
+                TotalPontos = x.TotalPontos
+            })
+            .ToList();
+
+        ViewBag.Torneio = torneio;
+        return View(ganhadores);
     }
 }

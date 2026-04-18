@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Equipe;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Enums;
 using Torneio.Infrastructure.Services;
 
 namespace Torneio.Web.Controllers;
@@ -53,6 +54,21 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarEquipeDto dto)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is not null && string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+        {
+            dto = new CriarEquipeDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                Nome = dto.Nome,
+                Capitao = dto.Capitao,
+                FiscalId = dto.FiscalId,
+                QtdVagas = 1,
+                FotoUrl = dto.FotoUrl,
+                FotoCapitaoUrl = dto.FotoCapitaoUrl,
+            };
+        }
+
         if (dto.FiscalId == Guid.Empty)
             ModelState.AddModelError(nameof(dto.FiscalId), "Selecione um fiscal.");
 
@@ -112,6 +128,19 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Editar(Guid id, AtualizarEquipeDto dto)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is not null && string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+        {
+            dto = new AtualizarEquipeDto
+            {
+                Nome = dto.Nome,
+                Capitao = dto.Capitao,
+                QtdVagas = 1,
+                FotoUrl = dto.FotoUrl,
+                FotoCapitaoUrl = dto.FotoCapitaoUrl,
+            };
+        }
+
         if (!ModelState.IsValid)
         {
             ViewBag.Equipe = await _servico.ObterPorId(id);
@@ -160,8 +189,13 @@ public class EquipeController : TorneioBaseController
     {
         var equipe = await _servico.ObterPorId(id);
         if (equipe is null) return NotFound();
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+
         ViewBag.Equipe = equipe;
-        await SetTorneioViewBag();
+        ViewBag.Torneio = torneio;
 
         var todosMembros = await _membroServico.ListarTodos();
         return View(todosMembros);
@@ -171,6 +205,11 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdicionarMembro(Guid id, Guid membroId)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+
         try
         {
             await _servico.AdicionarMembro(id, membroId);
@@ -187,6 +226,11 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoverMembro(Guid id, Guid membroId)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+
         await _servico.RemoverMembro(id, membroId);
         TempData["Sucesso"] = "Membro removido da equipe.";
         return RedirectToAction(nameof(Membros), new { slug = Slug, id });

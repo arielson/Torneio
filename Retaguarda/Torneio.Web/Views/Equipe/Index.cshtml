@@ -1,11 +1,12 @@
 @model IEnumerable<EquipeDto>
 @{
-    var slug        = Context.GetRouteData().Values["slug"]?.ToString();
-    var torneio     = (TorneioDto)ViewBag.Torneio;
-    var label            = torneio?.LabelEquipe ?? "Equipe";
-    var labelPlural      = torneio?.LabelEquipePlural ?? "Equipes";
-    var labelMembro      = torneio?.LabelMembro ?? "Membro";
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var label = torneio?.LabelEquipe ?? "Equipe";
+    var labelPlural = torneio?.LabelEquipePlural ?? "Equipes";
     var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var exibirMembrosPorEquipe = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
+    var exibirVagas = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
@@ -41,10 +42,16 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Capitão</th>
-                        <th>Vagas</th>
-                        <th>@labelMembroPlural</th>
-                        <th class="text-end">Ações</th>
+                        <th>Capitao</th>
+                        @if (exibirVagas)
+                        {
+                            <th>Vagas</th>
+                        }
+                        @if (exibirMembrosPorEquipe)
+                        {
+                            <th>@labelMembroPlural</th>
+                        }
+                        <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,17 +60,26 @@
                         <tr>
                             <td class="fw-semibold">@e.Nome</td>
                             <td>@e.Capitao</td>
-                            <td>@e.QtdVagas</td>
-                            <td>
-                                <span class="@(e.QtdMembros >= e.QtdVagas ? "text-success fw-semibold" : "")">
-                                    @e.QtdMembros / @e.QtdVagas
-                                </span>
-                            </td>
+                            @if (exibirVagas)
+                            {
+                                <td>@e.QtdVagas</td>
+                            }
+                            @if (exibirMembrosPorEquipe)
+                            {
+                                <td>
+                                    <span class="@(e.QtdMembros >= e.QtdVagas ? "text-success fw-semibold" : "")">
+                                        @e.QtdMembros / @e.QtdVagas
+                                    </span>
+                                </td>
+                            }
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                    <a href="/@slug/equipes/@e.Id/membros" class="btn btn-sm btn-outline-secondary" title="@labelMembroPlural">
-                                        <i class="bi bi-person me-1"></i>@labelMembroPlural
-                                    </a>
+                                    @if (exibirMembrosPorEquipe)
+                                    {
+                                        <a href="/@slug/equipes/@e.Id/membros" class="btn btn-sm btn-outline-secondary" title="@labelMembroPlural">
+                                            <i class="bi bi-person me-1"></i>@labelMembroPlural
+                                        </a>
+                                    }
                                     <a href="/@slug/equipes/@e.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
@@ -27,6 +28,18 @@ class ApiService {
       headers: _headers(token: token),
     );
     return _handle(response);
+  }
+
+  Future<Uint8List> getBytes(String url, {String? token}) async {
+    final response = await _client.get(
+      Uri.parse(url),
+      headers: _headers(token: token),
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.bodyBytes;
+    }
+    _handle(response);
+    return Uint8List(0);
   }
 
   Future<dynamic> post(String url, dynamic body, {String? token}) async {

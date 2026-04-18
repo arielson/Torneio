@@ -1,0 +1,68 @@
+@model IEnumerable<Torneio.Web.Models.GanhadorRelatorioViewModel>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    ViewData["Title"] = "Relatorio dos Ganhadores";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Relatorio dos Ganhadores</h1>
+    </div>
+</div>
+<a href="/@slug/relatorios" class="back-link">
+    <i class="bi bi-arrow-left"></i> Relatorios
+</a>
+
+@if (!lista.Any())
+{
+    <div class="alert alert-info d-flex gap-2 align-items-center">
+        <i class="bi bi-info-circle-fill"></i>
+        Nenhum ganhador encontrado com base nas capturas atuais.
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-trophy me-2"></i>Top @torneio.QtdGanhadores @torneio.LabelEquipePlural</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Posicao</th>
+                        <th>@torneio.LabelEquipe</th>
+                        <th>Capitao</th>
+                        <th>Pontos</th>
+                        <th class="text-end">Relatorios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var g in lista)
+                    {
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "º")</span></td>
+                            <td class="fw-semibold">@g.NomeEquipe</td>
+                            <td class="text-muted">@g.Capitao</td>
+                            <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=false"
+                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
+                                    </a>
+                                    <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=true"
+                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
+                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

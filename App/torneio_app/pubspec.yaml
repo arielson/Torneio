@@ -38,6 +38,7 @@ dependencies:
   # Utilitários
   intl: ^0.19.0
   uuid: ^4.5.1
+  printing: ^5.13.4
 
   cupertino_icons: ^1.0.8
 

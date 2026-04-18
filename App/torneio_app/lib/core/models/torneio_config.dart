@@ -17,6 +17,7 @@ class TorneioConfig {
   final bool permitirCapturaOffline;
   final String modoSorteio;
   final bool permitirEscolhaManual;
+  final int qtdGanhadores;
 
   const TorneioConfig({
     required this.id,
@@ -35,6 +36,7 @@ class TorneioConfig {
     required this.permitirCapturaOffline,
     required this.modoSorteio,
     required this.permitirEscolhaManual,
+    required this.qtdGanhadores,
   });
 
   factory TorneioConfig.fromJson(Map<String, dynamic> json) => TorneioConfig(
@@ -54,5 +56,6 @@ class TorneioConfig {
         permitirCapturaOffline: json['permitirCapturaOffline'] as bool? ?? true,
         modoSorteio: json['modoSorteio'] as String? ?? 'Sorteio',
         permitirEscolhaManual: json['permitirEscolhaManual'] as bool? ?? false,
+        qtdGanhadores: json['qtdGanhadores'] as int? ?? 3,
       );
 }

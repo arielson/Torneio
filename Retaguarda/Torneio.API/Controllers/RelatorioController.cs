@@ -16,6 +16,49 @@ public class RelatorioController : BaseController
 
     public RelatorioController(IRelatorioServico servico) => _servico = servico;
 
+    [Authorize(Policy = "AdminTorneio")]
+    [HttpGet("ganhadores")]
+    public async Task<IActionResult> Ganhadores(
+        [FromServices] ITorneioServico torneioServico,
+        [FromServices] IEquipeServico equipeServico,
+        [FromServices] ICapturaServico capturaServico)
+    {
+        var torneioId = GetTorneioIdClaim();
+        if (torneioId is null)
+            return Unauthorized(new { erro = "Torneio não identificado no token." });
+
+        var torneio = await torneioServico.ObterPorId(torneioId.Value);
+        if (torneio is null)
+            return NotFound(new { erro = "Torneio não encontrado." });
+
+        var equipes = (await equipeServico.ListarTodos()).ToList();
+        var capturas = (await capturaServico.ListarTodos()).ToList();
+
+        var ganhadores = equipes
+            .Select(e => new
+            {
+                EquipeId = e.Id,
+                NomeEquipe = e.Nome,
+                Capitao = e.Capitao,
+                TotalPontos = capturas
+                    .Where(c => c.EquipeId == e.Id)
+                    .Sum(c => c.Pontuacao)
+            })
+            .OrderByDescending(x => x.TotalPontos)
+            .ThenBy(x => x.NomeEquipe)
+            .Take(torneio.QtdGanhadores)
+            .Select((x, index) => new
+            {
+                Posicao = index + 1,
+                x.EquipeId,
+                x.NomeEquipe,
+                x.Capitao,
+                x.TotalPontos
+            });
+
+        return Ok(ganhadores);
+    }
+
     /// <summary>
     /// GET /api/{slug}/relatorios/equipe/{equipeId}?analitico=false
     /// </summary>

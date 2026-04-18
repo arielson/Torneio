@@ -1,16 +1,17 @@
 @model AtualizarEquipeDto
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
-    var equipe  = (EquipeDto)ViewBag.Equipe;
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var equipe = (EquipeDto)ViewBag.Equipe;
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label       = torneio?.LabelEquipe ?? "Equipe";
+    var label = torneio?.LabelEquipe ?? "Equipe";
     var labelPlural = torneio?.LabelEquipePlural ?? "Equipes";
-    ViewData["Title"] = $"Editar {label} — {equipe.Nome}";
+    var exibirVagas = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
+    ViewData["Title"] = $"Editar {label} - {equipe.Nome}";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Editar @label — @equipe.Nome</h1>
+        <h1>Editar @label - @equipe.Nome</h1>
     </div>
 </div>
 <a href="/@slug/equipes" class="back-link">
@@ -30,21 +31,28 @@
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Capitao" class="form-label">Capitão</label>
+            <label asp-for="Capitao" class="form-label">Capitao</label>
             <input asp-for="Capitao" class="form-control" />
             <span asp-validation-for="Capitao" class="text-danger small"></span>
         </div>
-        <div class="mb-3">
-            <label asp-for="QtdVagas" class="form-label">Quantidade de Vagas</label>
-            <input asp-for="QtdVagas" class="form-control" type="number" min="1" style="max-width:160px" />
-            <span asp-validation-for="QtdVagas" class="text-danger small"></span>
-        </div>
+        @if (exibirVagas)
+        {
+            <div class="mb-3">
+                <label asp-for="QtdVagas" class="form-label">Quantidade de Vagas</label>
+                <input asp-for="QtdVagas" class="form-control" type="number" min="1" style="max-width:160px" />
+                <span asp-validation-for="QtdVagas" class="text-danger small"></span>
+            </div>
+        }
+        else
+        {
+            <input asp-for="QtdVagas" type="hidden" value="1" />
+        }
         <div class="form-section-title">Fotos</div>
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto da {label}" }, { "fotoUrl", equipe.FotoUrl } })' />
-        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "fotoCapitao" }, { "label", "Foto do Capitão" }, { "fotoUrl", equipe.FotoCapitaoUrl } })' />
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "fotoCapitao" }, { "label", "Foto do Capitao" }, { "fotoUrl", equipe.FotoCapitaoUrl } })' />
         <div class="d-flex gap-2 pt-2">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+                <i class="bi bi-check-lg me-1"></i>Salvar Alteracoes
             </button>
             <a href="/@slug/equipes" class="btn btn-outline-secondary">Cancelar</a>
         </div>
