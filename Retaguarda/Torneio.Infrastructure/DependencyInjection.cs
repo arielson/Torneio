@@ -45,13 +45,14 @@ public static class DependencyInjection
         services.AddScoped<ITorneioRepositorio, TorneioRepositorio>();
         services.AddScoped<IAdminGeralRepositorio, AdminGeralRepositorio>();
         services.AddScoped<IAdminTorneioRepositorio, AdminTorneioRepositorio>();
-        services.AddScoped<IAnoTorneioRepositorio, AnoTorneioRepositorio>();
         services.AddScoped<IFiscalRepositorio, FiscalRepositorio>();
         services.AddScoped<IEquipeRepositorio, EquipeRepositorio>();
         services.AddScoped<IMembroRepositorio, MembroRepositorio>();
         services.AddScoped<IItemRepositorio, ItemRepositorio>();
         services.AddScoped<ICapturaRepositorio, CapturaRepositorio>();
         services.AddScoped<ISorteioEquipeRepositorio, SorteioEquipeRepositorio>();
+        services.AddScoped<IPremioRepositorio, PremioRepositorio>();
+        services.AddScoped<IBannerRepositorio, BannerRepositorio>();
 
         // Opções de armazenamento de arquivos
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.Section));

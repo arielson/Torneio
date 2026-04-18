@@ -10,12 +10,20 @@ public class TorneioEntity
     public string? LogoUrl { get; private set; }
     public bool Ativo { get; private set; }
 
-    // Terminologia configurável
+    // Status do torneio
+    public StatusTorneio Status { get; private set; }
+
+    // Terminologia configurável — singular e plural
     public string LabelEquipe { get; private set; } = null!;
+    public string LabelEquipePlural { get; private set; } = null!;
     public string LabelMembro { get; private set; } = null!;
+    public string LabelMembroPlural { get; private set; } = null!;
     public string LabelSupervisor { get; private set; } = null!;
+    public string LabelSupervisorPlural { get; private set; } = null!;
     public string LabelItem { get; private set; } = null!;
+    public string LabelItemPlural { get; private set; } = null!;
     public string LabelCaptura { get; private set; } = null!;
+    public string LabelCapturaPlural { get; private set; } = null!;
 
     // Regras
     public bool UsarFatorMultiplicador { get; private set; }
@@ -25,8 +33,13 @@ public class TorneioEntity
     // Sorteio
     public ModoSorteio ModoSorteio { get; private set; }
 
+    // Premiação — quantos lugares premiados (1º, 2º, 3º…)
+    public int QtdGanhadores { get; private set; } = 3;
+
     // Tipo (define terminologia fixa)
     public TipoTorneio TipoTorneio { get; private set; } = TipoTorneio.Pesca;
+
+    public DateTime CriadoEm { get; private set; }
 
     private TorneioEntity() { }
 
@@ -34,15 +47,21 @@ public class TorneioEntity
         string slug,
         string nomeTorneio,
         string labelEquipe,
+        string labelEquipePlural,
         string labelMembro,
+        string labelMembroPlural,
         string labelSupervisor,
+        string labelSupervisorPlural,
         string labelItem,
+        string labelItemPlural,
         string labelCaptura,
+        string labelCapturaPlural,
         string medidaCaptura,
         ModoSorteio modoSorteio,
         TipoTorneio tipoTorneio = TipoTorneio.Pesca,
         bool usarFatorMultiplicador = false,
         bool permitirCapturaOffline = true,
+        int qtdGanhadores = 3,
         string? logoUrl = null)
     {
         return new TorneioEntity
@@ -52,16 +71,24 @@ public class TorneioEntity
             NomeTorneio = nomeTorneio,
             LogoUrl = logoUrl,
             Ativo = true,
+            Status = StatusTorneio.Aberto,
             LabelEquipe = labelEquipe,
+            LabelEquipePlural = labelEquipePlural,
             LabelMembro = labelMembro,
+            LabelMembroPlural = labelMembroPlural,
             LabelSupervisor = labelSupervisor,
+            LabelSupervisorPlural = labelSupervisorPlural,
             LabelItem = labelItem,
+            LabelItemPlural = labelItemPlural,
             LabelCaptura = labelCaptura,
+            LabelCapturaPlural = labelCapturaPlural,
             MedidaCaptura = medidaCaptura,
             UsarFatorMultiplicador = usarFatorMultiplicador,
             PermitirCapturaOffline = permitirCapturaOffline,
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
+            QtdGanhadores = qtdGanhadores,
+            CriadoEm = DateTime.UtcNow,
         };
     }
 
@@ -69,29 +96,62 @@ public class TorneioEntity
 
     public void Desativar() => Ativo = false;
 
+    public void Liberar()
+    {
+        if (Status != StatusTorneio.Aberto)
+            throw new InvalidOperationException("Somente torneios com status Aberto podem ser liberados.");
+        Status = StatusTorneio.Liberado;
+    }
+
+    public void Finalizar()
+    {
+        if (Status != StatusTorneio.Liberado)
+            throw new InvalidOperationException("Somente torneios com status Liberado podem ser finalizados.");
+        Status = StatusTorneio.Finalizado;
+    }
+
+    public void Reabrir()
+    {
+        if (Status == StatusTorneio.Aberto)
+            throw new InvalidOperationException("O torneio já está aberto.");
+        Status = StatusTorneio.Aberto;
+    }
+
     public void AtualizarConfiguracoes(
         string nomeTorneio,
         string labelEquipe,
+        string labelEquipePlural,
         string labelMembro,
+        string labelMembroPlural,
         string labelSupervisor,
+        string labelSupervisorPlural,
         string labelItem,
+        string labelItemPlural,
         string labelCaptura,
+        string labelCapturaPlural,
         string medidaCaptura,
         ModoSorteio modoSorteio,
         bool usarFatorMultiplicador,
         bool permitirCapturaOffline,
+        int qtdGanhadores,
         string? logoUrl = null)
     {
         NomeTorneio = nomeTorneio;
         LabelEquipe = labelEquipe;
+        LabelEquipePlural = labelEquipePlural;
         LabelMembro = labelMembro;
+        LabelMembroPlural = labelMembroPlural;
         LabelSupervisor = labelSupervisor;
+        LabelSupervisorPlural = labelSupervisorPlural;
         LabelItem = labelItem;
+        LabelItemPlural = labelItemPlural;
         LabelCaptura = labelCaptura;
+        LabelCapturaPlural = labelCapturaPlural;
         MedidaCaptura = medidaCaptura;
         ModoSorteio = modoSorteio;
         UsarFatorMultiplicador = usarFatorMultiplicador;
         PermitirCapturaOffline = permitirCapturaOffline;
+        QtdGanhadores = qtdGanhadores;
         if (logoUrl != null) LogoUrl = logoUrl;
     }
 }

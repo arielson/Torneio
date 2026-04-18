@@ -4,21 +4,34 @@ using Torneio.Application.DTOs.Torneio;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Domain.Enums;
 
 namespace Torneio.Application.Services.Implementations;
 
 public class TorneioServico : ITorneioServico
 {
     private readonly ITorneioRepositorio _repositorio;
+    private readonly IFiscalRepositorio _fiscalRepositorio;
+    private readonly IEquipeRepositorio _equipeRepositorio;
+    private readonly IMembroRepositorio _membroRepositorio;
+    private readonly IPremioRepositorio _premioRepositorio;
     private readonly IValidator<CriarTorneioDto> _validadorCriar;
     private readonly IValidator<AtualizarTorneioDto> _validadorAtualizar;
 
     public TorneioServico(
         ITorneioRepositorio repositorio,
+        IFiscalRepositorio fiscalRepositorio,
+        IEquipeRepositorio equipeRepositorio,
+        IMembroRepositorio membroRepositorio,
+        IPremioRepositorio premioRepositorio,
         IValidator<CriarTorneioDto> validadorCriar,
         IValidator<AtualizarTorneioDto> validadorAtualizar)
     {
         _repositorio = repositorio;
+        _fiscalRepositorio = fiscalRepositorio;
+        _equipeRepositorio = equipeRepositorio;
+        _membroRepositorio = membroRepositorio;
+        _premioRepositorio = premioRepositorio;
         _validadorCriar = validadorCriar;
         _validadorAtualizar = validadorAtualizar;
     }
@@ -55,14 +68,17 @@ public class TorneioServico : ITorneioServico
         if (existente is not null)
             throw new InvalidOperationException($"Já existe um torneio com o slug '{dto.Slug}'.");
 
-        var preset = TorneioPresets.Get(dto.TipoTorneio);
-
         var entidade = TorneioEntity.Criar(
             dto.Slug, dto.NomeTorneio,
-            preset.LabelEquipe, preset.LabelMembro, preset.LabelSupervisor,
-            preset.LabelItem, preset.LabelCaptura, preset.MedidaCaptura,
+            dto.LabelEquipe, dto.LabelEquipePlural,
+            dto.LabelMembro, dto.LabelMembroPlural,
+            dto.LabelSupervisor, dto.LabelSupervisorPlural,
+            dto.LabelItem, dto.LabelItemPlural,
+            dto.LabelCaptura, dto.LabelCapturaPlural,
+            dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
-            dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline, dto.LogoUrl);
+            dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline,
+            dto.QtdGanhadores, dto.LogoUrl);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -75,14 +91,16 @@ public class TorneioServico : ITorneioServico
         var entidade = await _repositorio.ObterPorId(id)
             ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
 
-        var preset = TorneioPresets.Get(entidade.TipoTorneio);
-
         entidade.AtualizarConfiguracoes(
             dto.NomeTorneio,
-            preset.LabelEquipe, preset.LabelMembro, preset.LabelSupervisor,
-            preset.LabelItem, preset.LabelCaptura, preset.MedidaCaptura,
+            dto.LabelEquipe, dto.LabelEquipePlural,
+            dto.LabelMembro, dto.LabelMembroPlural,
+            dto.LabelSupervisor, dto.LabelSupervisorPlural,
+            dto.LabelItem, dto.LabelItemPlural,
+            dto.LabelCaptura, dto.LabelCapturaPlural,
+            dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.LogoUrl);
+            dto.PermitirCapturaOffline, dto.QtdGanhadores, dto.LogoUrl);
 
         await _repositorio.Atualizar(entidade);
     }
@@ -103,6 +121,106 @@ public class TorneioServico : ITorneioServico
         await _repositorio.Atualizar(entidade);
     }
 
+    public async Task Liberar(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
+        entidade.Liberar();
+        await _repositorio.Atualizar(entidade);
+    }
+
+    public async Task Finalizar(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
+        entidade.Finalizar();
+        await _repositorio.Atualizar(entidade);
+    }
+
+    public async Task Reabrir(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
+        entidade.Reabrir();
+        await _repositorio.Atualizar(entidade);
+    }
+
+    public async Task Excluir(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
+        await _repositorio.Remover(entidade.Id);
+    }
+
+    public async Task<TorneioDto> ClonarTorneio(Guid torneioId, string novoSlug, string novoNome)
+    {
+        if (string.IsNullOrWhiteSpace(novoSlug))
+            throw new ArgumentException("O slug da nova edição é obrigatório.");
+        if (string.IsNullOrWhiteSpace(novoNome))
+            throw new ArgumentException("O nome da nova edição é obrigatório.");
+
+        var origem = await _repositorio.ObterPorId(torneioId)
+            ?? throw new KeyNotFoundException($"Torneio origem '{torneioId}' não encontrado.");
+
+        var existente = await _repositorio.ObterPorSlug(novoSlug.Trim());
+        if (existente is not null)
+            throw new InvalidOperationException($"Já existe um torneio com o slug '{novoSlug}'.");
+
+        var novoTorneio = TorneioEntity.Criar(
+            novoSlug.Trim(), novoNome.Trim(),
+            origem.LabelEquipe, origem.LabelEquipePlural,
+            origem.LabelMembro, origem.LabelMembroPlural,
+            origem.LabelSupervisor, origem.LabelSupervisorPlural,
+            origem.LabelItem, origem.LabelItemPlural,
+            origem.LabelCaptura, origem.LabelCapturaPlural,
+            origem.MedidaCaptura,
+            origem.ModoSorteio, origem.TipoTorneio,
+            origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline,
+            origem.QtdGanhadores, origem.LogoUrl);
+
+        await _repositorio.Adicionar(novoTorneio);
+
+        // Clona Fiscais
+        var fiscais = await _fiscalRepositorio.ListarTodos();
+        var mapaFiscais = new Dictionary<Guid, Guid>();
+        foreach (var fiscal in fiscais)
+        {
+            var novoFiscal = Fiscal.Criar(
+                novoTorneio.Id, fiscal.Nome, fiscal.Usuario, fiscal.SenhaHash, fiscal.FotoUrl);
+            await _fiscalRepositorio.Adicionar(novoFiscal);
+            mapaFiscais[fiscal.Id] = novoFiscal.Id;
+        }
+
+        // Clona Equipes
+        var equipes = await _equipeRepositorio.ListarTodos();
+        foreach (var equipe in equipes)
+        {
+            var novoFiscalId = mapaFiscais.TryGetValue(equipe.FiscalId, out var fid) ? fid : equipe.FiscalId;
+            var novaEquipe = Equipe.Criar(
+                novoTorneio.Id, equipe.Nome, equipe.Capitao,
+                novoFiscalId, equipe.QtdVagas, equipe.FotoUrl, equipe.FotoCapitaoUrl);
+            await _equipeRepositorio.Adicionar(novaEquipe);
+        }
+
+        // Clona Membros
+        var membros = await _membroRepositorio.ListarTodos();
+        foreach (var membro in membros)
+        {
+            var novoMembro = Membro.Criar(novoTorneio.Id, membro.Nome, membro.FotoUrl);
+            await _membroRepositorio.Adicionar(novoMembro);
+        }
+
+        // Clona Prêmios
+        var premios = await _premioRepositorio.ListarPorTorneio(torneioId);
+        foreach (var premio in premios)
+        {
+            var novoPremio = Premio.Criar(novoTorneio.Id, premio.Posicao, premio.Descricao);
+            await _premioRepositorio.Adicionar(novoPremio);
+        }
+
+        return ParaDto(novoTorneio);
+    }
+
     private static TorneioDto ParaDto(TorneioEntity e) => new()
     {
         Id = e.Id,
@@ -110,15 +228,47 @@ public class TorneioServico : ITorneioServico
         NomeTorneio = e.NomeTorneio,
         LogoUrl = e.LogoUrl,
         Ativo = e.Ativo,
+        Status = e.Status.ToString(),
         LabelEquipe = e.LabelEquipe,
+        LabelEquipePlural = e.LabelEquipePlural,
         LabelMembro = e.LabelMembro,
+        LabelMembroPlural = e.LabelMembroPlural,
         LabelSupervisor = e.LabelSupervisor,
+        LabelSupervisorPlural = e.LabelSupervisorPlural,
         LabelItem = e.LabelItem,
+        LabelItemPlural = e.LabelItemPlural,
         LabelCaptura = e.LabelCaptura,
+        LabelCapturaPlural = e.LabelCapturaPlural,
         UsarFatorMultiplicador = e.UsarFatorMultiplicador,
         MedidaCaptura = e.MedidaCaptura,
         PermitirCapturaOffline = e.PermitirCapturaOffline,
         ModoSorteio = e.ModoSorteio.ToString(),
+        QtdGanhadores = e.QtdGanhadores,
         TipoTorneio = e.TipoTorneio,
+        CriadoEm = e.CriadoEm,
+    };
+
+    public async Task<IEnumerable<TorneioResumoDto>> ListarRecentes(int limite = 5)
+    {
+        var lista = await _repositorio.ListarRecentes(limite);
+        return lista.Select(ParaResumoDto);
+    }
+
+    public async Task<IEnumerable<TorneioResumoDto>> BuscarPorTexto(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q)) return [];
+        var lista = await _repositorio.BuscarPorTexto(q.Trim());
+        return lista.Select(ParaResumoDto);
+    }
+
+    private static TorneioResumoDto ParaResumoDto(TorneioEntity e) => new()
+    {
+        Id = e.Id,
+        Slug = e.Slug,
+        NomeTorneio = e.NomeTorneio,
+        LogoUrl = e.LogoUrl,
+        Status = e.Status.ToString(),
+        Ativo = e.Ativo,
+        CriadoEm = e.CriadoEm,
     };
 }

@@ -12,6 +12,6 @@ public class FiscalRepositorio : RepositorioBase<Fiscal>, IFiscalRepositorio
     public async Task<Fiscal?> ObterPorUsuario(string usuario, Guid torneioId) =>
         await _dbSet.FirstOrDefaultAsync(f => f.Usuario == usuario && f.TorneioId == torneioId);
 
-    public async Task<IEnumerable<Fiscal>> ListarPorAnoTorneio(Guid anoTorneioId) =>
-        await _dbSet.Where(f => f.AnoTorneioId == anoTorneioId).ToListAsync();
+    public async Task<IEnumerable<Fiscal>> ListarTodos() =>
+        await _dbSet.ToListAsync();
 }

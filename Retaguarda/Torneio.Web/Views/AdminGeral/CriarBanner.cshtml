@@ -1,0 +1,67 @@
+@model CriarBannerDto
+@using Torneio.Application.DTOs.Banner
+@using Torneio.Application.DTOs.Torneio
+@{
+    ViewData["Title"] = "Novo Banner";
+    var torneios = ViewBag.Torneios as IEnumerable<TorneioDto> ?? [];
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Novo Banner</h1>
+    </div>
+</div>
+<a asp-action="Banners" class="back-link">
+    <i class="bi bi-arrow-left"></i> Banners
+</a>
+
+<div class="form-card">
+    <form asp-action="CriarBanner" method="post" enctype="multipart/form-data">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="form-section-title">Torneio</div>
+        <div class="mb-3">
+            <label asp-for="TorneioId" class="form-label">Torneio vinculado</label>
+            <select asp-for="TorneioId" class="form-select">
+                <option value="">— Selecione —</option>
+                @foreach (var t in torneios)
+                {
+                    <option value="@t.Id">@t.NomeTorneio (@t.Slug)</option>
+                }
+            </select>
+            <span asp-validation-for="TorneioId" class="text-danger small"></span>
+        </div>
+
+        <div class="form-section-title">Imagem</div>
+        <div class="mb-3">
+            <label class="form-label">Upload de imagem</label>
+            <input type="file" name="imagemArquivo" class="form-control" accept="image/*" />
+            <div class="form-text">Ou informe uma URL externa abaixo.</div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ImagemUrl" class="form-label">URL da imagem <small class="text-muted fw-normal">(opcional se fizer upload)</small></label>
+            <input asp-for="ImagemUrl" class="form-control" placeholder="https://..." />
+        </div>
+
+        <div class="form-section-title">Configuração</div>
+        <div class="mb-3" style="max-width:160px">
+            <label asp-for="Ordem" class="form-label">Ordem</label>
+            <input asp-for="Ordem" class="form-control" type="number" min="0" />
+            <div class="form-text">Menor número = aparece primeiro.</div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Criar Banner
+            </button>
+            <a asp-action="Banners" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

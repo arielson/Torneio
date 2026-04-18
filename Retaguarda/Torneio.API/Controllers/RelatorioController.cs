@@ -17,17 +17,16 @@ public class RelatorioController : BaseController
     public RelatorioController(IRelatorioServico servico) => _servico = servico;
 
     /// <summary>
-    /// GET /api/{slug}/relatorios/equipe/{equipeId}?anoTorneioId=...&amp;analitico=false
+    /// GET /api/{slug}/relatorios/equipe/{equipeId}?analitico=false
     /// </summary>
     [HttpGet("equipe/{equipeId:guid}")]
     public async Task<IActionResult> RelatorioEquipe(
         Guid equipeId,
-        [FromQuery] Guid anoTorneioId,
         [FromQuery] bool analitico = false)
     {
         try
         {
-            var bytes = await _servico.GerarRelatorioEquipe(anoTorneioId, equipeId, analitico);
+            var bytes = await _servico.GerarRelatorioEquipe(equipeId, analitico);
             var tipo = analitico ? "analitico" : "sintetico";
             return File(bytes, "application/pdf", $"equipe_{equipeId}_{tipo}.pdf");
         }
@@ -38,18 +37,17 @@ public class RelatorioController : BaseController
     }
 
     /// <summary>
-    /// GET /api/{slug}/relatorios/membro/{membroId}?anoTorneioId=...&amp;analitico=false
+    /// GET /api/{slug}/relatorios/membro/{membroId}?analitico=false
     /// </summary>
     [Authorize(Policy = "AdminTorneio")]
     [HttpGet("membro/{membroId:guid}")]
     public async Task<IActionResult> RelatorioMembro(
         Guid membroId,
-        [FromQuery] Guid anoTorneioId,
         [FromQuery] bool analitico = false)
     {
         try
         {
-            var bytes = await _servico.GerarRelatorioMembro(anoTorneioId, membroId, analitico);
+            var bytes = await _servico.GerarRelatorioMembro(membroId, analitico);
             var tipo = analitico ? "analitico" : "sintetico";
             return File(bytes, "application/pdf", $"membro_{membroId}_{tipo}.pdf");
         }

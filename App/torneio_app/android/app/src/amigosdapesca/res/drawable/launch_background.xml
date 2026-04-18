@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fundo azul marinho escuro — cor do splash do flavor Amigos da Pesca -->
+    <item android:drawable="@color/splash_bg" />
+
+    <!-- Logo centralizado (descomente após adicionar o arquivo logo.png em mipmap) -->
+    <!-- <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/launch_image" />
+    </item> -->
+</layer-list>

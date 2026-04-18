@@ -55,7 +55,6 @@ class Captura {
 /// Usado para registrar uma nova captura (online ou offline)
 class RegistrarCapturaRequest {
   final String torneioId;
-  final String anoTorneioId;
   final String itemId;
   final String membroId;
   final String equipeId;
@@ -66,7 +65,6 @@ class RegistrarCapturaRequest {
 
   const RegistrarCapturaRequest({
     required this.torneioId,
-    required this.anoTorneioId,
     required this.itemId,
     required this.membroId,
     required this.equipeId,
@@ -78,7 +76,6 @@ class RegistrarCapturaRequest {
 
   Map<String, dynamic> toJson() => {
         'torneioId': torneioId,
-        'anoTorneioId': anoTorneioId,
         'itemId': itemId,
         'membroId': membroId,
         'equipeId': equipeId,

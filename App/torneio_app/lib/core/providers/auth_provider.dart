@@ -45,7 +45,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loginFiscal(String slug, String usuario, String senha) async {
+  /// Login para qualquer perfil de torneio (Fiscal, AdminTorneio).
+  /// O backend determina o perfil com base nas credenciais.
+  Future<void> loginTorneio(String slug, String usuario, String senha) async {
     await _login(
       url: ApiConstants.login(slug),
       usuario: usuario,
@@ -53,6 +55,10 @@ class AuthProvider extends ChangeNotifier {
       slug: slug,
     );
   }
+
+  /// Mantido por compatibilidade — use [loginTorneio].
+  Future<void> loginFiscal(String slug, String usuario, String senha) =>
+      loginTorneio(slug, usuario, senha);
 
   Future<void> _login({
     required String url,

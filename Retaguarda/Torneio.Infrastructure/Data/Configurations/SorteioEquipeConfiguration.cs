@@ -17,11 +17,6 @@ public class SorteioEquipeConfiguration : IEntityTypeConfiguration<SorteioEquipe
             .HasForeignKey(e => e.TorneioId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<AnoTorneio>()
-            .WithMany()
-            .HasForeignKey(e => e.AnoTorneioId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne<Equipe>()
             .WithMany()
             .HasForeignKey(e => e.EquipeId)
@@ -32,7 +27,7 @@ public class SorteioEquipeConfiguration : IEntityTypeConfiguration<SorteioEquipe
             .HasForeignKey(e => e.MembroId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => new { e.AnoTorneioId, e.EquipeId }).IsUnique();
-        builder.HasIndex(e => new { e.AnoTorneioId, e.Posicao }).IsUnique();
+        builder.HasIndex(e => new { e.TorneioId, e.EquipeId }).IsUnique();
+        builder.HasIndex(e => new { e.TorneioId, e.Posicao }).IsUnique();
     }
 }

@@ -10,61 +10,48 @@ namespace Torneio.Web.Controllers;
 public class SorteioController : TorneioBaseController
 {
     private readonly ISorteioAppServico _servico;
-    private readonly IAnoTorneioServico _anoServico;
 
-    public SorteioController(TenantContext tenantContext, ISorteioAppServico servico, IAnoTorneioServico anoServico)
+    public SorteioController(TenantContext tenantContext, ISorteioAppServico servico)
         : base(tenantContext)
     {
         _servico = servico;
-        _anoServico = anoServico;
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
-        var anos = await _anoServico.ListarPorTorneio(TenantContext.TorneioId);
-        return View(anos);
-    }
-
-    [HttpGet("{anoId:guid}")]
-    public async Task<IActionResult> Detalhe(Guid anoId)
-    {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
-
-        var resultado = await _servico.ObterResultado(anoId);
+        var resultado = await _servico.ObterResultado();
         return View(resultado);
     }
 
-    [HttpPost("{anoId:guid}/realizar")]
+    [HttpPost("realizar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Realizar(Guid anoId)
+    public async Task<IActionResult> Realizar()
     {
         try
         {
-            await _servico.RealizarSorteio(anoId);
+            await _servico.RealizarSorteio();
             TempData["Sucesso"] = "Sorteio realizado com sucesso.";
         }
         catch (Exception ex)
         {
             TempData["Erro"] = ex.Message;
         }
-        return RedirectToAction(nameof(Detalhe), new { slug = Slug, anoId });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
-    [HttpPost("{anoId:guid}/limpar")]
+    [HttpPost("limpar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Limpar(Guid anoId)
+    public async Task<IActionResult> Limpar()
     {
-        await _servico.LimparSorteio(anoId);
+        await _servico.LimparSorteio();
         TempData["Sucesso"] = "Sorteio limpo.";
-        return RedirectToAction(nameof(Detalhe), new { slug = Slug, anoId });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
-    [HttpPost("{anoId:guid}/{sorteioEquipeId:guid}/ajustar")]
+    [HttpPost("{sorteioEquipeId:guid}/ajustar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Ajustar(Guid anoId, Guid sorteioEquipeId, int novaPosicao)
+    public async Task<IActionResult> Ajustar(Guid sorteioEquipeId, int novaPosicao)
     {
         try
         {
@@ -75,6 +62,6 @@ public class SorteioController : TorneioBaseController
         {
             TempData["Erro"] = ex.Message;
         }
-        return RedirectToAction(nameof(Detalhe), new { slug = Slug, anoId });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 }

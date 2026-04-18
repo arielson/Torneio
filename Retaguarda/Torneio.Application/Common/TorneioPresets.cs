@@ -10,10 +10,15 @@ public static class TorneioPresets
 {
     public record Preset(
         string LabelEquipe,
+        string LabelEquipePlural,
         string LabelMembro,
+        string LabelMembroPlural,
         string LabelSupervisor,
+        string LabelSupervisorPlural,
         string LabelItem,
+        string LabelItemPlural,
         string LabelCaptura,
+        string LabelCapturaPlural,
         string MedidaCaptura,
         bool UsarFatorMultiplicador,
         ModoSorteio ModoSorteio);
@@ -22,23 +27,18 @@ public static class TorneioPresets
     {
         [TipoTorneio.Pesca] = new Preset(
             LabelEquipe: "Embarcação",
+            LabelEquipePlural: "Embarcações",
             LabelMembro: "Pescador",
+            LabelMembroPlural: "Pescadores",
             LabelSupervisor: "Fiscal",
+            LabelSupervisorPlural: "Fiscais",
             LabelItem: "Peixe",
+            LabelItemPlural: "Peixes",
             LabelCaptura: "Captura",
+            LabelCapturaPlural: "Capturas",
             MedidaCaptura: "cm",
             UsarFatorMultiplicador: false,
-            ModoSorteio: ModoSorteio.Sorteio),
-
-        [TipoTorneio.Futebol] = new Preset(
-            LabelEquipe: "Time",
-            LabelMembro: "Jogador",
-            LabelSupervisor: "Árbitro",
-            LabelItem: "Categoria",
-            LabelCaptura: "Gol",
-            MedidaCaptura: "gol",
-            UsarFatorMultiplicador: false,
-            ModoSorteio: ModoSorteio.Sorteio),
+            ModoSorteio: ModoSorteio.Nenhum),
     };
 
     public static Preset Get(TipoTorneio tipo) =>

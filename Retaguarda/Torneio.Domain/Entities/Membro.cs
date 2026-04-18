@@ -4,7 +4,6 @@ public class Membro
 {
     public Guid Id { get; private set; }
     public Guid TorneioId { get; private set; }
-    public Guid AnoTorneioId { get; private set; }
     public string Nome { get; private set; } = null!;
     public string? FotoUrl { get; private set; }
 
@@ -12,7 +11,6 @@ public class Membro
 
     public static Membro Criar(
         Guid torneioId,
-        Guid anoTorneioId,
         string nome,
         string? fotoUrl = null)
     {
@@ -20,7 +18,6 @@ public class Membro
         {
             Id = Guid.NewGuid(),
             TorneioId = torneioId,
-            AnoTorneioId = anoTorneioId,
             Nome = nome,
             FotoUrl = fotoUrl
         };

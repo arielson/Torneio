@@ -34,21 +34,21 @@ public class CapturaServico : ICapturaServico
         return entidade is null ? null : await ParaDtoComDetalhes(entidade);
     }
 
-    public async Task<IEnumerable<CapturaDto>> ListarPorEquipe(Guid equipeId, Guid anoTorneioId)
+    public async Task<IEnumerable<CapturaDto>> ListarPorEquipe(Guid equipeId)
     {
-        var lista = await _repositorio.ListarPorEquipe(equipeId, anoTorneioId);
+        var lista = await _repositorio.ListarPorEquipe(equipeId);
         return await ParaDtoListaComDetalhes(lista);
     }
 
-    public async Task<IEnumerable<CapturaDto>> ListarPorMembro(Guid membroId, Guid anoTorneioId)
+    public async Task<IEnumerable<CapturaDto>> ListarPorMembro(Guid membroId)
     {
-        var lista = await _repositorio.ListarPorMembro(membroId, anoTorneioId);
+        var lista = await _repositorio.ListarPorMembro(membroId);
         return await ParaDtoListaComDetalhes(lista);
     }
 
-    public async Task<IEnumerable<CapturaDto>> ListarPorAnoTorneio(Guid anoTorneioId)
+    public async Task<IEnumerable<CapturaDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarPorAnoTorneio(anoTorneioId);
+        var lista = await _repositorio.ListarTodos();
         return await ParaDtoListaComDetalhes(lista);
     }
 
@@ -57,7 +57,7 @@ public class CapturaServico : ICapturaServico
         await _validador.ValidateAndThrowAsync(dto);
 
         var entidade = Captura.Criar(
-            dto.TorneioId, dto.AnoTorneioId,
+            dto.TorneioId,
             dto.ItemId, dto.MembroId, dto.EquipeId,
             dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, dto.PendenteSync);
 
@@ -79,7 +79,7 @@ public class CapturaServico : ICapturaServico
         {
             await _validador.ValidateAndThrowAsync(dto);
             var entidade = Captura.Criar(
-                dto.TorneioId, dto.AnoTorneioId,
+                dto.TorneioId,
                 dto.ItemId, dto.MembroId, dto.EquipeId,
                 dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, pendenteSync: false);
             await _repositorio.Adicionar(entidade);
@@ -101,7 +101,6 @@ public class CapturaServico : ICapturaServico
         {
             Id = c.Id,
             TorneioId = c.TorneioId,
-            AnoTorneioId = c.AnoTorneioId,
             ItemId = c.ItemId,
             NomeItem = item?.Nome ?? string.Empty,
             MembroId = c.MembroId,

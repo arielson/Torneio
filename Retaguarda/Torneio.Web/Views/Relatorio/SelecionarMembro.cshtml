@@ -1,16 +1,14 @@
 @model IEnumerable<MembroDto>
 @{
-    var slug         = Context.GetRouteData().Values["slug"]?.ToString();
-    var torneio      = (TorneioDto)ViewBag.Torneio;
-    var ano          = (AnoTorneioDto)ViewBag.Ano;
-    var anoTorneioId = ano.Id;
-    ViewData["Title"] = $"Relatório de {torneio.LabelMembro} — {ano.Ano}";
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    ViewData["Title"] = $"Relatório de {torneio.LabelMembro}";
     var lista = Model.OrderBy(x => x.Nome).ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Relatório de @torneio.LabelMembro — @ano.Ano</h1>
+        <h1>Relatório de @torneio.LabelMembro</h1>
     </div>
 </div>
 <a href="/@slug/relatorios" class="back-link">
@@ -28,7 +26,7 @@ else
 {
     <div class="content-card">
         <div class="card-header-bar">
-            <h5><i class="bi bi-person me-2"></i>@torneio.LabelMembro&#x73;</h5>
+            <h5><i class="bi bi-person me-2"></i>@torneio.LabelMembroPlural</h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
@@ -45,11 +43,11 @@ else
                             <td class="fw-semibold">@m.Nome</td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <a href="/@slug/relatorios/membro/download?anoTorneioId=@anoTorneioId&membroId=@m.Id&analitico=false"
+                                    <a href="/@slug/relatorios/membro/download?membroId=@m.Id&analitico=false"
                                        class="btn btn-sm btn-outline-secondary" target="_blank" title="Sintético">
                                         <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintético
                                     </a>
-                                    <a href="/@slug/relatorios/membro/download?anoTorneioId=@anoTorneioId&membroId=@m.Id&analitico=true"
+                                    <a href="/@slug/relatorios/membro/download?membroId=@m.Id&analitico=true"
                                        class="btn btn-sm btn-secondary" target="_blank" title="Analítico">
                                         <i class="bi bi-file-earmark-richtext me-1"></i>Analítico
                                     </a>

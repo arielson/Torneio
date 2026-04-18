@@ -1,10 +1,10 @@
 @model AtualizarMembroDto
 @{
     var slug    = Context.GetRouteData().Values["slug"]?.ToString();
-    var anoId   = (Guid)ViewBag.AnoId;
     var membro  = (MembroDto)ViewBag.Membro;
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label   = torneio?.LabelMembro ?? "Membro";
+    var label       = torneio?.LabelMembro ?? "Membro";
+    var labelPlural = torneio?.LabelMembroPlural ?? "Membros";
     ViewData["Title"] = $"Editar {label} — {membro.Nome}";
 }
 
@@ -13,12 +13,12 @@
         <h1>Editar @label — @membro.Nome</h1>
     </div>
 </div>
-<a href="/@slug/membros/@anoId" class="back-link">
-    <i class="bi bi-arrow-left"></i> @label&#x73;
+<a href="/@slug/membros" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelPlural
 </a>
 
 <div class="form-card">
-    <form asp-controller="Membro" asp-action="Editar" asp-route-slug="@slug" asp-route-anoId="@anoId" asp-route-id="@membro.Id" method="post" enctype="multipart/form-data">
+    <form asp-controller="Membro" asp-action="Editar" asp-route-slug="@slug" asp-route-id="@membro.Id" method="post" enctype="multipart/form-data">
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
@@ -35,7 +35,7 @@
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-lg me-1"></i>Salvar Alterações
             </button>
-            <a href="/@slug/membros/@anoId" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="/@slug/membros" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>

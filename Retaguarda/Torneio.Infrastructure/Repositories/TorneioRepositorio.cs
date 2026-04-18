@@ -14,4 +14,18 @@ public class TorneioRepositorio : RepositorioBase<TorneioEntity>, ITorneioReposi
 
     public async Task<IEnumerable<TorneioEntity>> ListarAtivos() =>
         await _dbSet.Where(t => t.Ativo).ToListAsync();
+
+    public async Task<IEnumerable<TorneioEntity>> ListarRecentes(int limite) =>
+        await _dbSet.Where(t => t.Ativo)
+            .OrderByDescending(t => t.CriadoEm)
+            .Take(limite)
+            .ToListAsync();
+
+    public async Task<IEnumerable<TorneioEntity>> BuscarPorTexto(string q) =>
+        await _dbSet.Where(t => t.Ativo &&
+            (EF.Functions.ILike(t.NomeTorneio, $"%{q}%") ||
+             EF.Functions.ILike(t.Slug, $"%{q}%")))
+            .OrderByDescending(t => t.CriadoEm)
+            .Take(20)
+            .ToListAsync();
 }

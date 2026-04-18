@@ -4,7 +4,6 @@ public class CapturaDto
 {
     public Guid Id { get; init; }
     public Guid TorneioId { get; init; }
-    public Guid AnoTorneioId { get; init; }
     public Guid ItemId { get; init; }
     public string NomeItem { get; init; } = null!;
     public Guid MembroId { get; init; }

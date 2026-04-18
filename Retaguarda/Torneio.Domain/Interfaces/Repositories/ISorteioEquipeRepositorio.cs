@@ -4,6 +4,6 @@ namespace Torneio.Domain.Interfaces.Repositories;
 
 public interface ISorteioEquipeRepositorio : IRepositorio<SorteioEquipe>
 {
-    Task<IEnumerable<SorteioEquipe>> ListarPorAnoTorneio(Guid anoTorneioId);
-    Task RemoverPorAnoTorneio(Guid anoTorneioId);
+    Task<IEnumerable<SorteioEquipe>> ListarPorTorneio(Guid torneioId);
+    Task RemoverPorTorneio(Guid torneioId);
 }

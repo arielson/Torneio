@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 class LocalDb {
   static Database? _db;
   static const _dbName = 'torneio_offline.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   static const _tableCapturas = 'capturas_pendentes';
 
@@ -25,7 +25,23 @@ class LocalDb {
           CREATE TABLE $_tableCapturas (
             id TEXT PRIMARY KEY,
             torneioId TEXT NOT NULL,
-            anoTorneioId TEXT NOT NULL,
+            itemId TEXT NOT NULL,
+            membroId TEXT NOT NULL,
+            equipeId TEXT NOT NULL,
+            tamanhoMedida REAL NOT NULL,
+            fotoUrl TEXT NOT NULL,
+            dataHora TEXT NOT NULL,
+            pendenteSync INTEGER NOT NULL DEFAULT 1
+          )
+        ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Drop and recreate to remove anoTorneioId column
+        await db.execute('DROP TABLE IF EXISTS $_tableCapturas');
+        await db.execute('''
+          CREATE TABLE $_tableCapturas (
+            id TEXT PRIMARY KEY,
+            torneioId TEXT NOT NULL,
             itemId TEXT NOT NULL,
             membroId TEXT NOT NULL,
             equipeId TEXT NOT NULL,
@@ -86,7 +102,6 @@ class LocalDb {
   static RegistrarCapturaRequest _rowToRequest(Map<String, dynamic> row) {
     return RegistrarCapturaRequest(
       torneioId: row['torneioId'] as String,
-      anoTorneioId: row['anoTorneioId'] as String,
       itemId: row['itemId'] as String,
       membroId: row['membroId'] as String,
       equipeId: row['equipeId'] as String,

@@ -1,6 +1,6 @@
 namespace Torneio.Domain.Enums;
 
-public enum StatusAnoTorneio
+public enum StatusTorneio
 {
     Aberto,
     Liberado,

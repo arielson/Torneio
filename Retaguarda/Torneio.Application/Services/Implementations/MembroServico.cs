@@ -23,9 +23,9 @@ public class MembroServico : IMembroServico
         return entidade is null ? null : ParaDto(entidade);
     }
 
-    public async Task<IEnumerable<MembroDto>> ListarPorAnoTorneio(Guid anoTorneioId)
+    public async Task<IEnumerable<MembroDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarPorAnoTorneio(anoTorneioId);
+        var lista = await _repositorio.ListarTodos();
         return lista.Select(ParaDto);
     }
 
@@ -33,7 +33,7 @@ public class MembroServico : IMembroServico
     {
         await _validador.ValidateAndThrowAsync(dto);
 
-        var entidade = Membro.Criar(dto.TorneioId, dto.AnoTorneioId, dto.Nome, dto.FotoUrl);
+        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl);
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
     }
@@ -59,7 +59,6 @@ public class MembroServico : IMembroServico
     {
         Id = e.Id,
         TorneioId = e.TorneioId,
-        AnoTorneioId = e.AnoTorneioId,
         Nome = e.Nome,
         FotoUrl = e.FotoUrl
     };

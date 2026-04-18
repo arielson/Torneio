@@ -26,6 +26,12 @@ dependencies:
   # Conectividade
   connectivity_plus: ^6.1.1
 
+  # Deep links
+  app_links: ^6.3.2
+
+  # Imagens em cache
+  cached_network_image: ^3.4.1
+
   # Câmera / imagem
   image_picker: ^1.1.2
 
@@ -42,3 +48,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/

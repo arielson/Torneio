@@ -127,6 +127,13 @@
                                             </button>
                                         </form>
                                     }
+                                    <form asp-action="Excluir" asp-route-id="@t.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-danger" title="Excluir permanentemente"
+                                                onclick="return confirm('ATENÇÃO: isso excluirá o torneio \'@t.NomeTorneio\' e TODOS os seus dados (equipes, membros, fiscais, capturas, sorteios e prêmios) de forma irreversível.\n\nTem certeza?')">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

@@ -103,33 +103,43 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("admins_torneio", (string)null);
                 });
 
-            modelBuilder.Entity("Torneio.Domain.Entities.AnoTorneio", b =>
+            modelBuilder.Entity("Torneio.Domain.Entities.Banner", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<int>("Ano")
-                        .HasColumnType("integer")
-                        .HasColumnName("ano");
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("ImagemUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("imagem_url");
+
+                    b.Property<int>("Ordem")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("status");
+                        .HasDefaultValue(0)
+                        .HasColumnName("ordem");
 
                     b.Property<Guid>("TorneioId")
                         .HasColumnType("uuid")
                         .HasColumnName("torneio_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_anos_torneio");
+                        .HasName("pk_banners");
 
-                    b.HasIndex("TorneioId", "Ano")
-                        .IsUnique()
-                        .HasDatabaseName("ix_anos_torneio_torneio_id_ano");
+                    b.HasIndex("TorneioId")
+                        .HasDatabaseName("ix_banners_torneio_id");
 
-                    b.ToTable("anos_torneio", (string)null);
+                    b.HasIndex("Ativo", "Ordem")
+                        .HasDatabaseName("ix_banners_ativo_ordem");
+
+                    b.ToTable("banners", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Captura", b =>
@@ -138,10 +148,6 @@ namespace Torneio.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<Guid>("AnoTorneioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ano_torneio_id");
 
                     b.Property<DateTime>("DataHora")
                         .HasColumnType("timestamp with time zone")
@@ -192,14 +198,11 @@ namespace Torneio.Infrastructure.Migrations
                     b.HasIndex("PendenteSync")
                         .HasDatabaseName("ix_capturas_pendente_sync");
 
-                    b.HasIndex("TorneioId")
-                        .HasDatabaseName("ix_capturas_torneio_id");
+                    b.HasIndex("TorneioId", "EquipeId")
+                        .HasDatabaseName("ix_capturas_torneio_id_equipe_id");
 
-                    b.HasIndex("AnoTorneioId", "EquipeId")
-                        .HasDatabaseName("ix_capturas_ano_torneio_id_equipe_id");
-
-                    b.HasIndex("AnoTorneioId", "MembroId")
-                        .HasDatabaseName("ix_capturas_ano_torneio_id_membro_id");
+                    b.HasIndex("TorneioId", "MembroId")
+                        .HasDatabaseName("ix_capturas_torneio_id_membro_id");
 
                     b.ToTable("capturas", (string)null);
                 });
@@ -210,10 +213,6 @@ namespace Torneio.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<Guid>("AnoTorneioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ano_torneio_id");
 
                     b.Property<string>("Capitao")
                         .IsRequired()
@@ -252,9 +251,6 @@ namespace Torneio.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_equipes");
 
-                    b.HasIndex("AnoTorneioId")
-                        .HasDatabaseName("ix_equipes_ano_torneio_id");
-
                     b.HasIndex("FiscalId")
                         .HasDatabaseName("ix_equipes_fiscal_id");
 
@@ -270,10 +266,6 @@ namespace Torneio.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<Guid>("AnoTorneioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ano_torneio_id");
 
                     b.Property<string>("FotoUrl")
                         .HasMaxLength(500)
@@ -304,9 +296,6 @@ namespace Torneio.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_fiscais");
-
-                    b.HasIndex("AnoTorneioId")
-                        .HasDatabaseName("ix_fiscais_ano_torneio_id");
 
                     b.HasIndex("TorneioId")
                         .HasDatabaseName("ix_fiscais_torneio_id");
@@ -364,10 +353,6 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AnoTorneioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ano_torneio_id");
-
                     b.Property<string>("FotoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -386,13 +371,41 @@ namespace Torneio.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_membros");
 
-                    b.HasIndex("AnoTorneioId")
-                        .HasDatabaseName("ix_membros_ano_torneio_id");
-
                     b.HasIndex("TorneioId")
                         .HasDatabaseName("ix_membros_torneio_id");
 
                     b.ToTable("membros", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.Premio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descricao");
+
+                    b.Property<int>("Posicao")
+                        .HasColumnType("integer")
+                        .HasColumnName("posicao");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_premios");
+
+                    b.HasIndex("TorneioId", "Posicao")
+                        .IsUnique()
+                        .HasDatabaseName("ix_premios_torneio_id_posicao");
+
+                    b.ToTable("premios", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>
@@ -401,10 +414,6 @@ namespace Torneio.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<Guid>("AnoTorneioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ano_torneio_id");
 
                     b.Property<Guid>("EquipeId")
                         .HasColumnType("uuid")
@@ -431,16 +440,13 @@ namespace Torneio.Infrastructure.Migrations
                     b.HasIndex("MembroId")
                         .HasDatabaseName("ix_sorteios_equipe_membro_id");
 
-                    b.HasIndex("TorneioId")
-                        .HasDatabaseName("ix_sorteios_equipe_torneio_id");
-
-                    b.HasIndex("AnoTorneioId", "EquipeId")
+                    b.HasIndex("TorneioId", "EquipeId")
                         .IsUnique()
-                        .HasDatabaseName("ix_sorteios_equipe_ano_torneio_id_equipe_id");
+                        .HasDatabaseName("ix_sorteios_equipe_torneio_id_equipe_id");
 
-                    b.HasIndex("AnoTorneioId", "Posicao")
+                    b.HasIndex("TorneioId", "Posicao")
                         .IsUnique()
-                        .HasDatabaseName("ix_sorteios_equipe_ano_torneio_id_posicao");
+                        .HasDatabaseName("ix_sorteios_equipe_torneio_id_posicao");
 
                     b.ToTable("sorteios_equipe", (string)null);
                 });
@@ -456,11 +462,21 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("ativo");
 
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
                     b.Property<string>("LabelCaptura")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("label_captura");
+
+                    b.Property<string>("LabelCapturaPlural")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("label_captura_plural");
 
                     b.Property<string>("LabelEquipe")
                         .IsRequired()
@@ -468,11 +484,23 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("label_equipe");
 
+                    b.Property<string>("LabelEquipePlural")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("label_equipe_plural");
+
                     b.Property<string>("LabelItem")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("label_item");
+
+                    b.Property<string>("LabelItemPlural")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("label_item_plural");
 
                     b.Property<string>("LabelMembro")
                         .IsRequired()
@@ -480,11 +508,23 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("label_membro");
 
+                    b.Property<string>("LabelMembroPlural")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("label_membro_plural");
+
                     b.Property<string>("LabelSupervisor")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("label_supervisor");
+
+                    b.Property<string>("LabelSupervisorPlural")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("label_supervisor_plural");
 
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(500)
@@ -511,11 +551,21 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("permitir_captura_offline");
 
+                    b.Property<int>("QtdGanhadores")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(3)
+                        .HasColumnName("qtd_ganhadores");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("slug");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<int>("TipoTorneio")
                         .ValueGeneratedOnAdd()
@@ -566,25 +616,20 @@ namespace Torneio.Infrastructure.Migrations
                         .HasConstraintName("fk_admins_torneio_torneiros_torneio_id");
                 });
 
-            modelBuilder.Entity("Torneio.Domain.Entities.AnoTorneio", b =>
+            modelBuilder.Entity("Torneio.Domain.Entities.Banner", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", "Torneio")
                         .WithMany()
                         .HasForeignKey("TorneioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_anos_torneio_torneiros_torneio_id");
+                        .HasConstraintName("fk_banners_torneiros_torneio_id");
+
+                    b.Navigation("Torneio");
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Captura", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.AnoTorneio", null)
-                        .WithMany()
-                        .HasForeignKey("AnoTorneioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_capturas_anos_torneio_ano_torneio_id");
-
                     b.HasOne("Torneio.Domain.Entities.Equipe", null)
                         .WithMany()
                         .HasForeignKey("EquipeId")
@@ -618,13 +663,6 @@ namespace Torneio.Infrastructure.Migrations
 
             modelBuilder.Entity("Torneio.Domain.Entities.Equipe", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.AnoTorneio", null)
-                        .WithMany()
-                        .HasForeignKey("AnoTorneioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_equipes_anos_torneio_ano_torneio_id");
-
                     b.HasOne("Torneio.Domain.Entities.Fiscal", null)
                         .WithMany()
                         .HasForeignKey("FiscalId")
@@ -642,13 +680,6 @@ namespace Torneio.Infrastructure.Migrations
 
             modelBuilder.Entity("Torneio.Domain.Entities.Fiscal", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.AnoTorneio", null)
-                        .WithMany()
-                        .HasForeignKey("AnoTorneioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fiscais_anos_torneio_ano_torneio_id");
-
                     b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
                         .WithMany()
                         .HasForeignKey("TorneioId")
@@ -669,13 +700,6 @@ namespace Torneio.Infrastructure.Migrations
 
             modelBuilder.Entity("Torneio.Domain.Entities.Membro", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.AnoTorneio", null)
-                        .WithMany()
-                        .HasForeignKey("AnoTorneioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_membros_anos_torneio_ano_torneio_id");
-
                     b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
                         .WithMany()
                         .HasForeignKey("TorneioId")
@@ -684,15 +708,18 @@ namespace Torneio.Infrastructure.Migrations
                         .HasConstraintName("fk_membros_torneiros_torneio_id");
                 });
 
-            modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>
+            modelBuilder.Entity("Torneio.Domain.Entities.Premio", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.AnoTorneio", null)
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
                         .WithMany()
-                        .HasForeignKey("AnoTorneioId")
+                        .HasForeignKey("TorneioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_sorteios_equipe_anos_torneio_ano_torneio_id");
+                        .HasConstraintName("fk_premios_torneiros_torneio_id");
+                });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>
+                {
                     b.HasOne("Torneio.Domain.Entities.Equipe", null)
                         .WithMany()
                         .HasForeignKey("EquipeId")

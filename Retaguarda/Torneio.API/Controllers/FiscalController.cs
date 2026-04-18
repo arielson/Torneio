@@ -18,8 +18,8 @@ public class FiscalController : BaseController
     public FiscalController(IFiscalServico servico) => _servico = servico;
 
     [HttpGet]
-    public async Task<IActionResult> Listar([FromQuery] Guid anoTorneioId) =>
-        Ok(await _servico.ListarPorAnoTorneio(anoTorneioId));
+    public async Task<IActionResult> Listar() =>
+        Ok(await _servico.ListarTodos());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> ObterPorId(Guid id)

@@ -34,7 +34,7 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
     if (foto != null) setState(() => _fotoPath = foto.path);
   }
 
-  Future<void> _salvar() async {
+  Future<void> _salvar({bool forcarOffline = false}) async {
     if (!_formKey.currentState!.validate()) return;
     if (_fotoPath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -45,18 +45,7 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
 
     final auth = context.read<AuthProvider>();
     final config = context.read<ConfigProvider>().config!;
-    final configProv = context.read<ConfigProvider>();
     final capProv = context.read<CapturaProvider>();
-
-    final anos = configProv.anos.where((a) => a.isLiberado).toList();
-    if (anos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nenhuma edição ativa no momento.')),
-      );
-      return;
-    }
-
-    final anoAtivo = anos.first;
 
     // Equipe do fiscal
     final equipe = capProv.equipes.isEmpty
@@ -67,7 +56,7 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
 
     if (equipe == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Equipe não encontrada.')),
+        const SnackBar(content: Text('Equipe nao encontrada.')),
       );
       return;
     }
@@ -76,7 +65,6 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
 
     final req = RegistrarCapturaRequest(
       torneioId: config.id,
-      anoTorneioId: anoAtivo.id,
       itemId: _itemId!,
       membroId: _membroId!,
       equipeId: equipe.id,
@@ -89,6 +77,7 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
       slug: config.slug,
       token: auth.usuario!.token,
       req: req,
+      forcarOffline: forcarOffline,
     );
 
     if (!mounted) return;
@@ -98,11 +87,11 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            capProv.pendentesSync > 0
-                ? 'Captura salva offline. Sincronize quando tiver conexão.'
+            forcarOffline || capProv.pendentesSync > 0
+                ? 'Captura salva para sincronizar depois.'
                 : 'Captura registrada com sucesso!',
           ),
-          backgroundColor: capProv.pendentesSync > 0 ? Colors.orange : Colors.green,
+          backgroundColor: forcarOffline || capProv.pendentesSync > 0 ? Colors.orange : Colors.green,
         ),
       );
       Navigator.pop(context);
@@ -226,9 +215,15 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
               const SizedBox(height: 24),
 
               FilledButton.icon(
-                icon: const Icon(Icons.save),
-                label: Text(_salvando ? 'Salvando...' : 'Registrar'),
-                onPressed: _salvando ? null : _salvar,
+                icon: const Icon(Icons.send),
+                label: Text(_salvando ? 'Salvando...' : 'Registrar agora'),
+                onPressed: _salvando ? null : () => _salvar(forcarOffline: false),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.schedule),
+                label: Text(_salvando ? 'Salvando...' : 'Sincronizar depois'),
+                onPressed: _salvando ? null : () => _salvar(forcarOffline: true),
               ),
             ],
           ),

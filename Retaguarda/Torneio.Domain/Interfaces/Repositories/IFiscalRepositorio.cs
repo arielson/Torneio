@@ -5,5 +5,5 @@ namespace Torneio.Domain.Interfaces.Repositories;
 public interface IFiscalRepositorio : IRepositorio<Fiscal>
 {
     Task<Fiscal?> ObterPorUsuario(string usuario, Guid torneioId);
-    Task<IEnumerable<Fiscal>> ListarPorAnoTorneio(Guid anoTorneioId);
+    Task<IEnumerable<Fiscal>> ListarTodos();
 }

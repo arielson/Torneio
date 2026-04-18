@@ -26,18 +26,9 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
 
     if (auth.usuario == null || config == null) return;
 
-    // Encontra a equipe do fiscal: anoTorneio mais recente liberado
-    final configProv = context.read<ConfigProvider>();
-    await configProv.carregarAnos(config.slug, auth.usuario!.token);
-
-    final anos = configProv.anos.where((a) => a.isLiberado).toList();
-    if (anos.isEmpty) return;
-
-    final anoAtivo = anos.first;
     await capProv.carregarDadosEquipe(
       config.slug,
       auth.usuario!.token,
-      anoAtivo.id,
       // Equipe do fiscal — carregará todas e filtrará pela fiscalId
       '',
     );
@@ -58,7 +49,7 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
     if (confirm == true && mounted) {
       context.read<AuthProvider>().logout();
       context.read<CapturaProvider>().limpar();
-      Navigator.pushReplacementNamed(context, '/publico/home');
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 
@@ -112,6 +103,34 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Alerta de capturas pendentes
+                    if (pendentes > 0)
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/fiscal/sync'),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.orange.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.sync_problem, color: Colors.orange),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '$pendentes ${pendentes == 1 ? "captura nao sincronizada" : "capturas nao sincronizadas"}',
+                                  style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right, color: Colors.orange),
+                            ],
+                          ),
+                        ),
+                      ),
+
                     // Saudação
                     Text(
                       'Olá, ${auth.usuario?.nome ?? ''}!',

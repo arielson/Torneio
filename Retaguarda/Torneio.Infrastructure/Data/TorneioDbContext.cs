@@ -15,15 +15,16 @@ public class TorneioDbContext : DbContext
     }
 
     public DbSet<TorneioEntity> Torneiros { get; set; }
+    public DbSet<Banner> Banners { get; set; }
     public DbSet<AdminGeral> AdminsGeral { get; set; }
     public DbSet<AdminTorneio> AdminsTorneio { get; set; }
-    public DbSet<AnoTorneio> AnosTorneio { get; set; }
     public DbSet<Fiscal> Fiscais { get; set; }
     public DbSet<Equipe> Equipes { get; set; }
     public DbSet<Membro> Membros { get; set; }
     public DbSet<Item> Itens { get; set; }
     public DbSet<Captura> Capturas { get; set; }
     public DbSet<SorteioEquipe> SorteiosEquipe { get; set; }
+    public DbSet<Premio> Premios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,9 +34,6 @@ public class TorneioDbContext : DbContext
 
         // Query filters por TorneioId — bypass total quando EhAdminGeral
         modelBuilder.Entity<AdminTorneio>()
-            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
-
-        modelBuilder.Entity<AnoTorneio>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Fiscal>()
@@ -54,6 +52,9 @@ public class TorneioDbContext : DbContext
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<SorteioEquipe>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<Premio>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
     }
 }

@@ -4,7 +4,6 @@ public class SorteioEquipe
 {
     public Guid Id { get; private set; }
     public Guid TorneioId { get; private set; }
-    public Guid AnoTorneioId { get; private set; }
     public Guid EquipeId { get; private set; }
     public Guid MembroId { get; private set; }
     public int Posicao { get; private set; }
@@ -13,7 +12,6 @@ public class SorteioEquipe
 
     public static SorteioEquipe Criar(
         Guid torneioId,
-        Guid anoTorneioId,
         Guid equipeId,
         Guid membroId,
         int posicao)
@@ -22,7 +20,6 @@ public class SorteioEquipe
         {
             Id = Guid.NewGuid(),
             TorneioId = torneioId,
-            AnoTorneioId = anoTorneioId,
             EquipeId = equipeId,
             MembroId = membroId,
             Posicao = posicao

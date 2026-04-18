@@ -13,38 +13,41 @@ public class SorteioAppServico : ISorteioAppServico
     private readonly ISorteioEquipeRepositorio _sorteioRepositorio;
     private readonly IEquipeRepositorio _equipeRepositorio;
     private readonly IMembroRepositorio _membroRepositorio;
-    private readonly IAnoTorneioRepositorio _anoTorneioRepositorio;
+    private readonly ITorneioRepositorio _torneioRepositorio;
+    private readonly ITenantContext _tenantContext;
 
     public SorteioAppServico(
         ISorteioServico sorteioServico,
         ISorteioEquipeRepositorio sorteioRepositorio,
         IEquipeRepositorio equipeRepositorio,
         IMembroRepositorio membroRepositorio,
-        IAnoTorneioRepositorio anoTorneioRepositorio)
+        ITorneioRepositorio torneioRepositorio,
+        ITenantContext tenantContext)
     {
         _sorteioServico = sorteioServico;
         _sorteioRepositorio = sorteioRepositorio;
         _equipeRepositorio = equipeRepositorio;
         _membroRepositorio = membroRepositorio;
-        _anoTorneioRepositorio = anoTorneioRepositorio;
+        _torneioRepositorio = torneioRepositorio;
+        _tenantContext = tenantContext;
     }
 
-    public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio(Guid anoTorneioId)
+    public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio()
     {
-        var anoTorneio = await _anoTorneioRepositorio.ObterPorId(anoTorneioId)
-            ?? throw new KeyNotFoundException($"Ano do torneio '{anoTorneioId}' não encontrado.");
+        var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
+            ?? throw new KeyNotFoundException($"Torneio '{_tenantContext.TorneioId}' não encontrado.");
 
-        if (anoTorneio.Status != StatusAnoTorneio.Liberado)
-            throw new InvalidOperationException("O sorteio só pode ser realizado em anos com status Liberado.");
+        if (torneio.Status != StatusTorneio.Liberado)
+            throw new InvalidOperationException("O sorteio só pode ser realizado em torneios com status Liberado.");
 
-        await _sorteioServico.LimparSorteioAsync(anoTorneio.TorneioId, anoTorneioId);
-        var resultado = await _sorteioServico.RealizarSorteioAsync(anoTorneio.TorneioId, anoTorneioId);
+        await _sorteioServico.LimparSorteioAsync(torneio.Id);
+        var resultado = await _sorteioServico.RealizarSorteioAsync(torneio.Id);
         return await ParaDtoLista(resultado);
     }
 
-    public async Task<IEnumerable<SorteioEquipeDto>> ObterResultado(Guid anoTorneioId)
+    public async Task<IEnumerable<SorteioEquipeDto>> ObterResultado()
     {
-        var resultado = await _sorteioRepositorio.ListarPorAnoTorneio(anoTorneioId);
+        var resultado = await _sorteioRepositorio.ListarPorTorneio(_tenantContext.TorneioId);
         return await ParaDtoLista(resultado);
     }
 
@@ -56,11 +59,9 @@ public class SorteioAppServico : ISorteioAppServico
         await _sorteioRepositorio.Atualizar(entidade);
     }
 
-    public async Task LimparSorteio(Guid anoTorneioId)
+    public async Task LimparSorteio()
     {
-        var anoTorneio = await _anoTorneioRepositorio.ObterPorId(anoTorneioId)
-            ?? throw new KeyNotFoundException($"Ano do torneio '{anoTorneioId}' não encontrado.");
-        await _sorteioServico.LimparSorteioAsync(anoTorneio.TorneioId, anoTorneioId);
+        await _sorteioServico.LimparSorteioAsync(_tenantContext.TorneioId);
     }
 
     private async Task<IEnumerable<SorteioEquipeDto>> ParaDtoLista(IEnumerable<SorteioEquipe> lista)

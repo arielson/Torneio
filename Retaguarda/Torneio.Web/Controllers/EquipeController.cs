@@ -7,11 +7,10 @@ using Torneio.Infrastructure.Services;
 namespace Torneio.Web.Controllers;
 
 [Authorize(Policy = "AdminTorneio")]
-[Route("{slug}/equipes/{anoId:guid}")]
+[Route("{slug}/equipes")]
 public class EquipeController : TorneioBaseController
 {
     private readonly IEquipeServico _servico;
-    private readonly IAnoTorneioServico _anoServico;
     private readonly IFiscalServico _fiscalServico;
     private readonly IMembroServico _membroServico;
     private readonly ITorneioServico _torneioServico;
@@ -19,13 +18,11 @@ public class EquipeController : TorneioBaseController
     public EquipeController(
         TenantContext tenantContext,
         IEquipeServico servico,
-        IAnoTorneioServico anoServico,
         IFiscalServico fiscalServico,
         IMembroServico membroServico,
         ITorneioServico torneioServico) : base(tenantContext)
     {
         _servico = servico;
-        _anoServico = anoServico;
         _fiscalServico = fiscalServico;
         _membroServico = membroServico;
         _torneioServico = torneioServico;
@@ -37,42 +34,31 @@ public class EquipeController : TorneioBaseController
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index(Guid anoId)
+    public async Task<IActionResult> Index()
     {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
         await SetTorneioViewBag();
-
-        var equipes = await _servico.ListarPorAnoTorneio(anoId);
+        var equipes = await _servico.ListarTodos();
         return View(equipes);
     }
 
     [HttpGet("criar")]
-    public async Task<IActionResult> Criar(Guid anoId)
+    public async Task<IActionResult> Criar()
     {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
-        ViewBag.Fiscais = await _fiscalServico.ListarPorAnoTorneio(anoId);
+        ViewBag.Fiscais = await _fiscalServico.ListarTodos();
         await SetTorneioViewBag();
-        return View(new CriarEquipeDto { TorneioId = TenantContext.TorneioId, AnoTorneioId = anoId });
+        return View(new CriarEquipeDto { TorneioId = TenantContext.TorneioId });
     }
 
     [HttpPost("criar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Criar(Guid anoId, CriarEquipeDto dto)
+    public async Task<IActionResult> Criar(CriarEquipeDto dto)
     {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
-
         if (dto.FiscalId == Guid.Empty)
             ModelState.AddModelError(nameof(dto.FiscalId), "Selecione um fiscal.");
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Fiscais = await _fiscalServico.ListarPorAnoTorneio(anoId);
+            ViewBag.Fiscais = await _fiscalServico.ListarTodos();
             await SetTorneioViewBag();
             return View(dto);
         }
@@ -84,7 +70,6 @@ public class EquipeController : TorneioBaseController
             await _servico.Criar(new CriarEquipeDto
             {
                 TorneioId = TenantContext.TorneioId,
-                AnoTorneioId = anoId,
                 Nome = dto.Nome,
                 Capitao = dto.Capitao,
                 FiscalId = dto.FiscalId,
@@ -93,23 +78,23 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = fotoCapitaoUrl,
             });
             TempData["Sucesso"] = "Equipe criada com sucesso.";
-            return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+            return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            ViewBag.Fiscais = await _fiscalServico.ListarPorAnoTorneio(anoId);
+            ViewBag.Fiscais = await _fiscalServico.ListarTodos();
+            await SetTorneioViewBag();
             return View(dto);
         }
     }
 
     [HttpGet("{id:guid}/editar")]
-    public async Task<IActionResult> Editar(Guid anoId, Guid id)
+    public async Task<IActionResult> Editar(Guid id)
     {
         var equipe = await _servico.ObterPorId(id);
         if (equipe is null) return NotFound();
         ViewBag.Equipe = equipe;
-        ViewBag.AnoId = anoId;
         await SetTorneioViewBag();
 
         var dto = new AtualizarEquipeDto
@@ -125,13 +110,11 @@ public class EquipeController : TorneioBaseController
 
     [HttpPost("{id:guid}/editar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Editar(Guid anoId, Guid id, AtualizarEquipeDto dto)
+    public async Task<IActionResult> Editar(Guid id, AtualizarEquipeDto dto)
     {
         if (!ModelState.IsValid)
         {
-            var equipe = await _servico.ObterPorId(id);
-            ViewBag.Equipe = equipe;
-            ViewBag.AnoId = anoId;
+            ViewBag.Equipe = await _servico.ObterPorId(id);
             await SetTorneioViewBag();
             return View(dto);
         }
@@ -152,14 +135,12 @@ public class EquipeController : TorneioBaseController
 
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Equipe atualizada.";
-            return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+            return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            var equipe = await _servico.ObterPorId(id);
-            ViewBag.Equipe = equipe;
-            ViewBag.AnoId = anoId;
+            ViewBag.Equipe = await _servico.ObterPorId(id);
             await SetTorneioViewBag();
             return View(dto);
         }
@@ -167,29 +148,28 @@ public class EquipeController : TorneioBaseController
 
     [HttpPost("{id:guid}/remover")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Remover(Guid anoId, Guid id)
+    public async Task<IActionResult> Remover(Guid id)
     {
         await _servico.Remover(id);
         TempData["Sucesso"] = "Equipe removida.";
-        return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
     [HttpGet("{id:guid}/membros")]
-    public async Task<IActionResult> Membros(Guid anoId, Guid id)
+    public async Task<IActionResult> Membros(Guid id)
     {
         var equipe = await _servico.ObterPorId(id);
         if (equipe is null) return NotFound();
         ViewBag.Equipe = equipe;
-        ViewBag.AnoId = anoId;
         await SetTorneioViewBag();
 
-        var todosMembros = await _membroServico.ListarPorAnoTorneio(anoId);
+        var todosMembros = await _membroServico.ListarTodos();
         return View(todosMembros);
     }
 
     [HttpPost("{id:guid}/membros/{membroId:guid}/adicionar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AdicionarMembro(Guid anoId, Guid id, Guid membroId)
+    public async Task<IActionResult> AdicionarMembro(Guid id, Guid membroId)
     {
         try
         {
@@ -200,15 +180,15 @@ public class EquipeController : TorneioBaseController
         {
             TempData["Erro"] = ex.Message;
         }
-        return RedirectToAction(nameof(Membros), new { slug = Slug, anoId, id });
+        return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }
 
     [HttpPost("{id:guid}/membros/{membroId:guid}/remover")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RemoverMembro(Guid anoId, Guid id, Guid membroId)
+    public async Task<IActionResult> RemoverMembro(Guid id, Guid membroId)
     {
         await _servico.RemoverMembro(id, membroId);
         TempData["Sucesso"] = "Membro removido da equipe.";
-        return RedirectToAction(nameof(Membros), new { slug = Slug, anoId, id });
+        return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }
 }

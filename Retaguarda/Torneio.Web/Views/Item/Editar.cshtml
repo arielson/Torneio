@@ -3,8 +3,9 @@
     var slug    = Context.GetRouteData().Values["slug"]?.ToString();
     var item    = (ItemDto)ViewBag.Item;
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label   = torneio?.LabelItem ?? "Item";
-    var medida  = torneio?.MedidaCaptura ?? "cm";
+    var label       = torneio?.LabelItem ?? "Item";
+    var labelPlural = torneio?.LabelItemPlural ?? "Itens";
+    var medida      = torneio?.MedidaCaptura ?? "cm";
     ViewData["Title"] = $"Editar {label} — {item.Nome}";
 }
 
@@ -14,7 +15,7 @@
     </div>
 </div>
 <a href="/@slug/itens" class="back-link">
-    <i class="bi bi-arrow-left"></i> @label&#x73;
+    <i class="bi bi-arrow-left"></i> @labelPlural
 </a>
 
 <div class="form-card">

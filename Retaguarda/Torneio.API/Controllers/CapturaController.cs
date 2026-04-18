@@ -18,17 +18,16 @@ public class CapturaController : BaseController
 
     [HttpGet]
     public async Task<IActionResult> Listar(
-        [FromQuery] Guid anoTorneioId,
         [FromQuery] Guid? equipeId,
         [FromQuery] Guid? membroId)
     {
         if (equipeId.HasValue)
-            return Ok(await _servico.ListarPorEquipe(equipeId.Value, anoTorneioId));
+            return Ok(await _servico.ListarPorEquipe(equipeId.Value));
 
         if (membroId.HasValue)
-            return Ok(await _servico.ListarPorMembro(membroId.Value, anoTorneioId));
+            return Ok(await _servico.ListarPorMembro(membroId.Value));
 
-        return Ok(await _servico.ListarPorAnoTorneio(anoTorneioId));
+        return Ok(await _servico.ListarTodos());
     }
 
     [HttpGet("{id:guid}")]

@@ -1,23 +1,23 @@
 @model CriarFiscalDto
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
-    var ano     = (AnoTorneioDto)ViewBag.Ano;
-    var torneio = ViewBag.Torneio as TorneioDto;
-    var label   = torneio?.LabelSupervisor ?? "Fiscal";
+    var slug        = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio     = ViewBag.Torneio as TorneioDto;
+    var label       = torneio?.LabelSupervisor ?? "Fiscal";
+    var labelPlural = torneio?.LabelSupervisorPlural ?? "Fiscais";
     ViewData["Title"] = $"Novo {label}";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Novo @label — @ano.Ano</h1>
+        <h1>Novo @label</h1>
     </div>
 </div>
-<a href="/@slug/fiscais/@ano.Id" class="back-link">
-    <i class="bi bi-arrow-left"></i> @label&#x73;
+<a href="/@slug/fiscais" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelPlural
 </a>
 
 <div class="form-card">
-    <form asp-controller="Fiscal" asp-action="Criar" asp-route-slug="@slug" asp-route-anoId="@ano.Id" method="post" enctype="multipart/form-data">
+    <form asp-controller="Fiscal" asp-action="Criar" asp-route-slug="@slug" method="post" enctype="multipart/form-data">
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
@@ -45,7 +45,7 @@
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-lg me-1"></i>Criar @label
             </button>
-            <a href="/@slug/fiscais/@ano.Id" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="/@slug/fiscais" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>

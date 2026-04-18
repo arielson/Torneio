@@ -1,23 +1,24 @@
 @model IEnumerable<MembroDto>
 @{
     var slug        = Context.GetRouteData().Values["slug"]?.ToString();
-    var anoId       = (Guid)ViewBag.AnoId;
     var equipe      = (EquipeDto)ViewBag.Equipe;
     var torneio     = (TorneioDto)ViewBag.Torneio;
-    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
-    var labelMembro = torneio?.LabelMembro ?? "Membro";
-    ViewData["Title"] = $"{labelMembro}s — {equipe.Nome}";
+    var labelEquipe      = torneio?.LabelEquipe ?? "Equipe";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelMembro      = torneio?.LabelMembro ?? "Membro";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    ViewData["Title"] = $"{labelMembroPlural} — {equipe.Nome}";
     var lista = Model.ToList();
     var cheio = equipe.QtdMembros >= equipe.QtdVagas;
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>@labelMembro&#x73; — @equipe.Nome</h1>
+        <h1>@labelMembroPlural — @equipe.Nome</h1>
     </div>
 </div>
-<a href="/@slug/equipes/@anoId" class="back-link">
-    <i class="bi bi-arrow-left"></i> @labelEquipe&#x73;
+<a href="/@slug/equipes" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelEquipePlural
 </a>
 
 <div class="d-flex gap-3 mb-4 flex-wrap">
@@ -34,7 +35,7 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-person-plus me-2"></i>Gerenciar @labelMembro&#x73;</h5>
+        <h5><i class="bi bi-person-plus me-2"></i>Gerenciar @labelMembroPlural</h5>
     </div>
     @if (!lista.Any())
     {
@@ -60,7 +61,7 @@
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <form asp-controller="Equipe" asp-action="AdicionarMembro"
-                                          asp-route-slug="@slug" asp-route-anoId="@anoId"
+                                          asp-route-slug="@slug"
                                           asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
                                           method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
@@ -69,7 +70,7 @@
                                         </button>
                                     </form>
                                     <form asp-controller="Equipe" asp-action="RemoverMembro"
-                                          asp-route-slug="@slug" asp-route-anoId="@anoId"
+                                          asp-route-slug="@slug"
                                           asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
                                           method="post" class="d-inline">
                                         @Html.AntiForgeryToken()

@@ -1,21 +1,21 @@
 @model IEnumerable<EquipeDto>
 @{
-    var slug       = Context.GetRouteData().Values["slug"]?.ToString();
-    var anoId      = Context.GetRouteData().Values["anoId"]?.ToString();
-    var ano        = (AnoTorneioDto)ViewBag.Ano;
-    var torneio    = (TorneioDto)ViewBag.Torneio;
-    var label      = torneio?.LabelEquipe ?? "Equipe";
-    var labelMembro = torneio?.LabelMembro ?? "Membro";
-    ViewData["Title"] = $"{label}s — {ano.Ano}";
+    var slug        = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio     = (TorneioDto)ViewBag.Torneio;
+    var label            = torneio?.LabelEquipe ?? "Equipe";
+    var labelPlural      = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelMembro      = torneio?.LabelMembro ?? "Membro";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>@label&#x73; — @ano.Ano</h1>
+        <h1>@labelPlural</h1>
     </div>
     <div class="page-header-actions">
-        <a href="/@slug/equipes/@anoId/criar" class="btn btn-primary btn-sm">
+        <a href="/@slug/equipes/criar" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i>Nova @label
         </a>
     </div>
@@ -26,12 +26,12 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-people me-2"></i>@label&#x73; cadastradas</h5>
+        <h5><i class="bi bi-people me-2"></i>@labelPlural cadastradas</h5>
     </div>
     @if (!lista.Any())
     {
         <div class="card-body-pad text-muted">
-            Nenhuma @label.ToLower() cadastrada. <a href="/@slug/equipes/@anoId/criar">Criar a primeira</a>.
+            Nenhuma @label.ToLower() cadastrada. <a href="/@slug/equipes/criar">Criar a primeira</a>.
         </div>
     }
     else
@@ -43,7 +43,7 @@
                         <th>Nome</th>
                         <th>Capitão</th>
                         <th>Vagas</th>
-                        <th>@labelMembro&#x73;</th>
+                        <th>@labelMembroPlural</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
@@ -61,13 +61,13 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end flex-wrap">
-                                    <a href="/@slug/equipes/@anoId/@e.Id/membros" class="btn btn-sm btn-outline-secondary" title="@labelMembro&#x73;">
-                                        <i class="bi bi-person me-1"></i>@labelMembro&#x73;
+                                    <a href="/@slug/equipes/@e.Id/membros" class="btn btn-sm btn-outline-secondary" title="@labelMembroPlural">
+                                        <i class="bi bi-person me-1"></i>@labelMembroPlural
                                     </a>
-                                    <a href="/@slug/equipes/@anoId/@e.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <a href="/@slug/equipes/@e.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form asp-controller="Equipe" asp-action="Remover" asp-route-slug="@slug" asp-route-anoId="@anoId" asp-route-id="@e.Id" method="post" class="d-inline">
+                                    <form asp-controller="Equipe" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@e.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @e.Nome?')" title="Remover">
                                             <i class="bi bi-trash"></i>

@@ -5,7 +5,6 @@ namespace Torneio.Application.DTOs.Equipe;
 public class CriarEquipeDto
 {
     public Guid TorneioId { get; init; }
-    public Guid AnoTorneioId { get; init; }
 
     [Required(ErrorMessage = "O nome é obrigatório.")]
     public string Nome { get; init; } = null!;

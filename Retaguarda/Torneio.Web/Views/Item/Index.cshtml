@@ -2,15 +2,16 @@
 @{
     var slug    = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label   = torneio?.LabelItem ?? "Item";
-    var medida  = torneio?.MedidaCaptura ?? "cm";
-    ViewData["Title"] = $"{label}s";
+    var label       = torneio?.LabelItem ?? "Item";
+    var labelPlural = torneio?.LabelItemPlural ?? "Itens";
+    var medida      = torneio?.MedidaCaptura ?? "cm";
+    ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>@label&#x73;</h1>
+        <h1>@labelPlural</h1>
     </div>
     <div class="page-header-actions">
         <a href="/@slug/itens/criar" class="btn btn-primary btn-sm">
@@ -24,7 +25,7 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-collection me-2"></i>@label&#x73; cadastrados</h5>
+        <h5><i class="bi bi-collection me-2"></i>@labelPlural cadastrados</h5>
     </div>
     @if (!lista.Any())
     {

@@ -6,7 +6,6 @@ public class Captura
 {
     public Guid Id { get; private set; }
     public Guid TorneioId { get; private set; }
-    public Guid AnoTorneioId { get; private set; }
     public Guid ItemId { get; private set; }
     public Guid MembroId { get; private set; }
     public Guid EquipeId { get; private set; }
@@ -22,7 +21,6 @@ public class Captura
 
     public static Captura Criar(
         Guid torneioId,
-        Guid anoTorneioId,
         Guid itemId,
         Guid membroId,
         Guid equipeId,
@@ -35,7 +33,6 @@ public class Captura
         {
             Id = Guid.NewGuid(),
             TorneioId = torneioId,
-            AnoTorneioId = anoTorneioId,
             ItemId = itemId,
             MembroId = membroId,
             EquipeId = equipeId,

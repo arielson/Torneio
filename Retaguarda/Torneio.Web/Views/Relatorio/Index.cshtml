@@ -1,9 +1,7 @@
-@model IEnumerable<AnoTorneioDto>
 @{
     var slug    = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
     ViewData["Title"] = "Relatórios";
-    var lista = Model.OrderByDescending(x => x.Ano).ToList();
 }
 
 <div class="page-header">
@@ -15,45 +13,31 @@
     <i class="bi bi-arrow-left"></i> Painel
 </a>
 
-@if (!lista.Any())
-{
-    <div class="alert alert-info d-flex gap-2 align-items-center">
-        <i class="bi bi-info-circle-fill"></i> Nenhum ano cadastrado.
-    </div>
-}
-else
-{
-    <div class="row g-3">
-        @foreach (var a in lista)
-        {
-            var badgeClass = a.Status switch
-            {
-                "Liberado"   => "bg-success-subtle text-success border-success-subtle",
-                "Finalizado" => "bg-secondary-subtle text-secondary border-secondary-subtle",
-                _            => "bg-warning-subtle text-warning border-warning-subtle"
-            };
-            <div class="col-md-6">
-                <div class="content-card">
-                    <div class="card-header-bar">
-                        <h5><i class="bi bi-calendar3 me-2"></i>@a.Ano</h5>
-                        <span class="badge border @badgeClass">@a.Status</span>
-                    </div>
-                    <div class="card-body-pad">
-                        <p class="text-muted small mb-3">Por @torneio.LabelEquipe</p>
-                        <div class="d-flex gap-2 mb-4">
-                            <a href="/@slug/relatorios/equipe?anoTorneioId=@a.Id" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-file-earmark-bar-graph me-1"></i>Selecionar @torneio.LabelEquipe
-                            </a>
-                        </div>
-                        <p class="text-muted small mb-3">Por @torneio.LabelMembro</p>
-                        <div class="d-flex gap-2">
-                            <a href="/@slug/relatorios/membro?anoTorneioId=@a.Id" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-file-earmark-person me-1"></i>Selecionar @torneio.LabelMembro
-                            </a>
-                        </div>
-                    </div>
-                </div>
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="content-card">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-people me-2"></i>Por @torneio.LabelEquipe</h5>
             </div>
-        }
+            <div class="card-body-pad">
+                <p class="text-muted small mb-3">Selecione uma @torneio.LabelEquipe.ToLower() para gerar o relatório sintético ou analítico.</p>
+                <a href="/@slug/relatorios/equipe" class="btn btn-outline-primary">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i>Selecionar @torneio.LabelEquipe
+                </a>
+            </div>
+        </div>
     </div>
-}
+    <div class="col-md-6">
+        <div class="content-card">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-person me-2"></i>Por @torneio.LabelMembro</h5>
+            </div>
+            <div class="card-body-pad">
+                <p class="text-muted small mb-3">Selecione um @torneio.LabelMembro.ToLower() para gerar o relatório sintético ou analítico.</p>
+                <a href="/@slug/relatorios/membro" class="btn btn-outline-secondary">
+                    <i class="bi bi-file-earmark-person me-1"></i>Selecionar @torneio.LabelMembro
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

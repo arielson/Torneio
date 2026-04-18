@@ -38,7 +38,6 @@ class CapturaProvider extends ChangeNotifier {
   Future<void> carregarDadosEquipe(
     String slug,
     String token,
-    String anoTorneioId,
     String equipeId,
   ) async {
     _carregando = true;
@@ -47,10 +46,10 @@ class CapturaProvider extends ChangeNotifier {
 
     try {
       await Future.wait([
-        _carregarEquipes(slug, token, anoTorneioId),
-        _carregarMembros(slug, token, anoTorneioId),
+        _carregarEquipes(slug, token),
+        _carregarMembros(slug, token),
         _carregarItens(slug, token),
-        _carregarCapturas(slug, token, anoTorneioId, equipeId),
+        _carregarCapturas(slug, token, equipeId),
         _atualizarContadorPendentes(),
       ]);
     } catch (e) {
@@ -61,9 +60,9 @@ class CapturaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _carregarEquipes(String slug, String token, String anoTorneioId) async {
+  Future<void> _carregarEquipes(String slug, String token) async {
     final data = await _api.get(
-      '${ApiConstants.equipes(slug)}?anoTorneioId=$anoTorneioId',
+      ApiConstants.equipes(slug),
       token: token,
     );
     if (data is List) {
@@ -71,9 +70,9 @@ class CapturaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _carregarMembros(String slug, String token, String anoTorneioId) async {
+  Future<void> _carregarMembros(String slug, String token) async {
     final data = await _api.get(
-      '${ApiConstants.membros(slug)}?anoTorneioId=$anoTorneioId',
+      ApiConstants.membros(slug),
       token: token,
     );
     if (data is List) {
@@ -91,11 +90,10 @@ class CapturaProvider extends ChangeNotifier {
   Future<void> _carregarCapturas(
     String slug,
     String token,
-    String anoTorneioId,
     String equipeId,
   ) async {
     final data = await _api.get(
-      '${ApiConstants.capturas(slug)}?anoTorneioId=$anoTorneioId&equipeId=$equipeId',
+      '${ApiConstants.capturas(slug)}?equipeId=$equipeId',
       token: token,
     );
     if (data is List) {
@@ -113,24 +111,27 @@ class CapturaProvider extends ChangeNotifier {
     required String slug,
     required String token,
     required RegistrarCapturaRequest req,
+    bool forcarOffline = false,
   }) async {
-    final connectivity = await Connectivity().checkConnectivity();
-    final online = !connectivity.contains(ConnectivityResult.none);
+    if (!forcarOffline) {
+      final connectivity = await Connectivity().checkConnectivity();
+      final online = !connectivity.contains(ConnectivityResult.none);
 
-    if (online) {
-      try {
-        final data = await _api.post(
-          ApiConstants.capturas(slug),
-          req.toJson(),
-          token: token,
-        );
-        if (data != null) {
-          _capturas.insert(0, Captura.fromJson(data as Map<String, dynamic>));
-          notifyListeners();
-          return true;
+      if (online) {
+        try {
+          final data = await _api.post(
+            ApiConstants.capturas(slug),
+            req.toJson(),
+            token: token,
+          );
+          if (data != null) {
+            _capturas.insert(0, Captura.fromJson(data as Map<String, dynamic>));
+            notifyListeners();
+            return true;
+          }
+        } on ApiException {
+          // Cai para offline se a API falhar
         }
-      } on ApiException {
-        // Cai para offline se a API falhar
       }
     }
 
@@ -180,7 +181,6 @@ class CapturaProvider extends ChangeNotifier {
 extension on RegistrarCapturaRequest {
   RegistrarCapturaRequest copyWith({bool? pendenteSync}) => RegistrarCapturaRequest(
         torneioId: torneioId,
-        anoTorneioId: anoTorneioId,
         itemId: itemId,
         membroId: membroId,
         equipeId: equipeId,

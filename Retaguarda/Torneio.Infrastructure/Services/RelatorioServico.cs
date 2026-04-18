@@ -14,7 +14,6 @@ public class RelatorioServico : IRelatorioServico
     private readonly ICapturaServico _capturaServico;
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
-    private readonly IAnoTorneioServico _anoServico;
     private readonly ITorneioServico _torneioServico;
     private readonly ITenantContext _tenant;
     private readonly StorageOptions _storage;
@@ -23,7 +22,6 @@ public class RelatorioServico : IRelatorioServico
         ICapturaServico capturaServico,
         IEquipeServico equipeServico,
         IMembroServico membroServico,
-        IAnoTorneioServico anoServico,
         ITorneioServico torneioServico,
         ITenantContext tenant,
         IOptions<StorageOptions> storage)
@@ -31,20 +29,18 @@ public class RelatorioServico : IRelatorioServico
         _capturaServico = capturaServico;
         _equipeServico = equipeServico;
         _membroServico = membroServico;
-        _anoServico = anoServico;
         _torneioServico = torneioServico;
         _tenant = tenant;
         _storage = storage.Value;
     }
 
-    public async Task<byte[]> GerarRelatorioEquipe(Guid anoTorneioId, Guid equipeId, bool analitico)
+    public async Task<byte[]> GerarRelatorioEquipe(Guid equipeId, bool analitico)
     {
         var torneio = await _torneioServico.ObterPorId(_tenant.TorneioId);
-        var ano = await _anoServico.ObterPorId(anoTorneioId);
         var equipe = await _equipeServico.ObterPorId(equipeId);
-        var capturas = (await _capturaServico.ListarPorEquipe(equipeId, anoTorneioId)).ToList();
+        var capturas = (await _capturaServico.ListarPorEquipe(equipeId)).ToList();
 
-        if (torneio is null || ano is null || equipe is null)
+        if (torneio is null || equipe is null)
             throw new InvalidOperationException("Dados não encontrados para geração do relatório.");
 
         var totalPontos = capturas.Sum(c => c.Pontuacao);
@@ -62,14 +58,12 @@ public class RelatorioServico : IRelatorioServico
                 page.Header().Column(col =>
                 {
                     col.Item().Text(torneio.NomeTorneio).Bold().FontSize(16);
-                    col.Item().Text($"Ano: {ano.Ano}").FontSize(12);
                     col.Item().Text(titulo).FontSize(12).Italic();
                     col.Item().PaddingTop(4).BorderBottom(1).BorderColor(Colors.Grey.Lighten1).Text("");
                 });
 
                 page.Content().PaddingTop(12).Column(col =>
                 {
-                    // Cabeçalho da equipe
                     col.Item().Text($"{torneio.LabelEquipe}: {equipe.Nome}").Bold().FontSize(12);
                     col.Item().Text($"Capitão: {equipe.Capitao}").FontSize(10);
                     col.Item().PaddingTop(4).Text($"Total de pontos: {totalPontos:F2}").Bold();
@@ -79,15 +73,14 @@ public class RelatorioServico : IRelatorioServico
                     {
                         table.ColumnsDefinition(cols =>
                         {
-                            cols.ConstantColumn(30);   // #
-                            cols.RelativeColumn(3);    // Item
-                            cols.RelativeColumn(3);    // Membro
-                            cols.ConstantColumn(60);   // Medida
-                            if (usarFator) cols.ConstantColumn(50); // Fator
-                            cols.ConstantColumn(60);   // Pontos
+                            cols.ConstantColumn(30);
+                            cols.RelativeColumn(3);
+                            cols.RelativeColumn(3);
+                            cols.ConstantColumn(60);
+                            if (usarFator) cols.ConstantColumn(50);
+                            cols.ConstantColumn(60);
                         });
 
-                        // Header
                         table.Header(header =>
                         {
                             header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("#").Bold();
@@ -132,14 +125,13 @@ public class RelatorioServico : IRelatorioServico
         return doc.GeneratePdf();
     }
 
-    public async Task<byte[]> GerarRelatorioMembro(Guid anoTorneioId, Guid membroId, bool analitico)
+    public async Task<byte[]> GerarRelatorioMembro(Guid membroId, bool analitico)
     {
         var torneio = await _torneioServico.ObterPorId(_tenant.TorneioId);
-        var ano = await _anoServico.ObterPorId(anoTorneioId);
         var membro = await _membroServico.ObterPorId(membroId);
-        var capturas = (await _capturaServico.ListarPorMembro(membroId, anoTorneioId)).ToList();
+        var capturas = (await _capturaServico.ListarPorMembro(membroId)).ToList();
 
-        if (torneio is null || ano is null || membro is null)
+        if (torneio is null || membro is null)
             throw new InvalidOperationException("Dados não encontrados para geração do relatório.");
 
         var totalPontos = capturas.Sum(c => c.Pontuacao);
@@ -157,7 +149,6 @@ public class RelatorioServico : IRelatorioServico
                 page.Header().Column(col =>
                 {
                     col.Item().Text(torneio.NomeTorneio).Bold().FontSize(16);
-                    col.Item().Text($"Ano: {ano.Ano}").FontSize(12);
                     col.Item().Text(titulo).FontSize(12).Italic();
                     col.Item().PaddingTop(4).BorderBottom(1).BorderColor(Colors.Grey.Lighten1).Text("");
                 });
@@ -257,10 +248,8 @@ public class RelatorioServico : IRelatorioServico
     {
         if (string.IsNullOrWhiteSpace(fotoUrl)) return null;
 
-        // Se for caminho absoluto (app mobile envia path local), retorna direto
         if (Path.IsPathRooted(fotoUrl)) return fotoUrl;
 
-        // Se for URL relativa ao storage, resolve pelo BasePath
         if (!string.IsNullOrWhiteSpace(_storage.BasePath))
         {
             var relative = fotoUrl.TrimStart('/', '\\');

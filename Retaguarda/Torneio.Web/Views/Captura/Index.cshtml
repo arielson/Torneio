@@ -1,4 +1,3 @@
-@using Torneio.Application.DTOs.AnoTorneio
 @using Torneio.Application.DTOs.Captura
 @model IEnumerable<CapturaDto>
 @{
@@ -6,126 +5,106 @@
     var labelEquipe  = torneio?.LabelEquipe ?? "Equipe";
     var labelMembro  = torneio?.LabelMembro ?? "Membro";
     var labelItem    = torneio?.LabelItem ?? "Item";
-    var labelCaptura = torneio?.LabelCaptura ?? "Captura";
-    var medida       = torneio?.MedidaCaptura ?? "";
-    var usarFator    = torneio?.UsarFatorMultiplicador ?? false;
-    var storageBase  = ViewBag.StorageBaseUrl as string ?? "";
-    var anos         = ViewBag.Anos as List<AnoTorneioDto> ?? new();
-    var anoSelecionado = ViewBag.AnoTorneioIdSelecionado as Guid?;
-    var slug         = Context.GetRouteData().Values["slug"]?.ToString();
-    ViewData["Title"] = $"{labelCaptura}s";
+    var labelCaptura       = torneio?.LabelCaptura ?? "Captura";
+    var labelCapturaPlural = torneio?.LabelCapturaPlural ?? "Capturas";
+    var medida             = torneio?.MedidaCaptura ?? "";
+    var usarFator          = torneio?.UsarFatorMultiplicador ?? false;
+    var storageBase        = ViewBag.StorageBaseUrl as string ?? "";
+    var slug               = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = labelCapturaPlural;
+    var lista = Model.ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>@labelCaptura&#x73;</h1>
+        <h1>@labelCapturaPlural</h1>
     </div>
 </div>
 <a href="/@slug/admin" class="back-link">
     <i class="bi bi-arrow-left"></i> Painel
 </a>
 
-<div class="content-card mb-4" style="max-width:320px">
-    <div class="card-body-pad">
-        <form method="get" asp-action="Index">
-            <label class="form-label fw-semibold">Selecionar Ano</label>
-            <select name="anoTorneioId" class="form-select" onchange="this.form.submit()">
-                <option value="">— selecione —</option>
-                @foreach (var ano in anos)
-                {
-                    <option value="@ano.Id" selected="@(anoSelecionado == ano.Id)">@ano.Ano (@ano.Status)</option>
-                }
-            </select>
-        </form>
-    </div>
-</div>
-
-@if (anoSelecionado.HasValue)
+@if (!lista.Any())
 {
-    var lista = Model.ToList();
-    if (!lista.Any())
-    {
-        <div class="alert alert-info d-flex gap-2 align-items-center">
-            <i class="bi bi-info-circle-fill"></i>
-            Nenhuma @labelCaptura.ToLower() registrada neste ano.
-        </div>
-    }
-    else
-    {
-        var totalPontos = lista.Sum(c => c.Pontuacao);
-        var colunas = usarFator ? 8 : 7;
+    <div class="alert alert-info d-flex gap-2 align-items-center">
+        <i class="bi bi-info-circle-fill"></i>
+        Nenhuma @labelCaptura.ToLower() registrada.
+    </div>
+}
+else
+{
+    var totalPontos = lista.Sum(c => c.Pontuacao);
 
-        <div class="content-card">
-            <div class="card-header-bar">
-                <h5><i class="bi bi-camera me-2"></i>@lista.Count @labelCaptura.ToLower()&#x28;s&#x29; registrada&#x28;s&#x29;</h5>
-                <span class="fw-semibold small text-muted">Total: @totalPontos.ToString("0.##") pts</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-camera me-2"></i>@lista.Count @labelCaptura.ToLower()&#x28;s&#x29; registrada&#x28;s&#x29;</h5>
+            <span class="fw-semibold small text-muted">Total: @totalPontos.ToString("0.##") pts</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@labelEquipe</th>
+                        <th>@labelMembro</th>
+                        <th>@labelItem</th>
+                        <th>Medida (@medida)</th>
+                        @if (usarFator)
+                        {
+                            <th>Fator</th>
+                        }
+                        <th>Pontos</th>
+                        <th>Data/Hora</th>
+                        <th>Foto</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in lista)
+                    {
                         <tr>
-                            <th>@labelEquipe</th>
-                            <th>@labelMembro</th>
-                            <th>@labelItem</th>
-                            <th>Medida (@medida)</th>
+                            <td>@c.NomeEquipe</td>
+                            <td>@c.NomeMembro</td>
+                            <td class="fw-semibold">@c.NomeItem</td>
+                            <td>@c.TamanhoMedida.ToString("0.##")</td>
                             @if (usarFator)
                             {
-                                <th>Fator</th>
+                                <td class="text-muted">@(c.FatorMultiplicador > 1m ? c.FatorMultiplicador.ToString("0.##") : "—")</td>
                             }
-                            <th>Pontos</th>
-                            <th>Data/Hora</th>
-                            <th>Foto</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var c in lista)
-                        {
-                            <tr>
-                                <td>@c.NomeEquipe</td>
-                                <td>@c.NomeMembro</td>
-                                <td class="fw-semibold">@c.NomeItem</td>
-                                <td>@c.TamanhoMedida.ToString("0.##")</td>
-                                @if (usarFator)
+                            <td class="fw-semibold">@c.Pontuacao.ToString("0.##")</td>
+                            <td class="text-muted small">@c.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(c.FotoUrl))
                                 {
-                                    <td class="text-muted">@(c.FatorMultiplicador > 1m ? c.FatorMultiplicador.ToString("0.##") : "—")</td>
+                                    var url = c.FotoUrl.StartsWith("http") ? c.FotoUrl : $"{storageBase}/{c.FotoUrl.TrimStart('/')}";
+                                    <a href="@url" target="_blank">
+                                        <img src="@url" alt="foto" style="height:36px;width:36px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;" />
+                                    </a>
                                 }
-                                <td class="fw-semibold">@c.Pontuacao.ToString("0.##")</td>
-                                <td class="text-muted small">@c.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(c.FotoUrl))
-                                    {
-                                        var url = c.FotoUrl.StartsWith("http") ? c.FotoUrl : $"{storageBase}/{c.FotoUrl.TrimStart('/')}";
-                                        <a href="@url" target="_blank">
-                                            <img src="@url" alt="foto" style="height:36px;width:36px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;" />
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">—</span>
-                                    }
-                                </td>
-                                <td>
-                                    <form asp-action="Remover" asp-route-id="@c.Id" asp-route-anoTorneioId="@anoSelecionado" method="post"
-                                          onsubmit="return confirm('Remover esta @labelCaptura.ToLower()?')">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr class="fw-bold">
-                            <td colspan="@(usarFator ? 5 : 4)">Total</td>
-                            <td>@totalPontos.ToString("0.##")</td>
-                            <td colspan="3"></td>
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="Remover" asp-route-id="@c.Id" method="post"
+                                      onsubmit="return confirm('Remover esta @labelCaptura.ToLower()?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="@(usarFator ? 5 : 4)">Total</td>
+                        <td>@totalPontos.ToString("0.##")</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-    }
+    </div>
 }

@@ -17,10 +17,5 @@ public class MembroConfiguration : IEntityTypeConfiguration<Membro>
             .WithMany()
             .HasForeignKey(e => e.TorneioId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne<AnoTorneio>()
-            .WithMany()
-            .HasForeignKey(e => e.AnoTorneioId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -14,7 +14,6 @@ public static class DependencyInjection
 
         // Services
         services.AddScoped<ITorneioServico, TorneioServico>();
-        services.AddScoped<IAnoTorneioServico, AnoTorneioServico>();
         services.AddScoped<IAdminGeralServico, AdminGeralServico>();
         services.AddScoped<IAdminTorneioServico, AdminTorneioServico>();
         services.AddScoped<IFiscalServico, FiscalServico>();
@@ -23,7 +22,9 @@ public static class DependencyInjection
         services.AddScoped<IItemServico, ItemServico>();
         services.AddScoped<ICapturaServico, CapturaServico>();
         services.AddScoped<ISorteioAppServico, SorteioAppServico>();
+        services.AddScoped<IPremioServico, PremioServico>();
         services.AddScoped<IAutenticacaoServico, AutenticacaoServico>();
+        services.AddScoped<IBannerServico, BannerServico>();
 
         return services;
     }

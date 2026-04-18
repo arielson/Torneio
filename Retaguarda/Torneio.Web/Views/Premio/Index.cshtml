@@ -1,0 +1,93 @@
+@model IEnumerable<PremioDto>
+@{
+    var slug  = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Prêmios";
+    var lista = Model.OrderBy(x => x.Posicao).ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Prêmios</h1>
+    </div>
+</div>
+<a href="/@slug/admin" class="back-link">
+    <i class="bi bi-arrow-left"></i> Painel
+</a>
+
+@if (TempData["Sucesso"] is string sucesso)
+{
+    <div class="alert alert-success">@sucesso</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-trophy me-2"></i>Premiação</h5>
+            </div>
+            @if (!lista.Any())
+            {
+                <div class="card-body-pad text-muted">Nenhum prêmio cadastrado.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width:80px">Posição</th>
+                                <th>Descrição</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in lista)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-warning text-dark">@p.Posicao&#xBA;</span></td>
+                                    <td class="fw-semibold">@p.Descricao</td>
+                                    <td class="text-end">
+                                        <form asp-controller="Premio" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@p.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover prêmio?')" title="Remover">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="content-card">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-plus-circle me-2"></i>Adicionar Prêmio</h5>
+            </div>
+            <div class="card-body-pad">
+                <form asp-controller="Premio" asp-action="Adicionar" asp-route-slug="@slug" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Posição</label>
+                        <input type="number" name="Posicao" class="form-control" min="1" style="max-width:100px" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" name="Descricao" class="form-control" required placeholder="ex: Troféu + R$500" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Adicionar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

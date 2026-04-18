@@ -17,12 +17,12 @@ public class SorteioController : BaseController
     public SorteioController(ISorteioAppServico servico) => _servico = servico;
 
     [HttpGet]
-    public async Task<IActionResult> ObterResultado([FromQuery] Guid anoTorneioId) =>
-        Ok(await _servico.ObterResultado(anoTorneioId));
+    public async Task<IActionResult> ObterResultado() =>
+        Ok(await _servico.ObterResultado());
 
     [HttpPost]
-    public async Task<IActionResult> Realizar([FromQuery] Guid anoTorneioId) =>
-        Ok(await _servico.RealizarSorteio(anoTorneioId));
+    public async Task<IActionResult> Realizar() =>
+        Ok(await _servico.RealizarSorteio());
 
     [HttpPut("{id:guid}/posicao")]
     public async Task<IActionResult> AjustarPosicao(Guid id, [FromBody] AjustarPosicaoDto dto)
@@ -32,9 +32,9 @@ public class SorteioController : BaseController
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Limpar([FromQuery] Guid anoTorneioId)
+    public async Task<IActionResult> Limpar()
     {
-        await _servico.LimparSorteio(anoTorneioId);
+        await _servico.LimparSorteio();
         return NoContent();
     }
 }

@@ -10,7 +10,9 @@ public class CriarAnoTorneioValidator : AbstractValidator<CriarAnoTorneioDto>
         RuleFor(x => x.TorneioId)
             .NotEmpty().WithMessage("TorneioId é obrigatório.");
 
-        RuleFor(x => x.Ano)
-            .InclusiveBetween(2000, 2100).WithMessage("Ano deve estar entre 2000 e 2100.");
+        RuleFor(x => x.Titulo)
+            .NotEmpty().WithMessage("O título da edição é obrigatório.")
+            .MinimumLength(2).WithMessage("O título deve ter pelo menos 2 caracteres.")
+            .MaximumLength(200).WithMessage("O título deve ter no máximo 200 caracteres.");
     }
 }

@@ -30,9 +30,9 @@ public class FiscalServico : IFiscalServico
         return entidade is null ? null : ParaDto(entidade);
     }
 
-    public async Task<IEnumerable<FiscalDto>> ListarPorAnoTorneio(Guid anoTorneioId)
+    public async Task<IEnumerable<FiscalDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarPorAnoTorneio(anoTorneioId);
+        var lista = await _repositorio.ListarTodos();
         return lista.Select(ParaDto);
     }
 
@@ -45,7 +45,7 @@ public class FiscalServico : IFiscalServico
             throw new InvalidOperationException($"Usuário '{dto.Usuario}' já existe neste torneio.");
 
         var entidade = Fiscal.Criar(
-            dto.TorneioId, dto.AnoTorneioId,
+            dto.TorneioId,
             dto.Nome, dto.Usuario, _passwordHasher.Hash(dto.Senha), dto.FotoUrl);
 
         await _repositorio.Adicionar(entidade);
@@ -75,7 +75,6 @@ public class FiscalServico : IFiscalServico
     {
         Id = e.Id,
         TorneioId = e.TorneioId,
-        AnoTorneioId = e.AnoTorneioId,
         Nome = e.Nome,
         FotoUrl = e.FotoUrl,
         Usuario = e.Usuario

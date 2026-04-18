@@ -1,9 +1,12 @@
+import '../flavor_config.dart';
+
 class TorneioConfig {
   final String id;
   final String slug;
   final String nomeTorneio;
   final String? logoUrl;
   final bool ativo;
+  final String status;
   final String labelEquipe;
   final String labelMembro;
   final String labelSupervisor;
@@ -21,6 +24,7 @@ class TorneioConfig {
     required this.nomeTorneio,
     this.logoUrl,
     required this.ativo,
+    this.status = 'Aberto',
     required this.labelEquipe,
     required this.labelMembro,
     required this.labelSupervisor,
@@ -37,8 +41,9 @@ class TorneioConfig {
         id: json['id'] as String,
         slug: json['slug'] as String,
         nomeTorneio: json['nomeTorneio'] as String,
-        logoUrl: json['logoUrl'] as String?,
-        ativo: json['ativo'] as bool,
+        logoUrl: AppConfig.resolverUrl(json['logoUrl'] as String?),
+        ativo: json['ativo'] as bool? ?? true,
+        status: json['status'] as String? ?? 'Aberto',
         labelEquipe: json['labelEquipe'] as String? ?? 'Equipe',
         labelMembro: json['labelMembro'] as String? ?? 'Membro',
         labelSupervisor: json['labelSupervisor'] as String? ?? 'Fiscal',

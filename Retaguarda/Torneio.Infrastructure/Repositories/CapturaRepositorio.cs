@@ -9,15 +9,15 @@ public class CapturaRepositorio : RepositorioBase<Captura>, ICapturaRepositorio
 {
     public CapturaRepositorio(TorneioDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<Captura>> ListarPorEquipe(Guid equipeId, Guid anoTorneioId) =>
+    public async Task<IEnumerable<Captura>> ListarPorEquipe(Guid equipeId) =>
         await _dbSet
-            .Where(c => c.EquipeId == equipeId && c.AnoTorneioId == anoTorneioId)
+            .Where(c => c.EquipeId == equipeId)
             .OrderByDescending(c => c.DataHora)
             .ToListAsync();
 
-    public async Task<IEnumerable<Captura>> ListarPorMembro(Guid membroId, Guid anoTorneioId) =>
+    public async Task<IEnumerable<Captura>> ListarPorMembro(Guid membroId) =>
         await _dbSet
-            .Where(c => c.MembroId == membroId && c.AnoTorneioId == anoTorneioId)
+            .Where(c => c.MembroId == membroId)
             .OrderByDescending(c => c.DataHora)
             .ToListAsync();
 
@@ -26,9 +26,8 @@ public class CapturaRepositorio : RepositorioBase<Captura>, ICapturaRepositorio
             .Where(c => c.TorneioId == torneioId && c.PendenteSync)
             .ToListAsync();
 
-    public async Task<IEnumerable<Captura>> ListarPorAnoTorneio(Guid anoTorneioId) =>
+    public async Task<IEnumerable<Captura>> ListarTodos() =>
         await _dbSet
-            .Where(c => c.AnoTorneioId == anoTorneioId)
             .OrderByDescending(c => c.DataHora)
             .ToListAsync();
 }

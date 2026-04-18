@@ -5,7 +5,7 @@ namespace Torneio.Application.Services.Interfaces;
 public interface IEquipeServico
 {
     Task<EquipeDto?> ObterPorId(Guid id);
-    Task<IEnumerable<EquipeDto>> ListarPorAnoTorneio(Guid anoTorneioId);
+    Task<IEnumerable<EquipeDto>> ListarTodos();
     Task<EquipeDto> Criar(CriarEquipeDto dto);
     Task Atualizar(Guid id, AtualizarEquipeDto dto);
     Task Remover(Guid id);

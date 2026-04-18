@@ -28,9 +28,9 @@ public class EquipeServico : IEquipeServico
         return entidade is null ? null : ParaDto(entidade);
     }
 
-    public async Task<IEnumerable<EquipeDto>> ListarPorAnoTorneio(Guid anoTorneioId)
+    public async Task<IEnumerable<EquipeDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarPorAnoTorneio(anoTorneioId);
+        var lista = await _repositorio.ListarTodos();
         return lista.Select(ParaDto);
     }
 
@@ -39,7 +39,7 @@ public class EquipeServico : IEquipeServico
         await _validador.ValidateAndThrowAsync(dto);
 
         var entidade = Equipe.Criar(
-            dto.TorneioId, dto.AnoTorneioId,
+            dto.TorneioId,
             dto.Nome, dto.Capitao, dto.FiscalId, dto.QtdVagas,
             dto.FotoUrl, dto.FotoCapitaoUrl);
 
@@ -88,7 +88,6 @@ public class EquipeServico : IEquipeServico
     {
         Id = e.Id,
         TorneioId = e.TorneioId,
-        AnoTorneioId = e.AnoTorneioId,
         Nome = e.Nome,
         FotoUrl = e.FotoUrl,
         Capitao = e.Capitao,

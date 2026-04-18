@@ -8,7 +8,6 @@ public class CriarEquipeValidator : AbstractValidator<CriarEquipeDto>
     public CriarEquipeValidator()
     {
         RuleFor(x => x.TorneioId).NotEmpty();
-        RuleFor(x => x.AnoTorneioId).NotEmpty();
         RuleFor(x => x.Nome).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Capitao).NotEmpty().MaximumLength(200);
         RuleFor(x => x.FiscalId).NotEmpty();

@@ -68,25 +68,40 @@ else if (isAdmin)
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Cadastros</li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/anos") ? "active" : "")" href="/@slug/anos">
-                                <i class="bi bi-calendar3"></i> Anos
+                            <a class="nav-link @(IsActive($"/{slug}/fiscais") ? "active" : "")" href="/@slug/fiscais">
+                                <i class="bi bi-person-badge"></i> @(torneioNav?.LabelSupervisorPlural ?? "Fiscais")
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/equipes") ? "active" : "")" href="/@slug/equipes">
+                                <i class="bi bi-people"></i> @(torneioNav?.LabelEquipePlural ?? "Equipes")
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/membros") ? "active" : "")" href="/@slug/membros">
+                                <i class="bi bi-person"></i> @(torneioNav?.LabelMembroPlural ?? "Membros")
                             </a>
                         </li>
                         <li>
                             <a class="nav-link @(IsActive($"/{slug}/itens") ? "active" : "")" href="/@slug/itens">
-                                <i class="bi bi-collection"></i> @labelItem&#x73;
+                                <i class="bi bi-collection"></i> @(torneioNav?.LabelItemPlural ?? "Itens")
                             </a>
                         </li>
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Operações</li>
                         <li>
                             <a class="nav-link @(IsActive($"/{slug}/capturas") ? "active" : "")" href="/@slug/capturas">
-                                <i class="bi bi-camera"></i> @labelCaptura&#x73;
+                                <i class="bi bi-camera"></i> @(torneioNav?.LabelCapturaPlural ?? "Capturas")
                             </a>
                         </li>
                         <li>
                             <a class="nav-link @(IsActive($"/{slug}/sorteio") ? "active" : "")" href="/@slug/sorteio">
                                 <i class="bi bi-shuffle"></i> Sorteio
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{slug}/premios") ? "active" : "")" href="/@slug/premios">
+                                <i class="bi bi-trophy"></i> Prêmios
                             </a>
                         </li>
                         <li>
@@ -127,6 +142,11 @@ else if (isAdmin)
                             <a class="nav-link @(IsActive("/admin/torneios/criar") ? "active" : "")"
                                href="/admin/torneios/criar">
                                 <i class="bi bi-plus-circle"></i> Novo Torneio
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(IsActive("/admin/banners") ? "active" : "")" href="/admin/banners">
+                                <i class="bi bi-images"></i> Banners
                             </a>
                         </li>
                         <hr class="sidebar-divider" />

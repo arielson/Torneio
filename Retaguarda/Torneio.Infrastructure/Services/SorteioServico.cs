@@ -20,9 +20,9 @@ public class SorteioServico : ISorteioServico
         _sorteioRepositorio = sorteioRepositorio;
     }
 
-    public async Task<IEnumerable<SorteioEquipe>> RealizarSorteioAsync(Guid torneioId, Guid anoTorneioId)
+    public async Task<IEnumerable<SorteioEquipe>> RealizarSorteioAsync(Guid torneioId)
     {
-        var equipes = (await _equipeRepositorio.ListarPorAnoTorneio(anoTorneioId)).ToList();
+        var equipes = (await _equipeRepositorio.ListarTodos()).ToList();
         var resultado = new List<SorteioEquipe>();
         var random = new Random();
 
@@ -36,7 +36,7 @@ public class SorteioServico : ISorteioServico
             if (membros.Count == 0) continue;
 
             var membroSorteado = membros[random.Next(membros.Count)];
-            var registro = SorteioEquipe.Criar(torneioId, anoTorneioId, equipe.Id, membroSorteado.Id, i + 1);
+            var registro = SorteioEquipe.Criar(torneioId, equipe.Id, membroSorteado.Id, i + 1);
 
             await _sorteioRepositorio.Adicionar(registro);
             resultado.Add(registro);
@@ -45,9 +45,9 @@ public class SorteioServico : ISorteioServico
         return resultado;
     }
 
-    public async Task<IEnumerable<SorteioEquipe>> ObterResultadoAsync(Guid torneioId, Guid anoTorneioId) =>
-        await _sorteioRepositorio.ListarPorAnoTorneio(anoTorneioId);
+    public async Task<IEnumerable<SorteioEquipe>> ObterResultadoAsync(Guid torneioId) =>
+        await _sorteioRepositorio.ListarPorTorneio(torneioId);
 
-    public async Task LimparSorteioAsync(Guid torneioId, Guid anoTorneioId) =>
-        await _sorteioRepositorio.RemoverPorAnoTorneio(anoTorneioId);
+    public async Task LimparSorteioAsync(Guid torneioId) =>
+        await _sorteioRepositorio.RemoverPorTorneio(torneioId);
 }

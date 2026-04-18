@@ -10,27 +10,11 @@ namespace Torneio.Web.Controllers;
 public class TorneioAdminController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
-    private readonly IAnoTorneioServico _anoServico;
-    private readonly IEquipeServico _equipeServico;
-    private readonly IMembroServico _membroServico;
-    private readonly IFiscalServico _fiscalServico;
-    private readonly IItemServico _itemServico;
 
-    public TorneioAdminController(
-        TenantContext tenantContext,
-        ITorneioServico torneioServico,
-        IAnoTorneioServico anoServico,
-        IEquipeServico equipeServico,
-        IMembroServico membroServico,
-        IFiscalServico fiscalServico,
-        IItemServico itemServico) : base(tenantContext)
+    public TorneioAdminController(TenantContext tenantContext, ITorneioServico torneioServico)
+        : base(tenantContext)
     {
         _torneioServico = torneioServico;
-        _anoServico = anoServico;
-        _equipeServico = equipeServico;
-        _membroServico = membroServico;
-        _fiscalServico = fiscalServico;
-        _itemServico = itemServico;
     }
 
     [HttpGet("")]
@@ -38,9 +22,74 @@ public class TorneioAdminController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
+        return View(torneio);
+    }
 
-        var anos = await _anoServico.ListarPorTorneio(TenantContext.TorneioId);
-        ViewBag.Torneio = torneio;
-        return View(anos);
+    [HttpPost("liberar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Liberar()
+    {
+        try
+        {
+            await _torneioServico.Liberar(TenantContext.TorneioId);
+            TempData["Sucesso"] = "Torneio liberado.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
+    [HttpPost("finalizar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Finalizar()
+    {
+        try
+        {
+            await _torneioServico.Finalizar(TenantContext.TorneioId);
+            TempData["Sucesso"] = "Torneio finalizado.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
+    [HttpPost("reabrir")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reabrir()
+    {
+        try
+        {
+            await _torneioServico.Reabrir(TenantContext.TorneioId);
+            TempData["Sucesso"] = "Torneio reaberto.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
+    [HttpGet("clonar")]
+    public IActionResult Clonar() => View();
+
+    [HttpPost("clonar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Clonar(string novoSlug, string novoNome)
+    {
+        try
+        {
+            var novo = await _torneioServico.ClonarTorneio(TenantContext.TorneioId, novoSlug, novoNome);
+            TempData["Sucesso"] = $"Torneio \"{novo.NomeTorneio}\" criado a partir desta edição.";
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+            return View();
+        }
     }
 }

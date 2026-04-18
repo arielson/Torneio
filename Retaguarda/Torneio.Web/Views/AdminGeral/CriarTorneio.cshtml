@@ -16,7 +16,7 @@
 </a>
 
 <div class="form-card">
-    <form asp-action="CriarTorneio" method="post">
+    <form asp-action="CriarTorneio" method="post" enctype="multipart/form-data">
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
@@ -39,6 +39,11 @@
             <span asp-validation-for="NomeTorneio" class="text-danger small"></span>
         </div>
         <div class="mb-3">
+            <label class="form-label">Logo <small class="text-muted fw-normal">(opcional)</small></label>
+            <input type="file" name="logoArquivo" class="form-control" accept="image/*" />
+            <div class="form-text">Ou informe uma URL externa abaixo — o upload tem prioridade.</div>
+        </div>
+        <div class="mb-3">
             <label asp-for="LogoUrl" class="form-label">URL do Logo <small class="text-muted fw-normal">(opcional)</small></label>
             <input asp-for="LogoUrl" class="form-control" placeholder="https://..." />
         </div>
@@ -52,34 +57,66 @@
             </select>
         </div>
 
-        <div class="form-section-title">
-            Terminologia
-            <span class="fw-normal text-muted ms-1">— definida pelo tipo, somente leitura</span>
+        <div class="form-section-title">Terminologia</div>
+        <div class="form-text text-muted mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Preenchido automaticamente conforme o tipo. Personalize se necessário — ao trocar o tipo os valores são redefinidos.
         </div>
         <div class="row g-3 mb-2">
-            <div class="col-md-4">
-                <label class="form-label">Equipe / Grupo</label>
-                <input id="labelEquipe" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelEquipe" class="form-label">Equipe / Grupo <small class="text-muted">(singular)</small></label>
+                <input asp-for="LabelEquipe" class="form-control" placeholder="ex: Embarcação, Equipe, Grupo" />
+                <span asp-validation-for="LabelEquipe" class="text-danger small"></span>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Membro</label>
-                <input id="labelMembro" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelEquipePlural" class="form-label">Equipe / Grupo <small class="text-muted">(plural)</small></label>
+                <input asp-for="LabelEquipePlural" class="form-control" placeholder="ex: Embarcações, Equipes, Grupos" />
+                <span asp-validation-for="LabelEquipePlural" class="text-danger small"></span>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Supervisor</label>
-                <input id="labelSupervisor" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelMembro" class="form-label">Membro <small class="text-muted">(singular)</small></label>
+                <input asp-for="LabelMembro" class="form-control" placeholder="ex: Pescador, Atleta, Participante" />
+                <span asp-validation-for="LabelMembro" class="text-danger small"></span>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Item</label>
-                <input id="labelItem" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelMembroPlural" class="form-label">Membro <small class="text-muted">(plural)</small></label>
+                <input asp-for="LabelMembroPlural" class="form-control" placeholder="ex: Pescadores, Atletas, Participantes" />
+                <span asp-validation-for="LabelMembroPlural" class="text-danger small"></span>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Captura</label>
-                <input id="labelCaptura" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelSupervisor" class="form-label">Supervisor <small class="text-muted">(singular)</small></label>
+                <input asp-for="LabelSupervisor" class="form-control" placeholder="ex: Fiscal, Monitor, Juiz" />
+                <span asp-validation-for="LabelSupervisor" class="text-danger small"></span>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Unidade de Medida</label>
-                <input id="medidaCaptura" class="form-control bg-light" readonly value="" />
+            <div class="col-md-6">
+                <label asp-for="LabelSupervisorPlural" class="form-label">Supervisor <small class="text-muted">(plural)</small></label>
+                <input asp-for="LabelSupervisorPlural" class="form-control" placeholder="ex: Fiscais, Monitores, Juízes" />
+                <span asp-validation-for="LabelSupervisorPlural" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LabelItem" class="form-label">Item <small class="text-muted">(singular)</small></label>
+                <input asp-for="LabelItem" class="form-control" placeholder="ex: Peixe, Espécie, Item" />
+                <span asp-validation-for="LabelItem" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LabelItemPlural" class="form-label">Item <small class="text-muted">(plural)</small></label>
+                <input asp-for="LabelItemPlural" class="form-control" placeholder="ex: Peixes, Espécies, Itens" />
+                <span asp-validation-for="LabelItemPlural" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LabelCaptura" class="form-label">Captura <small class="text-muted">(singular)</small></label>
+                <input asp-for="LabelCaptura" class="form-control" placeholder="ex: Captura, Pesca, Registro" />
+                <span asp-validation-for="LabelCaptura" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LabelCapturaPlural" class="form-label">Captura <small class="text-muted">(plural)</small></label>
+                <input asp-for="LabelCapturaPlural" class="form-control" placeholder="ex: Capturas, Pescas, Registros" />
+                <span asp-validation-for="LabelCapturaPlural" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="MedidaCaptura" class="form-label">Unidade de Medida</label>
+                <input asp-for="MedidaCaptura" class="form-control" placeholder="ex: cm, kg, m" />
+                <span asp-validation-for="MedidaCaptura" class="text-danger small"></span>
             </div>
         </div>
 
@@ -95,15 +132,19 @@
             </select>
             <span asp-validation-for="ModoSorteio" class="text-danger small"></span>
         </div>
-        <div id="regrasPesca">
-            <div class="form-check mb-2">
-                <input asp-for="UsarFatorMultiplicador" class="form-check-input" type="checkbox" />
-                <label asp-for="UsarFatorMultiplicador" class="form-check-label">Usar Fator Multiplicador</label>
-            </div>
-            <div class="form-check mb-3">
-                <input asp-for="PermitirCapturaOffline" class="form-check-input" type="checkbox" />
-                <label asp-for="PermitirCapturaOffline" class="form-check-label">Permitir Captura Offline</label>
-            </div>
+        <div class="mb-3">
+            <label asp-for="QtdGanhadores" class="form-label">Quantidade de Ganhadores</label>
+            <input asp-for="QtdGanhadores" class="form-control" type="number" min="1" max="100" />
+            <div class="form-text">Número de posições premiadas (1º, 2º, 3º…)</div>
+            <span asp-validation-for="QtdGanhadores" class="text-danger small"></span>
+        </div>
+        <div class="form-check mb-2">
+            <input asp-for="UsarFatorMultiplicador" class="form-check-input" type="checkbox" />
+            <label asp-for="UsarFatorMultiplicador" class="form-check-label">Usar Fator Multiplicador</label>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="PermitirCapturaOffline" class="form-check-input" type="checkbox" />
+            <label asp-for="PermitirCapturaOffline" class="form-check-label">Permitir Captura Offline</label>
         </div>
 
         <div class="d-flex gap-2 pt-2">
@@ -119,23 +160,24 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         const presets = @Html.Raw(presetsJson);
-        const TIPO_PESCA = @((int)TipoTorneio.Pesca);
 
-        function aplicarTipo(valor) {
+        function aplicarPreset(valor) {
             const p = presets[valor];
             if (!p) return;
-            document.getElementById('labelEquipe').value    = p.labelEquipe;
-            document.getElementById('labelMembro').value    = p.labelMembro;
-            document.getElementById('labelSupervisor').value = p.labelSupervisor;
-            document.getElementById('labelItem').value      = p.labelItem;
-            document.getElementById('labelCaptura').value   = p.labelCaptura;
-            document.getElementById('medidaCaptura').value  = p.medidaCaptura;
-            document.getElementById('regrasPesca').style.display =
-                parseInt(valor) === TIPO_PESCA ? '' : 'none';
+            document.getElementById('LabelEquipe').value          = p.labelEquipe;
+            document.getElementById('LabelEquipePlural').value    = p.labelEquipePlural;
+            document.getElementById('LabelMembro').value          = p.labelMembro;
+            document.getElementById('LabelMembroPlural').value    = p.labelMembroPlural;
+            document.getElementById('LabelSupervisor').value      = p.labelSupervisor;
+            document.getElementById('LabelSupervisorPlural').value = p.labelSupervisorPlural;
+            document.getElementById('LabelItem').value            = p.labelItem;
+            document.getElementById('LabelItemPlural').value      = p.labelItemPlural;
+            document.getElementById('LabelCaptura').value         = p.labelCaptura;
+            document.getElementById('LabelCapturaPlural').value   = p.labelCapturaPlural;
+            document.getElementById('MedidaCaptura').value        = p.medidaCaptura;
         }
 
-        const sel = document.getElementById('tipoTorneio');
-        sel.addEventListener('change', () => aplicarTipo(sel.value));
-        aplicarTipo(sel.value);
+        document.getElementById('tipoTorneio')
+            .addEventListener('change', function () { aplicarPreset(this.value); });
     </script>
 }

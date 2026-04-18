@@ -19,11 +19,6 @@ public class CapturaConfiguration : IEntityTypeConfiguration<Captura>
             .HasForeignKey(e => e.TorneioId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<AnoTorneio>()
-            .WithMany()
-            .HasForeignKey(e => e.AnoTorneioId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne(e => e.Item)
             .WithMany()
             .HasForeignKey(e => e.ItemId)
@@ -39,8 +34,8 @@ public class CapturaConfiguration : IEntityTypeConfiguration<Captura>
             .HasForeignKey(e => e.EquipeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => new { e.AnoTorneioId, e.EquipeId });
-        builder.HasIndex(e => new { e.AnoTorneioId, e.MembroId });
+        builder.HasIndex(e => new { e.TorneioId, e.EquipeId });
+        builder.HasIndex(e => new { e.TorneioId, e.MembroId });
         builder.HasIndex(e => e.PendenteSync);
     }
 }

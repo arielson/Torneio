@@ -1,48 +1,103 @@
-@model IEnumerable<AnoTorneioDto>
+@model IEnumerable<SorteioEquipeDto>
 @{
-    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
     ViewData["Title"] = "Sorteio";
-    var lista = Model.OrderByDescending(x => x.Ano).ToList();
+    var lista = Model.OrderBy(x => x.Posicao).ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
         <h1>Sorteio</h1>
     </div>
+    <div class="page-header-actions">
+        <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-success btn-sm" onclick="return confirm('Realizar novo sorteio? O resultado anterior será substituído.')">
+                <i class="bi bi-shuffle me-1"></i>Sortear
+            </button>
+        </form>
+        @if (lista.Any())
+        {
+            <form asp-controller="Sorteio" asp-action="Limpar" asp-route-slug="@slug" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Limpar o sorteio?')">
+                    <i class="bi bi-trash me-1"></i>Limpar
+                </button>
+            </form>
+        }
+    </div>
 </div>
 <a href="/@slug/admin" class="back-link">
     <i class="bi bi-arrow-left"></i> Painel
 </a>
 
-<div class="content-card" style="max-width:480px">
-    <div class="card-header-bar">
-        <h5><i class="bi bi-shuffle me-2"></i>Selecione o Ano</h5>
+@if (TempData["Sucesso"] is string sucesso)
+{
+    <div class="alert alert-success">@sucesso</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+
+@if (!lista.Any())
+{
+    <div class="content-card" style="max-width:480px">
+        <div class="card-body-pad">
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-shuffle" style="font-size:2.5rem;opacity:.3"></i>
+                <p class="mt-2 mb-3">Nenhum sorteio realizado ainda.</p>
+                <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-primary">
+                        <i class="bi bi-shuffle me-1"></i>Realizar Sorteio
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-    @if (!lista.Any())
-    {
-        <div class="card-body-pad text-muted">Nenhum ano cadastrado.</div>
-    }
-    else
-    {
-        <ul class="list-group list-group-flush">
-            @foreach (var a in lista)
-            {
-                var badgeClass = a.Status switch
-                {
-                    "Liberado"   => "bg-success-subtle text-success border-success-subtle",
-                    "Finalizado" => "bg-secondary-subtle text-secondary border-secondary-subtle",
-                    _            => "bg-warning-subtle text-warning border-warning-subtle"
-                };
-                <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                    <span class="fw-semibold">
-                        @a.Ano
-                        <span class="badge border @badgeClass ms-2">@a.Status</span>
-                    </span>
-                    <a href="/@slug/sorteio/@a.Id" class="btn btn-sm btn-primary">
-                        <i class="bi bi-arrow-right me-1"></i>Abrir
-                    </a>
-                </li>
-            }
-        </ul>
-    }
-</div>
+}
+else
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-list-ol me-2"></i>Resultado — @lista.Count registros</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Posição</th>
+                        <th>@labelEquipe</th>
+                        <th>@labelMembro</th>
+                        <th style="width:160px">Ajustar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in lista)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">@s.Posicao</span></td>
+                            <td class="fw-semibold">@s.NomeEquipe</td>
+                            <td>@s.NomeMembro</td>
+                            <td>
+                                <form asp-controller="Sorteio" asp-action="Ajustar"
+                                      asp-route-slug="@slug"
+                                      asp-route-sorteioEquipeId="@s.Id"
+                                      method="post" class="d-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="number" name="novaPosicao" value="@s.Posicao" min="1"
+                                           class="form-control form-control-sm" style="width:70px" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">OK</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

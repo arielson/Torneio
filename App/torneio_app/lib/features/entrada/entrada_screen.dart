@@ -54,7 +54,7 @@ class _EntradaScreenState extends State<EntradaScreen> {
     if (auth.autenticado && auth.usuario?.slug == slug) {
       Navigator.pushReplacementNamed(context, '/fiscal/home');
     } else {
-      Navigator.pushReplacementNamed(context, '/publico/home');
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 

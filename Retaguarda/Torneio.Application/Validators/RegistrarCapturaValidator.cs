@@ -8,7 +8,6 @@ public class RegistrarCapturaValidator : AbstractValidator<RegistrarCapturaDto>
     public RegistrarCapturaValidator()
     {
         RuleFor(x => x.TorneioId).NotEmpty();
-        RuleFor(x => x.AnoTorneioId).NotEmpty();
         RuleFor(x => x.ItemId).NotEmpty();
         RuleFor(x => x.MembroId).NotEmpty();
         RuleFor(x => x.EquipeId).NotEmpty();

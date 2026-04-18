@@ -3,7 +3,6 @@ namespace Torneio.Application.DTOs.Captura;
 public class RegistrarCapturaDto
 {
     public Guid TorneioId { get; init; }
-    public Guid AnoTorneioId { get; init; }
     public Guid ItemId { get; init; }
     public Guid MembroId { get; init; }
     public Guid EquipeId { get; init; }

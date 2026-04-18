@@ -8,65 +8,63 @@ using Torneio.Infrastructure.Services;
 namespace Torneio.Web.Controllers;
 
 [Authorize(Policy = "AdminTorneio")]
-[Route("{slug}/fiscais/{anoId:guid}")]
+[Route("{slug}/fiscais")]
 public class FiscalController : TorneioBaseController
 {
     private readonly IFiscalServico _servico;
-    private readonly IAnoTorneioServico _anoServico;
+    private readonly ITorneioServico _torneioServico;
 
-    public FiscalController(TenantContext tenantContext, IFiscalServico servico, IAnoTorneioServico anoServico)
+    public FiscalController(TenantContext tenantContext, IFiscalServico servico, ITorneioServico torneioServico)
         : base(tenantContext)
     {
         _servico = servico;
-        _anoServico = anoServico;
+        _torneioServico = torneioServico;
     }
 
-    [HttpGet("")]
-    public async Task<IActionResult> Index(Guid anoId)
-    {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
+    private async Task SetTorneioViewBag()
+        => ViewBag.Torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
 
-        var fiscais = await _servico.ListarPorAnoTorneio(anoId);
+    [HttpGet("")]
+    public async Task<IActionResult> Index()
+    {
+        await SetTorneioViewBag();
+        var fiscais = await _servico.ListarTodos();
         return View(fiscais);
     }
 
     [HttpGet("criar")]
-    public async Task<IActionResult> Criar(Guid anoId)
+    public async Task<IActionResult> Criar()
     {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
-        return View(new CriarFiscalDto { TorneioId = TenantContext.TorneioId, AnoTorneioId = anoId });
+        await SetTorneioViewBag();
+        return View(new CriarFiscalDto { TorneioId = TenantContext.TorneioId });
     }
 
     [HttpPost("criar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Criar(Guid anoId, CriarFiscalDto dto)
+    public async Task<IActionResult> Criar(CriarFiscalDto dto)
     {
-        var ano = await _anoServico.ObterPorId(anoId);
-        if (ano is null) return NotFound();
-        ViewBag.Ano = ano;
-
-        if (!ModelState.IsValid) return View(dto);
+        if (!ModelState.IsValid)
+        {
+            await SetTorneioViewBag();
+            return View(dto);
+        }
         try
         {
             var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/fiscais");
             await _servico.Criar(new CriarFiscalDto
             {
                 TorneioId = TenantContext.TorneioId,
-                AnoTorneioId = anoId,
                 Nome = dto.Nome,
                 Usuario = dto.Usuario,
                 Senha = dto.Senha,
                 FotoUrl = fotoUrl,
             });
             TempData["Sucesso"] = "Fiscal criado com sucesso.";
-            return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+            return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
         {
+            await SetTorneioViewBag();
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(dto);
         }
@@ -74,42 +72,45 @@ public class FiscalController : TorneioBaseController
 
     [HttpPost("{id:guid}/remover")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Remover(Guid anoId, Guid id)
+    public async Task<IActionResult> Remover(Guid id)
     {
         await _servico.Remover(id);
         TempData["Sucesso"] = "Fiscal removido.";
-        return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
     [HttpGet("{id:guid}/senha")]
-    public async Task<IActionResult> AlterarSenha(Guid anoId, Guid id)
+    public async Task<IActionResult> AlterarSenha(Guid id)
     {
         var fiscal = await _servico.ObterPorId(id);
         if (fiscal is null) return NotFound();
+        await SetTorneioViewBag();
         ViewBag.Fiscal = fiscal;
-        ViewBag.AnoId = anoId;
         return View(new AtualizarSenhaDto());
     }
 
     [HttpPost("{id:guid}/senha")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AlterarSenha(Guid anoId, Guid id, AtualizarSenhaDto dto)
+    public async Task<IActionResult> AlterarSenha(Guid id, AtualizarSenhaDto dto)
     {
         if (!ModelState.IsValid)
         {
             var fiscal = await _servico.ObterPorId(id);
+            await SetTorneioViewBag();
             ViewBag.Fiscal = fiscal;
-            ViewBag.AnoId = anoId;
             return View(dto);
         }
         try
         {
             await _servico.AtualizarSenha(id, dto);
             TempData["Sucesso"] = "Senha alterada.";
-            return RedirectToAction(nameof(Index), new { slug = Slug, anoId });
+            return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
         {
+            var fiscal = await _servico.ObterPorId(id);
+            await SetTorneioViewBag();
+            ViewBag.Fiscal = fiscal;
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(dto);
         }

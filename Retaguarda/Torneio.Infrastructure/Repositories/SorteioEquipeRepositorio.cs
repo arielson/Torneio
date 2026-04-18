@@ -9,12 +9,12 @@ public class SorteioEquipeRepositorio : RepositorioBase<SorteioEquipe>, ISorteio
 {
     public SorteioEquipeRepositorio(TorneioDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<SorteioEquipe>> ListarPorAnoTorneio(Guid anoTorneioId) =>
-        await _dbSet.Where(s => s.AnoTorneioId == anoTorneioId).OrderBy(s => s.Posicao).ToListAsync();
+    public async Task<IEnumerable<SorteioEquipe>> ListarPorTorneio(Guid torneioId) =>
+        await _dbSet.Where(s => s.TorneioId == torneioId).OrderBy(s => s.Posicao).ToListAsync();
 
-    public async Task RemoverPorAnoTorneio(Guid anoTorneioId)
+    public async Task RemoverPorTorneio(Guid torneioId)
     {
-        var registros = await _dbSet.Where(s => s.AnoTorneioId == anoTorneioId).ToListAsync();
+        var registros = await _dbSet.Where(s => s.TorneioId == torneioId).ToListAsync();
         if (registros.Count > 0)
         {
             _context.RemoveRange(registros);

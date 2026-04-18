@@ -1,17 +1,21 @@
-class ApiConstants {
-  // Altere para o endereço real do backend em produção
-  static const String baseUrl = 'https://torneio.ari.net.br';
+import 'flavor_config.dart';
 
-  static String config(String slug) => '$baseUrl/api/$slug/config';
-  static String login(String slug) => '$baseUrl/api/$slug/auth/login';
-  static String loginAdminGeral() => '$baseUrl/api/auth/login';
-  static String equipes(String slug) => '$baseUrl/api/$slug/equipes';
-  static String membros(String slug) => '$baseUrl/api/$slug/membros';
-  static String itens(String slug) => '$baseUrl/api/$slug/itens';
-  static String capturas(String slug) => '$baseUrl/api/$slug/capturas';
-  static String sync(String slug) => '$baseUrl/api/$slug/sync';
-  static String sorteio(String slug) => '$baseUrl/api/$slug/sorteio';
-  static String anos(String slug) => '$baseUrl/api/$slug/anos';
+class ApiConstants {
+  static const String _base = AppConfig.apiBaseUrl;
+
+  static String config(String slug) => '$_base/api/$slug/config';
+  static String login(String slug) => '$_base/api/$slug/auth/login';
+  static String loginAdminGeral() => '$_base/api/auth/login';
+  static String equipes(String slug) => '$_base/api/$slug/equipes';
+  static String membros(String slug) => '$_base/api/$slug/membros';
+  static String itens(String slug) => '$_base/api/$slug/itens';
+  static String capturas(String slug) => '$_base/api/$slug/capturas';
+  static String sync(String slug) => '$_base/api/$slug/sync';
+  static String sorteio(String slug) => '$_base/api/$slug/sorteio';
+  static String anos(String slug) => '$_base/api/$slug/anos';
+  static String torneiosRecentes({int limite = 5}) => '$_base/api/torneios/recentes?limite=$limite';
+  static String torneiosBuscar(String q) => '$_base/api/torneios/buscar?q=${Uri.encodeComponent(q)}';
+  static String banners() => '$_base/api/banners';
 }
 
 class StorageKeys {

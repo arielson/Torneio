@@ -12,4 +12,11 @@ public interface ITorneioServico
     Task Atualizar(Guid id, AtualizarTorneioDto dto);
     Task Ativar(Guid id);
     Task Desativar(Guid id);
+    Task Liberar(Guid id);
+    Task Finalizar(Guid id);
+    Task Reabrir(Guid id);
+    Task Excluir(Guid id);
+    Task<TorneioDto> ClonarTorneio(Guid torneioId, string novoSlug, string novoNome);
+    Task<IEnumerable<TorneioResumoDto>> ListarRecentes(int limite = 5);
+    Task<IEnumerable<TorneioResumoDto>> BuscarPorTexto(string q);
 }
