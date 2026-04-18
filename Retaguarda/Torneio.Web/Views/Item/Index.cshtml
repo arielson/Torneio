@@ -1,10 +1,11 @@
 @model IEnumerable<ItemDto>
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label       = torneio?.LabelItem ?? "Item";
+    var label = torneio?.LabelItem ?? "Item";
     var labelPlural = torneio?.LabelItemPlural ?? "Itens";
-    var medida      = torneio?.MedidaCaptura ?? "cm";
+    var medida = torneio?.MedidaCaptura ?? "cm";
+    var usarFator = torneio?.UsarFatorMultiplicador ?? false;
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
@@ -40,9 +41,12 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Comprimento mín. (@medida)</th>
-                        <th>Fator</th>
-                        <th class="text-end">Ações</th>
+                        <th>Comprimento min. (@medida)</th>
+                        @if (usarFator)
+                        {
+                            <th>Fator</th>
+                        }
+                        <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,16 +55,19 @@
                         <tr>
                             <td class="fw-semibold">@i.Nome</td>
                             <td>@i.Comprimento.ToString("F2")</td>
-                            <td>
-                                @if (i.FatorMultiplicador != 1.0m)
-                                {
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle">@i.FatorMultiplicador.ToString("F2")</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">1,00</span>
-                                }
-                            </td>
+                            @if (usarFator)
+                            {
+                                <td>
+                                    @if (i.FatorMultiplicador != 1.0m)
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle">@i.FatorMultiplicador.ToString("F2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">1,00</span>
+                                    }
+                                </td>
+                            }
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <a href="/@slug/itens/@i.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">

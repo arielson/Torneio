@@ -1,17 +1,18 @@
 @model AtualizarItemDto
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
-    var item    = (ItemDto)ViewBag.Item;
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var item = (ItemDto)ViewBag.Item;
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label       = torneio?.LabelItem ?? "Item";
+    var label = torneio?.LabelItem ?? "Item";
     var labelPlural = torneio?.LabelItemPlural ?? "Itens";
-    var medida      = torneio?.MedidaCaptura ?? "cm";
-    ViewData["Title"] = $"Editar {label} — {item.Nome}";
+    var medida = torneio?.MedidaCaptura ?? "cm";
+    var usarFator = torneio?.UsarFatorMultiplicador ?? false;
+    ViewData["Title"] = $"Editar {label} - {item.Nome}";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Editar @label — @item.Nome</h1>
+        <h1>Editar @label - @item.Nome</h1>
     </div>
 </div>
 <a href="/@slug/itens" class="back-link">
@@ -31,22 +32,29 @@
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
         <div class="row g-3 mb-2">
-            <div class="col-md-6">
-                <label asp-for="Comprimento" class="form-label">Comprimento mínimo (@medida)</label>
+            <div class="@(usarFator ? "col-md-6" : "col-12")">
+                <label asp-for="Comprimento" class="form-label">Comprimento minimo (@medida) - opcional</label>
                 <input asp-for="Comprimento" class="form-control" type="number" step="0.01" min="0" />
                 <span asp-validation-for="Comprimento" class="text-danger small"></span>
             </div>
-            <div class="col-md-6">
-                <label asp-for="FatorMultiplicador" class="form-label">Fator Multiplicador</label>
-                <input asp-for="FatorMultiplicador" class="form-control" type="number" step="0.01" min="0.01" />
-                <span asp-validation-for="FatorMultiplicador" class="text-danger small"></span>
-            </div>
+            @if (usarFator)
+            {
+                <div class="col-md-6">
+                    <label asp-for="FatorMultiplicador" class="form-label">Fator Multiplicador</label>
+                    <input asp-for="FatorMultiplicador" class="form-control" type="number" step="0.01" min="0.01" />
+                    <span asp-validation-for="FatorMultiplicador" class="text-danger small"></span>
+                </div>
+            }
+            else
+            {
+                <input asp-for="FatorMultiplicador" type="hidden" value="1.00" />
+            }
         </div>
         <div class="form-section-title">Foto</div>
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto do {label}" }, { "fotoUrl", item.FotoUrl } })' />
         <div class="d-flex gap-2 pt-2">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+                <i class="bi bi-check-lg me-1"></i>Salvar Alteracoes
             </button>
             <a href="/@slug/itens" class="btn btn-outline-secondary">Cancelar</a>
         </div>

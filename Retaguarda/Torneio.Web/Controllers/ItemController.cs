@@ -43,6 +43,19 @@ public class ItemController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarItemDto dto)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is not null && !torneio.UsarFatorMultiplicador)
+        {
+            dto = new CriarItemDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                Nome = dto.Nome,
+                Comprimento = dto.Comprimento,
+                FatorMultiplicador = 1.0m,
+                FotoUrl = dto.FotoUrl,
+            };
+        }
+
         if (!ModelState.IsValid)
         {
             await SetTorneioViewBag();
@@ -65,6 +78,7 @@ public class ItemController : TorneioBaseController
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+            await SetTorneioViewBag();
             return View(dto);
         }
     }
@@ -89,6 +103,18 @@ public class ItemController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Editar(Guid id, AtualizarItemDto dto)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is not null && !torneio.UsarFatorMultiplicador)
+        {
+            dto = new AtualizarItemDto
+            {
+                Nome = dto.Nome,
+                Comprimento = dto.Comprimento,
+                FatorMultiplicador = 1.0m,
+                FotoUrl = dto.FotoUrl,
+            };
+        }
+
         if (!ModelState.IsValid)
         {
             ViewBag.Item = await _servico.ObterPorId(id);
