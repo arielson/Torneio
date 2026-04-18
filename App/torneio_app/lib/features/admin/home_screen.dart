@@ -31,11 +31,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
         content: const Text('Deseja encerrar a sessão?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Sair')),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
         ],
       ),
     );
@@ -52,14 +54,14 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final configProv = context.watch<ConfigProvider>();
-    final config = configProv.config;
+    final config = context.watch<ConfigProvider>().config;
 
     final labelEquipePlural = config?.labelEquipePlural ?? 'Equipes';
     final labelMembroPlural = config?.labelMembroPlural ?? 'Membros';
     final labelItemPlural = config?.labelItemPlural ?? 'Itens';
     final labelFiscalPlural = config?.labelSupervisorPlural ?? 'Fiscais';
     final labelCapturaPlural = config?.labelCapturaPlural ?? 'Capturas';
+    final exibirSorteio = config?.modoSorteio != 'Nenhum';
 
     return Scaffold(
       appBar: AppBar(
@@ -86,73 +88,69 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               ),
               Text(
                 'Administrador do torneio',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
-
               if (config != null) ...[
                 const SizedBox(height: 12),
                 _StatusBadge(status: config.status),
               ],
-
               const SizedBox(height: 20),
-
               Text('Cadastros', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              _NavGrid(items: [
-                _NavItem(
-                  icon: Icons.groups,
-                  label: labelEquipePlural,
-                  color: Colors.indigo,
-                  onTap: () => _abrirSecao('/admin/equipes'),
-                ),
-                _NavItem(
-                  icon: Icons.person,
-                  label: labelMembroPlural,
-                  color: Colors.teal,
-                  onTap: () => _abrirSecao('/admin/membros'),
-                ),
-                _NavItem(
-                  icon: Icons.inventory_2,
-                  label: labelItemPlural,
-                  color: Colors.brown,
-                  onTap: () => _abrirSecao('/admin/itens'),
-                ),
-                _NavItem(
-                  icon: Icons.badge,
-                  label: labelFiscalPlural,
-                  color: Colors.purple,
-                  onTap: () => _abrirSecao('/admin/fiscais'),
-                ),
-              ]),
-
+              _NavGrid(
+                items: [
+                  _NavItem(
+                    icon: Icons.groups,
+                    label: labelEquipePlural,
+                    color: Colors.indigo,
+                    onTap: () => _abrirSecao('/admin/equipes'),
+                  ),
+                  _NavItem(
+                    icon: Icons.person,
+                    label: labelMembroPlural,
+                    color: Colors.teal,
+                    onTap: () => _abrirSecao('/admin/membros'),
+                  ),
+                  _NavItem(
+                    icon: Icons.inventory_2,
+                    label: labelItemPlural,
+                    color: Colors.brown,
+                    onTap: () => _abrirSecao('/admin/itens'),
+                  ),
+                  _NavItem(
+                    icon: Icons.badge,
+                    label: labelFiscalPlural,
+                    color: Colors.purple,
+                    onTap: () => _abrirSecao('/admin/fiscais'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
-
               Text('Operações', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              _NavGrid(items: [
-                _NavItem(
-                  icon: Icons.list_alt,
-                  label: labelCapturaPlural,
-                  color: Colors.green,
-                  onTap: () => _abrirSecao('/admin/capturas'),
-                ),
-                _NavItem(
-                  icon: Icons.shuffle,
-                  label: 'Sorteio',
-                  color: Colors.deepOrange,
-                  onTap: () => _abrirSecao('/admin/sorteio'),
-                ),
-                _NavItem(
-                  icon: Icons.picture_as_pdf,
-                  label: 'Relatórios',
-                  color: Colors.red,
-                  onTap: () => _abrirSecao('/admin/relatorios'),
-                ),
-              ]),
-
+              _NavGrid(
+                items: [
+                  _NavItem(
+                    icon: Icons.list_alt,
+                    label: labelCapturaPlural,
+                    color: Colors.green,
+                    onTap: () => _abrirSecao('/admin/capturas'),
+                  ),
+                  if (exibirSorteio)
+                    _NavItem(
+                      icon: Icons.shuffle,
+                      label: 'Sorteio',
+                      color: Colors.deepOrange,
+                      onTap: () => _abrirSecao('/admin/sorteio'),
+                    ),
+                  _NavItem(
+                    icon: Icons.picture_as_pdf,
+                    label: 'Relatórios',
+                    color: Colors.red,
+                    onTap: () => _abrirSecao('/admin/relatorios'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
             ],
           ),
@@ -162,10 +160,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   }
 }
 
-// ── Componentes ─────────────────────────────────────────────────────────────
-
 class _StatusBadge extends StatelessWidget {
   final String status;
+
   const _StatusBadge({required this.status});
 
   Color get _cor => switch (status) {
@@ -191,6 +188,7 @@ class _StatusBadge extends StatelessWidget {
 
 class _NavGrid extends StatelessWidget {
   final List<_NavItem> items;
+
   const _NavGrid({required this.items});
 
   @override
@@ -240,10 +238,7 @@ class _NavItem extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 10,
-                  color: color,
-                  fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500),
             ),
           ],
         ),

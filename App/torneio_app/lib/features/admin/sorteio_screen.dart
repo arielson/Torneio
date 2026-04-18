@@ -183,6 +183,18 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
+    if (config?.modoSorteio == 'Nenhum') {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Sorteio')),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('Este torneio não utiliza sorteio.'),
+          ),
+        ),
+      );
+    }
+
     final labelMembro = config?.labelMembro ?? 'Membro';
 
     return Scaffold(

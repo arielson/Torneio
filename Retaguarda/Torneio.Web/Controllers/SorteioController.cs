@@ -10,16 +10,27 @@ namespace Torneio.Web.Controllers;
 public class SorteioController : TorneioBaseController
 {
     private readonly ISorteioAppServico _servico;
+    private readonly ITorneioServico _torneioServico;
 
-    public SorteioController(TenantContext tenantContext, ISorteioAppServico servico)
+    public SorteioController(
+        TenantContext tenantContext,
+        ISorteioAppServico servico,
+        ITorneioServico torneioServico)
         : base(tenantContext)
     {
         _servico = servico;
+        _torneioServico = torneioServico;
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
+
+        ViewBag.Torneio = torneio;
         var resultado = await _servico.ObterResultado();
         return View(resultado);
     }
@@ -28,6 +39,11 @@ public class SorteioController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Realizar()
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
+
         try
         {
             await _servico.RealizarSorteio();
@@ -44,6 +60,11 @@ public class SorteioController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Limpar()
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
+
         await _servico.LimparSorteio();
         TempData["Sucesso"] = "Sorteio limpo.";
         return RedirectToAction(nameof(Index), new { slug = Slug });
@@ -53,6 +74,11 @@ public class SorteioController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Ajustar(Guid sorteioEquipeId, int novaPosicao)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
+
         try
         {
             await _servico.AjustarPosicao(sorteioEquipeId, novaPosicao);

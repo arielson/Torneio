@@ -9,6 +9,7 @@
         "Finalizado" => "bg-secondary-subtle text-secondary border-secondary-subtle",
         _            => "bg-warning-subtle text-warning border-warning-subtle"
     };
+    var exibirSorteio = !string.Equals(Model.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
 }
 
 <div class="page-header">
@@ -115,15 +116,18 @@
             </div>
         </a>
     </div>
-    <div class="col-md-3 col-sm-6">
-        <a href="/@slug/sorteio" class="action-card">
-            <div class="action-icon purple"><i class="bi bi-shuffle"></i></div>
-            <div>
-                <div class="action-label">Sorteio</div>
-                <div class="action-desc">Gerenciar sorteio</div>
-            </div>
-        </a>
-    </div>
+    @if (exibirSorteio)
+    {
+        <div class="col-md-3 col-sm-6">
+            <a href="/@slug/sorteio" class="action-card">
+                <div class="action-icon purple"><i class="bi bi-shuffle"></i></div>
+                <div>
+                    <div class="action-label">Sorteio</div>
+                    <div class="action-desc">Gerenciar sorteio</div>
+                </div>
+            </a>
+        </div>
+    }
     <div class="col-md-3 col-sm-6">
         <a href="/@slug/premios" class="action-card">
             <div class="action-icon amber"><i class="bi bi-trophy"></i></div>

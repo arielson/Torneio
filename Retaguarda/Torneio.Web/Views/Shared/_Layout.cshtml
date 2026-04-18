@@ -20,6 +20,7 @@
     var torneioNav  = ViewBag.Torneio as TorneioDto;
     var labelItem   = torneioNav?.LabelItem ?? "Item";
     var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
+    var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
 
     bool IsActive(string path) =>
         (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
@@ -94,11 +95,14 @@ else if (isAdmin)
                                 <i class="bi bi-camera"></i> @(torneioNav?.LabelCapturaPlural ?? "Capturas")
                             </a>
                         </li>
-                        <li>
-                            <a class="nav-link @(IsActive($"/{slug}/sorteio") ? "active" : "")" href="/@slug/sorteio">
-                                <i class="bi bi-shuffle"></i> Sorteio
-                            </a>
-                        </li>
+                        @if (exibirSorteio)
+                        {
+                            <li>
+                                <a class="nav-link @(IsActive($"/{slug}/sorteio") ? "active" : "")" href="/@slug/sorteio">
+                                    <i class="bi bi-shuffle"></i> Sorteio
+                                </a>
+                            </li>
+                        }
                         <li>
                             <a class="nav-link @(IsActive($"/{slug}/premios") ? "active" : "")" href="/@slug/premios">
                                 <i class="bi bi-trophy"></i> Prêmios
