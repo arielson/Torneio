@@ -1,7 +1,6 @@
 class Equipe {
   final String id;
   final String torneioId;
-  final String anoTorneioId;
   final String nome;
   final String? fotoUrl;
   final String capitao;
@@ -13,7 +12,6 @@ class Equipe {
   const Equipe({
     required this.id,
     required this.torneioId,
-    required this.anoTorneioId,
     required this.nome,
     this.fotoUrl,
     required this.capitao,
@@ -26,7 +24,6 @@ class Equipe {
   factory Equipe.fromJson(Map<String, dynamic> json) => Equipe(
         id: json['id'] as String,
         torneioId: json['torneioId'] as String,
-        anoTorneioId: json['anoTorneioId'] as String,
         nome: json['nome'] as String,
         fotoUrl: json['fotoUrl'] as String?,
         capitao: json['capitao'] as String,

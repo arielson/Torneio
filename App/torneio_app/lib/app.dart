@@ -17,6 +17,7 @@ import 'features/fiscal/sync_screen.dart';
 import 'features/admin/home_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
+import 'features/admin/section_placeholder_screen.dart';
 import 'theme/app_theme.dart';
 
 class TorneioApp extends StatefulWidget {
@@ -79,6 +80,12 @@ class _TorneioAppState extends State<TorneioApp> {
           '/fiscal/capturas': (_) => const CapturasScreen(),
           '/fiscal/sync': (_) => const SyncScreen(),
           '/admin/home': (_) => const HomeAdminScreen(),
+          '/admin/equipes': (_) => const AdminSectionPlaceholderScreen(titulo: 'Equipes'),
+          '/admin/membros': (_) => const AdminSectionPlaceholderScreen(titulo: 'Membros'),
+          '/admin/itens': (_) => const AdminSectionPlaceholderScreen(titulo: 'Itens'),
+          '/admin/fiscais': (_) => const AdminSectionPlaceholderScreen(titulo: 'Fiscais'),
+          '/admin/capturas': (_) => const AdminSectionPlaceholderScreen(titulo: 'Capturas'),
+          '/admin/sorteio': (_) => const AdminSectionPlaceholderScreen(titulo: 'Sorteio'),
           '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
           '/admin/relatorios/ganhadores': (_) => const RelatoriosGanhadoresScreen(),
         },
