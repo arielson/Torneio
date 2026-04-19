@@ -1,4 +1,5 @@
 namespace Torneio.Application.DTOs.Banner;
+
 public class BannerDto
 {
     public Guid Id { get; init; }
@@ -8,4 +9,6 @@ public class BannerDto
     public string TorneioNome { get; init; } = null!;
     public int Ordem { get; init; }
     public bool Ativo { get; init; }
+    public string TipoDestino { get; init; } = "Torneio";
+    public string? Destino { get; init; }
 }

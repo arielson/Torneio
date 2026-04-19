@@ -37,6 +37,7 @@
                     <tr>
                         <th>Imagem</th>
                         <th>Torneio</th>
+                        <th>Destino</th>
                         <th>Ordem</th>
                         <th>Status</th>
                         <th class="text-end">Ações</th>
@@ -45,6 +46,15 @@
                 <tbody>
                     @foreach (var b in lista.OrderBy(x => x.Ordem))
                     {
+                        var (icone, detalhe) = b.TipoDestino switch
+                        {
+                            "Torneio"   => ("bi-trophy",    b.TorneioNome),
+                            "Site"      => ("bi-globe2",    b.Destino ?? ""),
+                            "WhatsApp"  => ("bi-whatsapp",  b.Destino ?? ""),
+                            "Instagram" => ("bi-instagram", "@" + b.Destino),
+                            "Email"     => ("bi-envelope",  b.Destino ?? ""),
+                            _           => ("bi-image",     "Somente imagem"),
+                        };
                         <tr>
                             <td>
                                 <img src="@b.ImagemUrl" alt="Banner" style="max-height:60px;max-width:120px;border-radius:4px;object-fit:cover;" />
@@ -52,6 +62,13 @@
                             <td>
                                 <span class="fw-semibold">@b.TorneioNome</span><br />
                                 <code class="text-muted small">@b.TorneioSlug</code>
+                            </td>
+                            <td>
+                                <i class="bi @icone me-1"></i><small>@b.TipoDestino</small>
+                                @if (!string.IsNullOrEmpty(detalhe))
+                                {
+                                    <br /><small class="text-muted">@detalhe</small>
+                                }
                             </td>
                             <td>@b.Ordem</td>
                             <td>

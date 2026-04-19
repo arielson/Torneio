@@ -1,6 +1,7 @@
 @model CriarBannerDto
 @using Torneio.Application.DTOs.Banner
 @using Torneio.Application.DTOs.Torneio
+@using Torneio.Domain.Enums
 @{
     ViewData["Title"] = "Novo Banner";
     var torneios = ViewBag.Torneios as IEnumerable<TorneioDto> ?? [];
@@ -22,9 +23,9 @@
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
         }
 
-        <div class="form-section-title">Torneio</div>
+        <div class="form-section-title">Torneio vinculado</div>
         <div class="mb-3">
-            <label asp-for="TorneioId" class="form-label">Torneio vinculado</label>
+            <label asp-for="TorneioId" class="form-label">Torneio proprietário <small class="text-muted fw-normal">(para organização e cascata)</small></label>
             <select asp-for="TorneioId" class="form-select">
                 <option value="">— Selecione —</option>
                 @foreach (var t in torneios)
@@ -46,6 +47,30 @@
             <input asp-for="ImagemUrl" class="form-control" placeholder="https://..." />
         </div>
 
+        <div class="form-section-title">Destino ao clicar</div>
+        <div class="form-text text-muted mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Escolha o que acontece quando o usuário toca no banner no app.
+        </div>
+        <div class="mb-3">
+            <label asp-for="TipoDestino" class="form-label">Tipo de destino</label>
+            <select asp-for="TipoDestino" class="form-select" id="tipoDestino" onchange="atualizarDestino()">
+                <option value="@((int)TipoDestinoBanner.Torneio)">🏆 Torneio — abre o torneio vinculado</option>
+                <option value="@((int)TipoDestinoBanner.Site)">🌐 Site — abre URL no navegador</option>
+                <option value="@((int)TipoDestinoBanner.WhatsApp)">💬 WhatsApp — abre conversa</option>
+                <option value="@((int)TipoDestinoBanner.Instagram)">📷 Instagram — abre perfil</option>
+                <option value="@((int)TipoDestinoBanner.Email)">✉️ E-mail — abre app de e-mail</option>
+                <option value="@((int)TipoDestinoBanner.Nenhum)">🖼️ Somente imagem — sem ação</option>
+            </select>
+        </div>
+
+        <div id="campoDestino" class="mb-3" style="display:none">
+            <label asp-for="Destino" class="form-label" id="labelDestino">Destino</label>
+            <input asp-for="Destino" class="form-control" id="inputDestino" />
+            <div class="form-text" id="textoAjudaDestino"></div>
+            <span asp-validation-for="Destino" class="text-danger small"></span>
+        </div>
+
         <div class="form-section-title">Configuração</div>
         <div class="mb-3" style="max-width:160px">
             <label asp-for="Ordem" class="form-label">Ordem</label>
@@ -64,4 +89,27 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const config = {
+            "@((int)TipoDestinoBanner.Site)":      { label: "URL do site",          placeholder: "https://exemplo.com.br",     ajuda: "URL completa incluindo https://" },
+            "@((int)TipoDestinoBanner.WhatsApp)":  { label: "Número de WhatsApp",   placeholder: "5511999999999",              ajuda: "Número internacional sem + nem espaços (DDI + DDD + número)" },
+            "@((int)TipoDestinoBanner.Instagram)": { label: "Usuário do Instagram", placeholder: "nome_usuario",               ajuda: "Somente o nome de usuário, sem @@" },
+            "@((int)TipoDestinoBanner.Email)":     { label: "Endereço de e-mail",   placeholder: "contato@@exemplo.com.br",     ajuda: "E-mail que será aberto no aplicativo de e-mail" },
+        };
+
+        function atualizarDestino() {
+            const tipo = document.getElementById('tipoDestino').value;
+            const div = document.getElementById('campoDestino');
+            const c = config[tipo];
+            if (c) {
+                document.getElementById('labelDestino').textContent = c.label;
+                document.getElementById('inputDestino').placeholder = c.placeholder;
+                document.getElementById('textoAjudaDestino').textContent = c.ajuda;
+                div.style.display = '';
+            } else {
+                div.style.display = 'none';
+            }
+        }
+        atualizarDestino();
+    </script>
 }

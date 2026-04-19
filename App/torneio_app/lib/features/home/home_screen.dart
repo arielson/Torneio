@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/torneio_resumo.dart';
 import '../../core/models/banner_app.dart';
 import '../../core/providers/home_provider.dart';
@@ -61,6 +62,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _abrirTorneio(String slug) {
     Navigator.pushNamed(context, '/torneio', arguments: slug);
+  }
+
+  Future<void> _abrirBanner(BannerApp banner) async {
+    switch (banner.tipoDestino) {
+      case 'Torneio':
+        if (banner.torneioSlug.isNotEmpty) {
+          Navigator.pushNamed(context, '/torneio', arguments: banner.torneioSlug);
+        }
+      case 'Site':
+        final url = banner.destino;
+        if (url != null && url.isNotEmpty) {
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        }
+      case 'WhatsApp':
+        final phone = banner.destino;
+        if (phone != null && phone.isNotEmpty) {
+          final native = Uri.parse('whatsapp://send?phone=$phone');
+          final web = Uri.parse('https://wa.me/$phone');
+          if (!await launchUrl(native, mode: LaunchMode.externalApplication)) {
+            await launchUrl(web, mode: LaunchMode.externalApplication);
+          }
+        }
+      case 'Instagram':
+        final handle = banner.destino;
+        if (handle != null && handle.isNotEmpty) {
+          final native = Uri.parse('instagram://user?username=$handle');
+          final web = Uri.parse('https://instagram.com/$handle');
+          if (!await launchUrl(native, mode: LaunchMode.externalApplication)) {
+            await launchUrl(web, mode: LaunchMode.externalApplication);
+          }
+        }
+      case 'Email':
+        final email = banner.destino;
+        if (email != null && email.isNotEmpty) {
+          await launchUrl(Uri.parse('mailto:$email'));
+        }
+      // 'Nenhum' ou qualquer outro: não faz nada
+    }
   }
 
   Color _corStatus(String status) => switch (status) {
@@ -124,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPageChanged: (i) => setState(() => _bannerIndex = i),
                                 itemBuilder: (ctx, i) => _BannerCard(
                                   banner: banners[i],
-                                  onTap: () => _abrirTorneio(banners[i].torneioSlug),
+                                  onTap: () => _abrirBanner(banners[i]),
                                 ),
                               ),
                             ),

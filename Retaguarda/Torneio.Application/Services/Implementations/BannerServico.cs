@@ -38,7 +38,7 @@ public class BannerServico : IBannerServico
     {
         var torneio = await _torneioRepositorio.ObterPorId(dto.TorneioId)
             ?? throw new KeyNotFoundException($"Torneio '{dto.TorneioId}' não encontrado.");
-        var entidade = Banner.Criar(dto.TorneioId, dto.ImagemUrl, dto.Ordem);
+        var entidade = Banner.Criar(dto.TorneioId, dto.ImagemUrl, dto.Ordem, dto.TipoDestino, dto.Destino);
         await _repositorio.Adicionar(entidade);
         entidade = (await _repositorio.ObterComTorneio(entidade.Id))!;
         return ParaDto(entidade);
@@ -69,5 +69,7 @@ public class BannerServico : IBannerServico
         TorneioNome = e.Torneio?.NomeTorneio ?? "",
         Ordem = e.Ordem,
         Ativo = e.Ativo,
+        TipoDestino = e.TipoDestino.ToString(),
+        Destino = e.Destino,
     };
 }
