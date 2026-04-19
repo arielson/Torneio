@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.DTOs.Membro;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
@@ -12,12 +13,14 @@ public class MembroController : TorneioBaseController
 {
     private readonly IMembroServico _servico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _log;
 
-    public MembroController(TenantContext tenantContext, IMembroServico servico, ITorneioServico torneioServico)
+    public MembroController(TenantContext tenantContext, IMembroServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log)
         : base(tenantContext)
     {
         _servico = servico;
         _torneioServico = torneioServico;
+        _log = log;
     }
 
     private async Task SetTorneioViewBag()
@@ -59,6 +62,14 @@ public class MembroController : TorneioBaseController
                 FotoUrl = fotoUrl,
             });
             TempData["Sucesso"] = "Membro criado com sucesso.";
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Membros, Acao = "CriarMembro",
+                Descricao = $"Pescador criado: {dto.Nome}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
@@ -110,8 +121,17 @@ public class MembroController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
+        var membro = await _servico.ObterPorId(id);
         await _servico.Remover(id);
         TempData["Sucesso"] = "Membro removido.";
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Membros, Acao = "RemoverMembro",
+            Descricao = $"Pescador removido: {membro?.Nome ?? id.ToString()}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 }

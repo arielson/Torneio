@@ -191,5 +191,6 @@ extension on RegistrarCapturaRequest {
         fotoUrl: fotoUrl,
         dataHora: dataHora,
         pendenteSync: pendenteSync ?? this.pendenteSync,
+        fonteFoto: fonteFoto,
       );
 }

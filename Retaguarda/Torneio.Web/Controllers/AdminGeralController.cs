@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Torneio.Application.DTOs.AdminGeral;
 using Torneio.Application.DTOs.AdminTorneio;
 using Torneio.Application.DTOs.Auth;
 using Torneio.Application.DTOs.Banner;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.DTOs.Torneio;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Enums;
@@ -22,20 +24,27 @@ public class AdminGeralController : Controller
     private readonly IAdminTorneioServico _adminTorneioServico;
     private readonly IFileStorage _fileStorage;
     private readonly IBannerServico _bannerServico;
+    private readonly ILogAuditoriaServico _log;
 
     public AdminGeralController(
         ITorneioServico torneioServico,
         IAdminGeralServico adminGeralServico,
         IAdminTorneioServico adminTorneioServico,
         IFileStorage fileStorage,
-        IBannerServico bannerServico)
+        IBannerServico bannerServico,
+        ILogAuditoriaServico log)
     {
         _torneioServico = torneioServico;
         _adminGeralServico = adminGeralServico;
         _adminTorneioServico = adminTorneioServico;
         _fileStorage = fileStorage;
         _bannerServico = bannerServico;
+        _log = log;
     }
+
+    private string AdminNome => User.Identity?.Name ?? "—";
+    private string AdminPerfil => User.FindFirst("perfil")?.Value ?? "AdminGeral";
+    private string? AdminIp => HttpContext.Connection.RemoteIpAddress?.ToString();
 
     private async Task<string?> ResolverLogoAsync(IFormFile? arquivo, string? urlTexto)
     {
@@ -97,6 +106,12 @@ public class AdminGeralController : Controller
             dto.LogoUrl = await ResolverLogoAsync(Request.Form.Files["logoArquivo"], dto.LogoUrl);
             await _torneioServico.Criar(dto);
             TempData["Sucesso"] = "Torneio criado com sucesso.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                Categoria = CategoriaLog.Torneios, Acao = "CriarTorneio",
+                Descricao = $"Torneio criado: {dto.NomeTorneio} (/{dto.Slug})",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
@@ -195,8 +210,15 @@ public class AdminGeralController : Controller
     {
         try
         {
+            var torneio = await _torneioServico.ObterPorId(id);
             await _torneioServico.Excluir(id);
             TempData["Sucesso"] = "Torneio excluído permanentemente.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                Categoria = CategoriaLog.Torneios, Acao = "ExcluirTorneio",
+                Descricao = $"Torneio excluído: {torneio?.NomeTorneio ?? id.ToString()}",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
         }
         catch (Exception ex)
         {
@@ -310,6 +332,12 @@ public class AdminGeralController : Controller
         {
             await _adminGeralServico.Criar(dto);
             TempData["Sucesso"] = "Admin criado com sucesso.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                Categoria = CategoriaLog.Usuarios, Acao = "CriarAdminGeral",
+                Descricao = $"Admin Geral criado: {dto.Nome} ({dto.Usuario})",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
             return RedirectToAction(nameof(Admins));
         }
         catch (Exception ex)
@@ -323,8 +351,15 @@ public class AdminGeralController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoverAdmin(Guid id)
     {
+        var admin = await _adminGeralServico.ObterPorId(id);
         await _adminGeralServico.Remover(id);
         TempData["Sucesso"] = "Admin removido.";
+        await _log.Registrar(new RegistrarLogDto
+        {
+            Categoria = CategoriaLog.Usuarios, Acao = "RemoverAdminGeral",
+            Descricao = $"Admin Geral removido: {admin?.Nome ?? id.ToString()}",
+            UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+        });
         return RedirectToAction(nameof(Admins));
     }
 
@@ -369,6 +404,13 @@ public class AdminGeralController : Controller
                 Senha = dto.Senha,
             });
             TempData["Sucesso"] = "Admin do torneio criado com sucesso.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = torneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Usuarios, Acao = "CriarAdminTorneio",
+                Descricao = $"Admin Torneio criado: {dto.Nome} ({dto.Usuario})",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
             return RedirectToAction(nameof(AdminsTorneio), new { torneioId });
         }
         catch (Exception ex)
@@ -382,8 +424,17 @@ public class AdminGeralController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoverAdminTorneio(Guid torneioId, Guid id)
     {
+        var admin = await _adminTorneioServico.ObterPorId(id);
+        var torneio = await _torneioServico.ObterPorId(torneioId);
         await _adminTorneioServico.Remover(id);
         TempData["Sucesso"] = "Admin removido.";
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = torneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Usuarios, Acao = "RemoverAdminTorneio",
+            Descricao = $"Admin Torneio removido: {admin?.Nome ?? id.ToString()}",
+            UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+        });
         return RedirectToAction(nameof(AdminsTorneio), new { torneioId });
     }
 }

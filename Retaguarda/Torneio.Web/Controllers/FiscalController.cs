@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Auth;
 using Torneio.Application.DTOs.Fiscal;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
 
@@ -13,12 +14,14 @@ public class FiscalController : TorneioBaseController
 {
     private readonly IFiscalServico _servico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _log;
 
-    public FiscalController(TenantContext tenantContext, IFiscalServico servico, ITorneioServico torneioServico)
+    public FiscalController(TenantContext tenantContext, IFiscalServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log)
         : base(tenantContext)
     {
         _servico = servico;
         _torneioServico = torneioServico;
+        _log = log;
     }
 
     private async Task SetTorneioViewBag()
@@ -60,6 +63,14 @@ public class FiscalController : TorneioBaseController
                 FotoUrl = fotoUrl,
             });
             TempData["Sucesso"] = "Fiscal criado com sucesso.";
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Usuarios, Acao = "CriarFiscal",
+                Descricao = $"Fiscal criado: {dto.Nome} ({dto.Usuario})",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
@@ -74,8 +85,17 @@ public class FiscalController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
+        var fiscal = await _servico.ObterPorId(id);
         await _servico.Remover(id);
         TempData["Sucesso"] = "Fiscal removido.";
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Usuarios, Acao = "RemoverFiscal",
+            Descricao = $"Fiscal removido: {fiscal?.Nome ?? id.ToString()}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 

@@ -59,7 +59,7 @@ public class CapturaServico : ICapturaServico
         var entidade = Captura.Criar(
             dto.TorneioId,
             dto.ItemId, dto.MembroId, dto.EquipeId,
-            dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, dto.PendenteSync);
+            dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, dto.PendenteSync, dto.Origem, dto.FonteFoto);
 
         await _repositorio.Adicionar(entidade);
         return await ParaDtoComDetalhes(entidade);
@@ -72,6 +72,22 @@ public class CapturaServico : ICapturaServico
         await _repositorio.Remover(entidade.Id);
     }
 
+    public async Task Invalidar(Guid id, string motivo)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Captura '{id}' não encontrada.");
+        entidade.Invalidar(motivo);
+        await _repositorio.Atualizar(entidade);
+    }
+
+    public async Task Revalidar(Guid id)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Captura '{id}' não encontrada.");
+        entidade.Revalidar();
+        await _repositorio.Atualizar(entidade);
+    }
+
     public async Task<int> SincronizarLote(IEnumerable<RegistrarCapturaDto> capturas)
     {
         var count = 0;
@@ -81,7 +97,8 @@ public class CapturaServico : ICapturaServico
             var entidade = Captura.Criar(
                 dto.TorneioId,
                 dto.ItemId, dto.MembroId, dto.EquipeId,
-                dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, pendenteSync: false);
+                dto.TamanhoMedida, dto.FotoUrl, dto.DataHora, pendenteSync: false,
+                origem: dto.Origem, fonteFoto: dto.FonteFoto);
             await _repositorio.Adicionar(entidade);
             count++;
         }
@@ -112,7 +129,11 @@ public class CapturaServico : ICapturaServico
             Pontuacao = pontuacao,
             FotoUrl = c.FotoUrl,
             DataHora = c.DataHora,
-            PendenteSync = c.PendenteSync
+            PendenteSync = c.PendenteSync,
+            Origem = c.Origem,
+            FonteFoto = c.FonteFoto,
+            Invalidada = c.Invalidada,
+            MotivoInvalidacao = c.MotivoInvalidacao
         };
     }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/equipe.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
@@ -26,12 +27,7 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
 
     if (auth.usuario == null || config == null) return;
 
-    await capProv.carregarDadosEquipe(
-      config.slug,
-      auth.usuario!.token,
-      // Equipe do fiscal — carregará todas e filtrará pela fiscalId
-      '',
-    );
+    await capProv.carregarDadosEquipe(config.slug, auth.usuario!.token, '');
   }
 
   Future<void> _logout() async {
@@ -41,8 +37,14 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
         title: const Text('Sair'),
         content: const Text('Deseja encerrar a sessão?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sair')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
         ],
       ),
     );
@@ -60,14 +62,11 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
     final config = context.watch<ConfigProvider>().config;
     final capProv = context.watch<CapturaProvider>();
     final pendentes = capProv.pendentesSync;
-    final equipes = capProv.equipes;
-    final exibirContagemMembros = config?.modoSorteio != 'Nenhum';
 
-    // Equipe do fiscal (filtra por fiscalId)
     final fiscalId = auth.usuario?.id ?? '';
-    final minhaEquipe = equipes.isNotEmpty
-        ? equipes.where((e) => e.fiscalId == fiscalId).firstOrNull ?? equipes.first
-        : null;
+    final minhasEquipes =
+        capProv.equipes.where((e) => e.fiscalId == fiscalId).toList();
+    final exibirContagem = config?.modoSorteio != 'Nenhum';
 
     return Scaffold(
       appBar: AppBar(
@@ -111,7 +110,8 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                         onTap: () => Navigator.pushNamed(context, '/fiscal/sync'),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.orange.shade50,
                             borderRadius: BorderRadius.circular(10),
@@ -123,8 +123,10 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  '$pendentes ${pendentes == 1 ? "captura nao sincronizada" : "capturas nao sincronizadas"}',
-                                  style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
+                                  '$pendentes ${pendentes == 1 ? "captura não sincronizada" : "capturas não sincronizadas"}',
+                                  style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ),
                               const Icon(Icons.chevron_right, color: Colors.orange),
@@ -141,37 +143,27 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Perfil: ${config?.labelSupervisor ?? 'Fiscal'}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 24),
 
-                    // Equipe
-                    if (minhaEquipe != null) ...[
+                    // Embarcações
+                    if (minhasEquipes.isNotEmpty) ...[
                       Text(
-                        config?.labelEquipe ?? 'Equipe',
+                        minhasEquipes.length == 1
+                            ? (config?.labelEquipe ?? 'Equipe')
+                            : '${config?.labelEquipePlural ?? "${config?.labelEquipe ?? "Equipes"}s"} (${minhasEquipes.length})',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                minhaEquipe.nome,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text('Capitão: ${minhaEquipe.capitao}'),
-                              if (exibirContagemMembros)
-                                Text(
-                                  '${minhaEquipe.qtdMembros}/${minhaEquipe.qtdVagas} ${config?.labelMembro ?? "membros"}',
-                                ),
-                            ],
-                          ),
+                      ...minhasEquipes.map(
+                        (e) => _EquipeCard(
+                          equipe: e,
+                          labelMembro: config?.labelMembro ?? 'membro',
+                          exibirContagem: exibirContagem,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -187,21 +179,27 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                       actions: [
                         _ActionItem(
                           icon: Icons.add_circle,
-                          label: 'Registrar\n${config?.labelCaptura ?? "Captura"}',
+                          label:
+                              'Registrar\n${config?.labelCaptura ?? "Captura"}',
                           color: Colors.green,
-                          onTap: () => Navigator.pushNamed(context, '/fiscal/registrar'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/fiscal/registrar'),
                         ),
                         _ActionItem(
                           icon: Icons.list_alt,
-                          label: '${config?.labelCaptura ?? "Capturas"}\nRegistradas',
+                          label:
+                              '${config?.labelCaptura ?? "Capturas"}\nRegistradas',
                           color: Colors.blue,
-                          onTap: () => Navigator.pushNamed(context, '/fiscal/capturas'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/fiscal/capturas'),
                         ),
                         _ActionItem(
                           icon: Icons.sync,
-                          label: 'Sincronizar\n${pendentes > 0 ? "($pendentes)" : ""}',
+                          label:
+                              'Sincronizar\n${pendentes > 0 ? "($pendentes)" : ""}',
                           color: pendentes > 0 ? Colors.orange : Colors.grey,
-                          onTap: () => Navigator.pushNamed(context, '/fiscal/sync'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/fiscal/sync'),
                         ),
                       ],
                     ),
@@ -227,6 +225,47 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                 ),
               ),
             ),
+    );
+  }
+}
+
+class _EquipeCard extends StatelessWidget {
+  final Equipe equipe;
+  final String labelMembro;
+  final bool exibirContagem;
+
+  const _EquipeCard({
+    required this.equipe,
+    required this.labelMembro,
+    required this.exibirContagem,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              equipe.nome,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text('Capitão: ${equipe.capitao}'),
+            if (exibirContagem)
+              Text(
+                '${equipe.qtdMembros}/${equipe.qtdVagas} $labelMembro${equipe.qtdVagas != 1 ? "s" : ""}',
+                style: const TextStyle(color: Colors.grey),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -280,7 +319,8 @@ class _ActionItem extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.w500),
             ),
           ],
         ),

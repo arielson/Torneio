@@ -1,10 +1,11 @@
 @using Torneio.Application.DTOs.Captura
+@using Torneio.Domain.Enums
 @model IEnumerable<CapturaDto>
 @{
-    var torneio      = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
-    var labelEquipe  = torneio?.LabelEquipe ?? "Equipe";
-    var labelMembro  = torneio?.LabelMembro ?? "Membro";
-    var labelItem    = torneio?.LabelItem ?? "Item";
+    var torneio            = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var labelEquipe        = torneio?.LabelEquipe  ?? "Equipe";
+    var labelMembro        = torneio?.LabelMembro  ?? "Membro";
+    var labelItem          = torneio?.LabelItem    ?? "Item";
     var labelCaptura       = torneio?.LabelCaptura ?? "Captura";
     var labelCapturaPlural = torneio?.LabelCapturaPlural ?? "Capturas";
     var medida             = torneio?.MedidaCaptura ?? "";
@@ -19,10 +20,30 @@
     <div class="page-header-left">
         <h1>@labelCapturaPlural</h1>
     </div>
+    <div class="page-header-right">
+        <a href="/@slug/capturas/registrar" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nova @labelCaptura
+        </a>
+    </div>
 </div>
 <a href="/@slug/admin" class="back-link">
     <i class="bi bi-arrow-left"></i> Painel
 </a>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+        <i class="bi bi-check-circle me-1"></i>@TempData["Sucesso"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+        <i class="bi bi-exclamation-triangle me-1"></i>@TempData["Erro"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 @if (!lista.Any())
 {
@@ -33,12 +54,19 @@
 }
 else
 {
-    var totalPontos = lista.Sum(c => c.Pontuacao);
+    var totalPontos = lista.Where(c => !c.Invalidada).Sum(c => c.Pontuacao);
+    var qtdInvalidas = lista.Count(c => c.Invalidada);
 
     <div class="content-card">
         <div class="card-header-bar">
-            <h5><i class="bi bi-camera me-2"></i>@lista.Count @labelCaptura.ToLower()&#x28;s&#x29; registrada&#x28;s&#x29;</h5>
-            <span class="fw-semibold small text-muted">Total: @totalPontos.ToString("0.##") pts</span>
+            <h5>
+                <i class="bi bi-camera me-2"></i>@lista.Count @labelCaptura.ToLower()&#x28;s&#x29; registrada&#x28;s&#x29;
+                @if (qtdInvalidas > 0)
+                {
+                    <span class="badge bg-danger ms-2">@qtdInvalidas invalidada@(qtdInvalidas > 1 ? "s" : "")</span>
+                }
+            </h5>
+            <span class="fw-semibold small text-muted">Total válido: @totalPontos.ToString("0.##") pts</span>
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
@@ -54,24 +82,48 @@ else
                         }
                         <th>Pontos</th>
                         <th>Data/Hora</th>
+                        <th>Origem</th>
                         <th>Foto</th>
+                        <th>Status</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var c in lista)
                     {
-                        <tr>
+                        <tr class="@(c.Invalidada ? "table-danger opacity-75" : "")">
                             <td>@c.NomeEquipe</td>
                             <td>@c.NomeMembro</td>
-                            <td class="fw-semibold">@c.NomeItem</td>
+                            <td class="fw-semibold @(c.Invalidada ? "text-decoration-line-through" : "")">@c.NomeItem</td>
                             <td>@c.TamanhoMedida.ToString("0.##")</td>
                             @if (usarFator)
                             {
                                 <td class="text-muted">@(c.FatorMultiplicador > 1m ? c.FatorMultiplicador.ToString("0.##") : "—")</td>
                             }
-                            <td class="fw-semibold">@c.Pontuacao.ToString("0.##")</td>
+                            <td class="fw-semibold @(c.Invalidada ? "text-muted text-decoration-line-through" : "")">
+                                @c.Pontuacao.ToString("0.##")
+                            </td>
                             <td class="text-muted small">@c.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (c.Origem == OrigemCaptura.Retaguarda)
+                                {
+                                    <span class="badge bg-info text-dark" title="Registrada pela Retaguarda">
+                                        <i class="bi bi-pc-display me-1"></i>Retaguarda
+                                    </span>
+                                }
+                                else if (c.FonteFoto == FonteFoto.Galeria)
+                                {
+                                    <span class="badge bg-success" title="App — foto da galeria">
+                                        <i class="bi bi-images me-1"></i>Galeria
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success" title="App — foto tirada na hora">
+                                        <i class="bi bi-camera me-1"></i>App
+                                    </span>
+                                }
+                            </td>
                             <td>
                                 @if (!string.IsNullOrEmpty(c.FotoUrl))
                                 {
@@ -86,25 +138,115 @@ else
                                 }
                             </td>
                             <td>
-                                <form asp-action="Remover" asp-route-id="@c.Id" method="post"
-                                      onsubmit="return confirm('Remover esta @labelCaptura.ToLower()?')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                @if (c.Invalidada)
+                                {
+                                    <span class="badge bg-danger" data-bs-toggle="tooltip" title="@c.MotivoInvalidacao">
+                                        <i class="bi bi-x-circle me-1"></i>Inválida
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                        <i class="bi bi-check-circle me-1"></i>Válida
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    @if (c.Invalidada)
+                                    {
+                                        <form asp-action="Revalidar" asp-route-id="@c.Id" method="post"
+                                              onsubmit="return confirm('Revalidar esta @labelCaptura.ToLower()?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Revalidar">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                                title="Invalidar"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalInvalidar"
+                                                data-id="@c.Id"
+                                                data-nome="@c.NomeMembro — @c.NomeItem">
+                                            <i class="bi bi-slash-circle"></i>
+                                        </button>
+                                    }
+                                    <form asp-action="Remover" asp-route-id="@c.Id" method="post"
+                                          onsubmit="return confirm('Remover esta @labelCaptura.ToLower()?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
                 </tbody>
                 <tfoot>
                     <tr class="fw-bold">
-                        <td colspan="@(usarFator ? 5 : 4)">Total</td>
+                        <td colspan="@(usarFator ? 5 : 4)">Total válido</td>
                         <td>@totalPontos.ToString("0.##")</td>
-                        <td colspan="3"></td>
+                        <td colspan="5"></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
+}
+
+<!-- Modal de invalidação -->
+<div class="modal fade" id="modalInvalidar" tabindex="-1" aria-labelledby="modalInvalidarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formInvalidar" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalInvalidarLabel">
+                        <i class="bi bi-slash-circle text-warning me-2"></i>Invalidar @labelCaptura
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3" id="modalInvalidarNome"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo da invalidação <span class="text-danger">*</span></label>
+                        <textarea name="motivo" class="form-control" rows="3"
+                                  placeholder="Descreva o motivo da invalidação..." required maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-slash-circle me-1"></i>Invalidar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tooltips
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+            new bootstrap.Tooltip(el);
+        });
+
+        // Modal de invalidar — injeta action correta
+        const modalInvalidar = document.getElementById('modalInvalidar');
+        if (modalInvalidar) {
+            modalInvalidar.addEventListener('show.bs.modal', e => {
+                const btn = e.relatedTarget;
+                const id  = btn.dataset.id;
+                const nome = btn.dataset.nome;
+                document.getElementById('formInvalidar').action = `/@(slug)/capturas/${id}/invalidar`;
+                document.getElementById('modalInvalidarNome').textContent = nome;
+                modalInvalidar.querySelector('textarea[name="motivo"]').value = '';
+            });
+        }
+    </script>
 }

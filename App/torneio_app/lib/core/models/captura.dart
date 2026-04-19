@@ -1,5 +1,8 @@
 import '../flavor_config.dart';
 
+// 0 = App (camera), 1 = App (galeria), null = Retaguarda
+enum FonteFoto { camera, galeria }
+
 class Captura {
   final String id;
   final String torneioId;
@@ -12,9 +15,11 @@ class Captura {
   final double tamanhoMedida;
   final double fatorMultiplicador;
   final double pontuacao;
-  final String fotoUrl;
+  final String? fotoUrl;
   final DateTime dataHora;
   final bool pendenteSync;
+  final bool invalidada;
+  final String? motivoInvalidacao;
 
   const Captura({
     required this.id,
@@ -28,9 +33,11 @@ class Captura {
     required this.tamanhoMedida,
     required this.fatorMultiplicador,
     required this.pontuacao,
-    required this.fotoUrl,
+    this.fotoUrl,
     required this.dataHora,
     required this.pendenteSync,
+    this.invalidada = false,
+    this.motivoInvalidacao,
   });
 
   factory Captura.fromJson(Map<String, dynamic> json) => Captura(
@@ -45,9 +52,11 @@ class Captura {
         tamanhoMedida: (json['tamanhoMedida'] as num).toDouble(),
         fatorMultiplicador: (json['fatorMultiplicador'] as num).toDouble(),
         pontuacao: (json['pontuacao'] as num).toDouble(),
-        fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?) ?? '',
+        fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?),
         dataHora: DateTime.parse(json['dataHora'] as String),
         pendenteSync: json['pendenteSync'] as bool? ?? false,
+        invalidada: json['invalidada'] as bool? ?? false,
+        motivoInvalidacao: json['motivoInvalidacao'] as String?,
       );
 }
 
@@ -60,6 +69,7 @@ class RegistrarCapturaRequest {
   final String fotoUrl;
   final DateTime dataHora;
   final bool pendenteSync;
+  final int? fonteFoto; // 0 = Camera, 1 = Galeria, null = sem foto/retaguarda
 
   const RegistrarCapturaRequest({
     required this.torneioId,
@@ -70,6 +80,7 @@ class RegistrarCapturaRequest {
     required this.fotoUrl,
     required this.dataHora,
     this.pendenteSync = false,
+    this.fonteFoto,
   });
 
   Map<String, dynamic> toJson() => {
@@ -81,6 +92,7 @@ class RegistrarCapturaRequest {
         'fotoUrl': fotoUrl,
         'dataHora': dataHora.toIso8601String(),
         'pendenteSync': pendenteSync,
+        if (fonteFoto != null) 'fonteFoto': fonteFoto,
       };
 
   Map<String, dynamic> toDbMap(String localId) => {

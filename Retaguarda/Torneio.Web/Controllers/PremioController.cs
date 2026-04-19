@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.DTOs.Premio;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
@@ -12,12 +13,14 @@ public class PremioController : TorneioBaseController
 {
     private readonly IPremioServico _premioServico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _log;
 
-    public PremioController(TenantContext tenantContext, IPremioServico premioServico, ITorneioServico torneioServico)
+    public PremioController(TenantContext tenantContext, IPremioServico premioServico, ITorneioServico torneioServico, ILogAuditoriaServico log)
         : base(tenantContext)
     {
         _premioServico = premioServico;
         _torneioServico = torneioServico;
+        _log = log;
     }
 
     [HttpGet("")]
@@ -42,6 +45,14 @@ public class PremioController : TorneioBaseController
                 Descricao = dto.Descricao,
             });
             TempData["Sucesso"] = "Prêmio adicionado.";
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Premios, Acao = "CriarPremio",
+                Descricao = $"Prêmio adicionado: {dto.Posicao}º lugar — {dto.Descricao}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
         }
         catch (Exception ex)
         {
@@ -54,8 +65,18 @@ public class PremioController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
+        var premios = await _premioServico.ListarPorTorneio(TenantContext.TorneioId);
+        var premio = premios.FirstOrDefault(p => p.Id == id);
         await _premioServico.Remover(id);
         TempData["Sucesso"] = "Prêmio removido.";
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Premios, Acao = "RemoverPremio",
+            Descricao = $"Prêmio removido | Posição: {premio?.Posicao}º lugar | Descrição: {premio?.Descricao ?? id.ToString()}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 }

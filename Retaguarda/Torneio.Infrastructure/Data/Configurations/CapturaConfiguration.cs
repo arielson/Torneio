@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Torneio.Domain.Entities;
+using Torneio.Domain.Enums;
 
 namespace Torneio.Infrastructure.Data.Configurations;
 
@@ -11,8 +12,17 @@ public class CapturaConfiguration : IEntityTypeConfiguration<Captura>
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.TamanhoMedida).HasColumnType("numeric(10,2)").IsRequired();
-        builder.Property(e => e.FotoUrl).IsRequired().HasMaxLength(500);
+        builder.Property(e => e.FotoUrl).HasMaxLength(500);
         builder.Property(e => e.DataHora).IsRequired();
+        builder.Property(e => e.Origem)
+            .IsRequired()
+            .HasDefaultValue(OrigemCaptura.App);
+        builder.Property(e => e.FonteFoto);
+        builder.Property(e => e.Invalidada)
+            .IsRequired()
+            .HasDefaultValue(false);
+        builder.Property(e => e.MotivoInvalidacao)
+            .HasMaxLength(500);
 
         builder.HasOne<TorneioEntity>()
             .WithMany()

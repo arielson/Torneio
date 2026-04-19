@@ -63,7 +63,7 @@ else if (isAdmin)
                         {
                             <li>
                                 <a class="nav-link" href="/admin">
-                                    <i class="bi bi-arrow-left-circle"></i> Plataforma
+                                    <i class="bi bi-arrow-left-circle"></i> Início
                                 </a>
                             </li>
                             <hr class="sidebar-divider" />
@@ -139,7 +139,7 @@ else if (isAdmin)
                     <!-- Platform context brand -->
                     <a class="sidebar-brand" href="/admin">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
-                        <span>Plataforma</span>
+                        <span>Torvia</span>
                     </a>
                     <ul class="sidebar-nav">
                         <li class="sidebar-section-label">Geral</li>
@@ -166,6 +166,13 @@ else if (isAdmin)
                         <li>
                             <a class="nav-link @(IsActive("/admin/admins") ? "active" : "")" href="/admin/admins">
                                 <i class="bi bi-shield-check"></i> Admins Gerais
+                            </a>
+                        </li>
+                        <hr class="sidebar-divider" />
+                        <li class="sidebar-section-label">Auditoria</li>
+                        <li>
+                            <a class="nav-link @(IsActive("/admin/logs") ? "active" : "")" href="/admin/logs">
+                                <i class="bi bi-journal-text"></i> Logs
                             </a>
                         </li>
                     </ul>
@@ -285,7 +292,7 @@ else
         </div>
         <footer class="border-top py-3 mt-4">
             <div class="container">
-                <small class="text-muted">&copy; @DateTime.Now.Year — Torneio</small>
+                <small class="text-muted">&copy; @DateTime.Now.Year — Torvia</small>
             </div>
         </footer>
         <script src="~/lib/jquery/dist/jquery.min.js"></script>

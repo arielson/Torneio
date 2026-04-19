@@ -1,3 +1,4 @@
+using Torneio.Domain.Enums;
 using Torneio.Domain.ValueObjects;
 
 namespace Torneio.Domain.Entities;
@@ -10,9 +11,13 @@ public class Captura
     public Guid MembroId { get; private set; }
     public Guid EquipeId { get; private set; }
     public decimal TamanhoMedida { get; private set; }
-    public string FotoUrl { get; private set; } = null!;
+    public string? FotoUrl { get; private set; }
     public DateTime DataHora { get; private set; }
     public bool PendenteSync { get; private set; }
+    public OrigemCaptura Origem { get; private set; }
+    public FonteFoto? FonteFoto { get; private set; }
+    public bool Invalidada { get; private set; }
+    public string? MotivoInvalidacao { get; private set; }
 
     // Navegação (carregada pelo EF Core quando necessário)
     public Item? Item { get; private set; }
@@ -25,9 +30,11 @@ public class Captura
         Guid membroId,
         Guid equipeId,
         decimal tamanhoMedida,
-        string fotoUrl,
+        string? fotoUrl,
         DateTime dataHora,
-        bool pendenteSync = false)
+        bool pendenteSync = false,
+        OrigemCaptura origem = OrigemCaptura.App,
+        FonteFoto? fonteFoto = null)
     {
         return new Captura
         {
@@ -39,8 +46,23 @@ public class Captura
             TamanhoMedida = tamanhoMedida,
             FotoUrl = fotoUrl,
             DataHora = dataHora,
-            PendenteSync = pendenteSync
+            PendenteSync = pendenteSync,
+            Origem = origem,
+            FonteFoto = fonteFoto,
+            Invalidada = false
         };
+    }
+
+    public void Invalidar(string motivo)
+    {
+        Invalidada = true;
+        MotivoInvalidacao = motivo;
+    }
+
+    public void Revalidar()
+    {
+        Invalidada = false;
+        MotivoInvalidacao = null;
     }
 
     public Pontuacao CalcularPontuacao()
@@ -52,5 +74,5 @@ public class Captura
 
     public void MarcarSincronizado() => PendenteSync = false;
 
-    public void AtualizarFoto(string fotoUrl) => FotoUrl = fotoUrl;
+    public void AtualizarFoto(string? fotoUrl) => FotoUrl = fotoUrl;
 }

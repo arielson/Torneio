@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Torneio.Application.Services.Interfaces;
@@ -16,6 +17,10 @@ public abstract class TorneioBaseController : Controller
     }
 
     protected string Slug => RouteData.Values["slug"]?.ToString() ?? string.Empty;
+
+    protected string UsuarioNome => User.Identity?.Name ?? "—";
+    protected string UsuarioPerfil => User.FindFirst("perfil")?.Value ?? "AdminTorneio";
+    protected string? IpAddress => HttpContext.Connection.RemoteIpAddress?.ToString();
 
     // Carrega ViewBag.Torneio e ViewBag.StorageBaseUrl antes de qualquer action.
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)

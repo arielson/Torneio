@@ -22,28 +22,30 @@ public class SorteioServico : ISorteioServico
 
     public async Task<IEnumerable<SorteioEquipe>> RealizarSorteioAsync(Guid torneioId)
     {
-        var equipes = (await _equipeRepositorio.ListarTodos()).ToList();
+        var equipes  = (await _equipeRepositorio.ListarTodos()).ToList();
+        var membros  = (await _membroRepositorio.ListarTodos()).ToList();
         var resultado = new List<SorteioEquipe>();
-        var random = new Random();
+        var random   = new Random();
 
-        // Embaralha equipes aleatoriamente
-        var embaralhadas = equipes.OrderBy(_ => random.Next()).ToList();
+        var membrosEmbaralhados = membros.OrderBy(_ => random.Next()).ToList();
 
-        for (int i = 0; i < embaralhadas.Count; i++)
+        // Posição global crescente (1, 2, 3... por todos os membros sorteados)
+        int posicaoGlobal = 1;
+        int idx = 0;
+        foreach (var equipe in equipes)
         {
-            var equipe = embaralhadas[i];
-            var membros = (await _membroRepositorio.ListarPorEquipe(equipe.Id)).ToList();
-            if (membros.Count == 0) continue;
-
-            var membroSorteado = membros[random.Next(membros.Count)];
-            var registro = SorteioEquipe.Criar(torneioId, equipe.Id, membroSorteado.Id, i + 1);
-
-            await _sorteioRepositorio.Adicionar(registro);
-            resultado.Add(registro);
+            for (int v = 0; v < equipe.QtdVagas && idx < membrosEmbaralhados.Count; v++)
+            {
+                var membro = membrosEmbaralhados[idx++];
+                resultado.Add(SorteioEquipe.Criar(torneioId, equipe.Id, membro.Id, posicaoGlobal++));
+            }
         }
 
         return resultado;
     }
+
+    public async Task SalvarSorteioAsync(IEnumerable<SorteioEquipe> resultado) =>
+        await _sorteioRepositorio.AdicionarLote(resultado);
 
     public async Task<IEnumerable<SorteioEquipe>> ObterResultadoAsync(Guid torneioId) =>
         await _sorteioRepositorio.ListarPorTorneio(torneioId);

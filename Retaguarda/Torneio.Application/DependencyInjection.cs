@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IPremioServico, PremioServico>();
         services.AddScoped<IAutenticacaoServico, AutenticacaoServico>();
         services.AddScoped<IBannerServico, BannerServico>();
+        services.AddScoped<ILogAuditoriaServico, LogAuditoriaServico>();
 
         return services;
     }

@@ -27,7 +27,9 @@ public class SorteioEquipeConfiguration : IEntityTypeConfiguration<SorteioEquipe
             .HasForeignKey(e => e.MembroId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => new { e.TorneioId, e.EquipeId }).IsUnique();
-        builder.HasIndex(e => new { e.TorneioId, e.Posicao }).IsUnique();
+        // Cada membro só pode estar em uma equipe por torneio
+        builder.HasIndex(e => new { e.TorneioId, e.MembroId }).IsUnique();
+        builder.HasIndex(e => e.TorneioId);
+        builder.HasIndex(e => e.EquipeId);
     }
 }

@@ -18,6 +18,7 @@ class ApiConstants {
       '$_base/api/$slug/relatorios/membro/$membroId?analitico=$analitico';
   static String sync(String slug) => '$_base/api/$slug/sync';
   static String sorteio(String slug) => '$_base/api/$slug/sorteio';
+  static String sorteioConfirmar(String slug) => '$_base/api/$slug/sorteio/confirmar';
   static String sorteioPreCondicoes(String slug) => '$_base/api/$slug/sorteio/pre-condicoes';
   static String anos(String slug) => '$_base/api/$slug/anos';
   static String torneiosRecentes({int limite = 5}) => '$_base/api/torneios/recentes?limite=$limite';

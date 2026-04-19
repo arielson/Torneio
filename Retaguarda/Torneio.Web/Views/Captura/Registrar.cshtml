@@ -1,0 +1,109 @@
+@model Torneio.Web.Models.RegistrarCapturaWebDto
+@using Torneio.Application.DTOs.Equipe
+@using Torneio.Application.DTOs.Membro
+@using Torneio.Application.DTOs.Item
+@{
+    var torneio        = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var labelEquipe    = torneio?.LabelEquipe  ?? "Equipe";
+    var labelMembro    = torneio?.LabelMembro  ?? "Membro";
+    var labelItem      = torneio?.LabelItem    ?? "Item";
+    var labelCaptura   = torneio?.LabelCaptura ?? "Captura";
+    var medida         = torneio?.MedidaCaptura ?? "";
+    var slug           = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"]  = $"Nova {labelCaptura}";
+
+    var equipes = ViewBag.Equipes as IEnumerable<EquipeDto> ?? [];
+    var membros = ViewBag.Membros as IEnumerable<MembroDto> ?? [];
+    var itens   = ViewBag.Itens   as IEnumerable<ItemDto>   ?? [];
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Nova @labelCaptura <span class="badge bg-secondary ms-2" style="font-size:.6em;vertical-align:middle;">Retaguarda</span></h1>
+    </div>
+</div>
+<a href="/@slug/capturas" class="back-link">
+    <i class="bi bi-arrow-left"></i> @(torneio?.LabelCapturaPlural ?? "Capturas")
+</a>
+
+<div class="form-card">
+    <form asp-action="Registrar" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="form-section-title">Dados da @labelCaptura.ToLower()</div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="EquipeId" class="form-label">@labelEquipe</label>
+                <select asp-for="EquipeId" class="form-select" id="selectEquipe" onchange="filtrarMembros()">
+                    <option value="">— Selecione —</option>
+                    @foreach (var e in equipes)
+                    {
+                        <option value="@e.Id">@e.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="EquipeId" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="MembroId" class="form-label">@labelMembro</label>
+                <select asp-for="MembroId" class="form-select" id="selectMembro">
+                    <option value="">— Selecione —</option>
+                    @foreach (var m in membros)
+                    {
+                        <option value="@m.Id">@m.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="MembroId" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="ItemId" class="form-label">@labelItem</label>
+                <select asp-for="ItemId" class="form-select">
+                    <option value="">— Selecione —</option>
+                    @foreach (var i in itens)
+                    {
+                        <option value="@i.Id">@i.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="ItemId" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="TamanhoMedida" class="form-label">
+                    Medida @(!string.IsNullOrEmpty(medida) ? $"({medida})" : "")
+                </label>
+                <input asp-for="TamanhoMedida" class="form-control" type="number" step="0.01" min="0.01" placeholder="0.00" />
+                <span asp-validation-for="TamanhoMedida" class="text-danger small"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DataHora" class="form-label">Data e hora</label>
+                <input asp-for="DataHora" class="form-control" type="datetime-local"
+                       value="@Model.DataHora.ToString("yyyy-MM-ddTHH:mm")" />
+                <span asp-validation-for="DataHora" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="form-section-title">Foto <small class="text-muted fw-normal">(opcional)</small></div>
+        <div class="mb-3">
+            <input type="file" name="foto" class="form-control" accept="image/*" />
+            <div class="form-text">Aceita JPG, PNG ou WEBP.</div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Registrar @labelCaptura
+            </button>
+            <a href="/@slug/capturas" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -234,7 +234,7 @@ class _CapturasAdminScreenState extends State<CapturasAdminScreen> {
                                   medida: medida,
                                   usarFator: usarFator,
                                   onRemover: () => _remover(_capturas[i]),
-                                  onVerFoto: () => _verFoto(_capturas[i].fotoUrl),
+                                  onVerFoto: () => _verFoto(_capturas[i].fotoUrl ?? ''),
                                 ),
                               ),
                             ),
@@ -418,7 +418,7 @@ class _CapturaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
-    final temFoto = captura.fotoUrl.isNotEmpty;
+    final temFoto = captura.fotoUrl?.isNotEmpty ?? false;
 
     return Card(
       child: IntrinsicHeight(
@@ -434,7 +434,7 @@ class _CapturaCard extends StatelessWidget {
                   width: 72,
                   child: temFoto
                       ? Image.network(
-                          captura.fotoUrl,
+                          captura.fotoUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, e, st) => _FotoPlaceholder(),
                         )

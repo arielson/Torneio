@@ -26,6 +26,7 @@ public class TorneioDbContext : DbContext
     public DbSet<Captura> Capturas { get; set; }
     public DbSet<SorteioEquipe> SorteiosEquipe { get; set; }
     public DbSet<Premio> Premios { get; set; }
+    public DbSet<LogAuditoria> Logs { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -59,19 +59,24 @@ public class SorteioAppServico : ISorteioAppServico
 
     public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio()
     {
-        var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
-            ?? throw new KeyNotFoundException($"Torneio '{_tenantContext.TorneioId}' não encontrado.");
-
-        var sorteioExistente = await _sorteioRepositorio.ListarPorTorneio(torneio.Id);
-        if (sorteioExistente.Any())
-            throw new InvalidOperationException("O sorteio já foi realizado. Limpe o resultado atual antes de sortear novamente.");
-
         var preCondicoes = await VerificarPreCondicoes();
         if (!preCondicoes.Valido)
             throw new InvalidOperationException(preCondicoes.MensagemErro!);
 
-        var resultado = await _sorteioServico.RealizarSorteioAsync(torneio.Id);
+        // Apenas calcula em memória — não salva no banco
+        var resultado = await _sorteioServico.RealizarSorteioAsync(_tenantContext.TorneioId);
         return await ParaDtoLista(resultado);
+    }
+
+    public async Task ConfirmarSorteio(IEnumerable<ConfirmarSorteioItemDto> itens)
+    {
+        var sorteioExistente = await _sorteioRepositorio.ListarPorTorneio(_tenantContext.TorneioId);
+        if (sorteioExistente.Any())
+            throw new InvalidOperationException("O sorteio já foi realizado. Limpe o resultado atual antes de sortear novamente.");
+
+        var entidades = itens.Select(i =>
+            SorteioEquipe.Criar(_tenantContext.TorneioId, i.EquipeId, i.MembroId, i.Posicao));
+        await _sorteioServico.SalvarSorteioAsync(entidades);
     }
 
     public async Task<IEnumerable<SorteioEquipeDto>> ObterResultado()

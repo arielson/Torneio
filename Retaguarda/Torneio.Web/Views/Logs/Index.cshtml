@@ -1,0 +1,231 @@
+@using Torneio.Application.DTOs.Log
+@model IEnumerable<LogAuditoriaDto>
+
+<style>
+.bg-purple-subtle { background-color: #ede7f6 !important; }
+.text-purple { color: #6f42c1 !important; }
+</style>
+@{
+    ViewData["Title"] = "Logs de Auditoria";
+    var torneios    = ViewBag.Torneios    as IEnumerable<dynamic> ?? [];
+    var categorias  = ViewBag.Categorias  as IReadOnlyList<string> ?? [];
+    var perfis      = ViewBag.Perfis      as string[] ?? [];
+    int pagina      = ViewBag.Pagina;
+    int totalPaginas = ViewBag.TotalPaginas;
+    int total       = ViewBag.Total;
+    var lista       = Model.ToList();
+
+    Guid? filtroTorneioId    = ViewBag.TorneioId;
+    string? filtroCategoria  = ViewBag.Categoria;
+    string? filtroPerfil     = ViewBag.UsuarioPerfil;
+    string? filtroBusca      = ViewBag.Busca;
+    string? filtroDataInicio = ViewBag.DataInicio;
+    string? filtroDataFim    = ViewBag.DataFim;
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1><i class="bi bi-journal-text me-2"></i>Logs de Auditoria</h1>
+        <span class="text-muted small ms-2">@total registro(s) encontrado(s)</span>
+    </div>
+    <div class="page-header-actions">
+        <a asp-controller="AdminGeral" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Painel
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h6 class="mb-0"><i class="bi bi-funnel me-1"></i>Filtros</h6>
+    </div>
+    <div class="card-body-pad">
+        <form method="get" asp-action="Index" class="row g-2 align-items-end">
+            <div class="col-sm-6 col-md-3">
+                <label class="form-label small fw-semibold">Torneio</label>
+                <select name="torneioId" class="form-select form-select-sm">
+                    <option value="">Todos os torneios</option>
+                    @foreach (var t in torneios)
+                    {
+                        <option value="@t.Id" selected="@(filtroTorneioId.HasValue && filtroTorneioId.Value == (Guid)t.Id ? "selected" : null)">@t.NomeTorneio</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label small fw-semibold">Categoria</label>
+                <select name="categoria" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    @foreach (var cat in categorias)
+                    {
+                        <option value="@cat" selected="@(filtroCategoria == cat ? "selected" : null)">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label small fw-semibold">Perfil</label>
+                <select name="usuarioPerfil" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    @foreach (var p in perfis)
+                    {
+                        <option value="@p" selected="@(filtroPerfil == p ? "selected" : null)">@p</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label small fw-semibold">Data início</label>
+                <input type="date" name="dataInicio" class="form-control form-control-sm" value="@filtroDataInicio" />
+            </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label small fw-semibold">Data fim</label>
+                <input type="date" name="dataFim" class="form-control form-control-sm" value="@filtroDataFim" />
+            </div>
+            <div class="col-sm-12 col-md-3">
+                <label class="form-label small fw-semibold">Busca livre</label>
+                <input type="text" name="busca" class="form-control form-control-sm"
+                       placeholder="Usuário, ação, descrição..."
+                       value="@filtroBusca" />
+            </div>
+            <div class="col-sm-6 col-md-auto">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+            </div>
+            <div class="col-sm-6 col-md-auto">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm w-100">Limpar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-list-ul me-2"></i>Registros</h5>
+        <span class="badge bg-secondary-subtle text-secondary border">Página @pagina de @(totalPaginas == 0 ? 1 : totalPaginas)</span>
+    </div>
+
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhum registro encontrado para os filtros selecionados.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:140px">Data/Hora</th>
+                        <th style="width:100px">Categoria</th>
+                        <th style="width:180px">Ação</th>
+                        <th>Descrição</th>
+                        <th style="width:140px">Usuário</th>
+                        <th style="width:110px">Perfil</th>
+                        <th style="width:130px">Torneio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in lista)
+                    {
+                        <tr>
+                            <td class="text-muted small text-nowrap">
+                                @log.DataHora.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                @{
+                                    var (catClass, catIcon) = log.Categoria switch
+                                    {
+                                        "Usuários"  => ("bg-primary-subtle text-primary",    "bi-person"),
+                                        "Capturas"  => ("bg-success-subtle text-success",    "bi-fish"),
+                                        "Itens"     => ("bg-info-subtle text-info",          "bi-box"),
+                                        "Membros"   => ("bg-warning-subtle text-warning",    "bi-people"),
+                                        "Prêmios"   => ("bg-danger-subtle text-danger",      "bi-trophy"),
+                                        "Torneios"  => ("bg-secondary-subtle text-secondary","bi-flag"),
+                                        "Sorteio"   => ("bg-purple-subtle text-purple",      "bi-shuffle"),
+                                        _           => ("bg-light text-muted",               "bi-dot")
+                                    };
+                                }
+                                <span class="badge @catClass border small">
+                                    <i class="bi @catIcon me-1"></i>@log.Categoria
+                                </span>
+                            </td>
+                            <td class="small text-muted text-nowrap">@log.Acao</td>
+                            <td class="small">@log.Descricao</td>
+                            <td class="small text-nowrap">@log.UsuarioNome</td>
+                            <td>
+                                @{
+                                    var perfilClass = log.UsuarioPerfil switch
+                                    {
+                                        "AdminGeral"   => "bg-danger-subtle text-danger border-danger-subtle",
+                                        "AdminTorneio" => "bg-primary-subtle text-primary border-primary-subtle",
+                                        "Fiscal"       => "bg-success-subtle text-success border-success-subtle",
+                                        _              => "bg-secondary-subtle text-secondary"
+                                    };
+                                }
+                                <span class="badge @perfilClass border small">@log.UsuarioPerfil</span>
+                            </td>
+                            <td class="small text-muted text-nowrap">
+                                @(log.NomeTorneio ?? "—")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPaginas > 1)
+        {
+            <div class="card-body-pad border-top d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        @if (pagina > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-torneioId="@filtroTorneioId"
+                                   asp-route-categoria="@filtroCategoria"
+                                   asp-route-usuarioPerfil="@filtroPerfil"
+                                   asp-route-busca="@filtroBusca"
+                                   asp-route-dataInicio="@filtroDataInicio"
+                                   asp-route-dataFim="@filtroDataFim"
+                                   asp-route-pagina="@(pagina - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+
+                        @for (int p = Math.Max(1, pagina - 2); p <= Math.Min(totalPaginas, pagina + 2); p++)
+                        {
+                            <li class="page-item @(p == pagina ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-torneioId="@filtroTorneioId"
+                                   asp-route-categoria="@filtroCategoria"
+                                   asp-route-usuarioPerfil="@filtroPerfil"
+                                   asp-route-busca="@filtroBusca"
+                                   asp-route-dataInicio="@filtroDataInicio"
+                                   asp-route-dataFim="@filtroDataFim"
+                                   asp-route-pagina="@p">@p</a>
+                            </li>
+                        }
+
+                        @if (pagina < totalPaginas)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-torneioId="@filtroTorneioId"
+                                   asp-route-categoria="@filtroCategoria"
+                                   asp-route-usuarioPerfil="@filtroPerfil"
+                                   asp-route-busca="@filtroBusca"
+                                   asp-route-dataInicio="@filtroDataInicio"
+                                   asp-route-dataFim="@filtroDataFim"
+                                   asp-route-pagina="@(pagina + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>

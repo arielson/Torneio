@@ -17,19 +17,41 @@ class CapturaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('dd/MM/yyyy HH:mm');
+    final invalida = captura.invalidada;
+
+    Color iconColor;
+    IconData iconData;
+    Color bgColor;
+
+    if (invalida) {
+      iconColor = Colors.red;
+      iconData = Icons.cancel;
+      bgColor = Colors.red.shade50;
+    } else if (captura.pendenteSync) {
+      iconColor = Colors.orange;
+      iconData = Icons.sync_problem;
+      bgColor = Colors.orange.shade50;
+    } else {
+      iconColor = Colors.green;
+      iconData = Icons.check_circle;
+      bgColor = Colors.green.shade50;
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+      color: invalida ? Colors.red.shade50 : null,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: captura.pendenteSync ? Colors.orange.shade100 : Colors.green.shade100,
-          child: Icon(
-            captura.pendenteSync ? Icons.sync_problem : Icons.check_circle,
-            color: captura.pendenteSync ? Colors.orange : Colors.green,
-          ),
+          backgroundColor: bgColor,
+          child: Icon(iconData, color: iconColor),
         ),
         title: Text(
           '${captura.nomeItem} — ${captura.nomeMembro}',
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            decoration: invalida ? TextDecoration.lineThrough : null,
+            color: invalida ? Colors.red.shade700 : null,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,11 +60,24 @@ class CapturaCard extends StatelessWidget {
               '${captura.tamanhoMedida.toStringAsFixed(1)} $medidaLabel'
               '${mostrarFator && captura.fatorMultiplicador != 1.0 ? ' × ${captura.fatorMultiplicador.toStringAsFixed(2)}' : ''}'
               ' = ${captura.pontuacao.toStringAsFixed(2)} pts',
+              style: invalida ? TextStyle(color: Colors.red.shade400) : null,
             ),
             Text(
               fmt.format(captura.dataHora.toLocal()),
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (invalida && captura.motivoInvalidacao != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  'Invalidada: ${captura.motivoInvalidacao}',
+                  style: TextStyle(
+                    color: Colors.red.shade600,
+                    fontSize: 11,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
           ],
         ),
         isThreeLine: true,

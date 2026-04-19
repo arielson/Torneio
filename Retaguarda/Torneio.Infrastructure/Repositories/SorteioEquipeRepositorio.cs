@@ -12,6 +12,12 @@ public class SorteioEquipeRepositorio : RepositorioBase<SorteioEquipe>, ISorteio
     public async Task<IEnumerable<SorteioEquipe>> ListarPorTorneio(Guid torneioId) =>
         await _dbSet.Where(s => s.TorneioId == torneioId).OrderBy(s => s.Posicao).ToListAsync();
 
+    public async Task AdicionarLote(IEnumerable<SorteioEquipe> lista)
+    {
+        await _dbSet.AddRangeAsync(lista);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task RemoverPorTorneio(Guid torneioId)
     {
         var registros = await _dbSet.Where(s => s.TorneioId == torneioId).ToListAsync();

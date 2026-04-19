@@ -1,5 +1,6 @@
 using FluentValidation;
 using Torneio.Application.DTOs.Captura;
+using Torneio.Domain.Enums;
 
 namespace Torneio.Application.Validators;
 
@@ -13,7 +14,9 @@ public class RegistrarCapturaValidator : AbstractValidator<RegistrarCapturaDto>
         RuleFor(x => x.EquipeId).NotEmpty();
         RuleFor(x => x.TamanhoMedida)
             .GreaterThan(0).WithMessage("Tamanho da medida deve ser maior que zero.");
-        RuleFor(x => x.FotoUrl).NotEmpty().WithMessage("Foto é obrigatória.");
+        RuleFor(x => x.FotoUrl)
+            .NotEmpty().WithMessage("Foto é obrigatória.")
+            .When(x => x.Origem == OrigemCaptura.App);
         RuleFor(x => x.DataHora).NotEmpty();
     }
 }

@@ -11,4 +11,6 @@ public interface ICapturaServico
     Task<CapturaDto> Registrar(RegistrarCapturaDto dto);
     Task Remover(Guid id);
     Task<int> SincronizarLote(IEnumerable<RegistrarCapturaDto> capturas);
+    Task Invalidar(Guid id, string motivo);
+    Task Revalidar(Guid id);
 }

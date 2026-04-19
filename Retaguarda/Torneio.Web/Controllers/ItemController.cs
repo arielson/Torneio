@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Item;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
 
@@ -12,11 +13,13 @@ public class ItemController : TorneioBaseController
 {
     private readonly IItemServico _servico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _log;
 
-    public ItemController(TenantContext tenantContext, IItemServico servico, ITorneioServico torneioServico) : base(tenantContext)
+    public ItemController(TenantContext tenantContext, IItemServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log) : base(tenantContext)
     {
         _servico = servico;
         _torneioServico = torneioServico;
+        _log = log;
     }
 
     private async Task SetTorneioViewBag()
@@ -73,6 +76,13 @@ public class ItemController : TorneioBaseController
                 FotoUrl = fotoUrl,
             });
             TempData["Sucesso"] = "Item criado com sucesso.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Itens, Acao = "CriarItem",
+                Descricao = $"Item criado | Nome: {dto.Nome} | Comprimento mínimo: {dto.Comprimento} | Fator: {dto.FatorMultiplicador}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
@@ -149,8 +159,17 @@ public class ItemController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
+        var item = await _servico.ObterPorId(id);
         await _servico.Remover(id);
         TempData["Sucesso"] = "Item removido.";
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Itens, Acao = "RemoverItem",
+            Descricao = $"Item removido | Nome: {item?.Nome ?? id.ToString()} | Comprimento mínimo: {item?.Comprimento} | Fator: {item?.FatorMultiplicador}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 }

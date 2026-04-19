@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<ISorteioEquipeRepositorio, SorteioEquipeRepositorio>();
         services.AddScoped<IPremioRepositorio, PremioRepositorio>();
         services.AddScoped<IBannerRepositorio, BannerRepositorio>();
+        services.AddScoped<ILogAuditoriaRepositorio, LogAuditoriaRepositorio>();
 
         // Opções de armazenamento de arquivos
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.Section));

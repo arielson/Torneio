@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Captura;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 
 namespace Torneio.API.Controllers;
@@ -13,8 +14,15 @@ namespace Torneio.API.Controllers;
 public class CapturaController : BaseController
 {
     private readonly ICapturaServico _servico;
+    private readonly ILogAuditoriaServico _log;
+    private readonly ITorneioServico _torneioServico;
 
-    public CapturaController(ICapturaServico servico) => _servico = servico;
+    public CapturaController(ICapturaServico servico, ILogAuditoriaServico log, ITorneioServico torneioServico)
+    {
+        _servico = servico;
+        _log = log;
+        _torneioServico = torneioServico;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Listar(
@@ -41,6 +49,19 @@ public class CapturaController : BaseController
     public async Task<IActionResult> Registrar([FromBody] RegistrarCapturaDto dto)
     {
         var criado = await _servico.Registrar(dto);
+        var torneio = dto.TorneioId != Guid.Empty
+            ? await _torneioServico.ObterPorId(dto.TorneioId)
+            : null;
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = dto.TorneioId != Guid.Empty ? dto.TorneioId : null,
+            NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Capturas, Acao = "RegistrarCapturaApp",
+            Descricao = $"Captura registrada pelo app | Item: {criado.NomeItem} | Pescador: {criado.NomeMembro} | Equipe: {criado.NomeEquipe} | Medida: {criado.TamanhoMedida} | Data: {criado.DataHora:dd/MM/yyyy HH:mm}",
+            UsuarioNome = User.Identity?.Name ?? "—",
+            UsuarioPerfil = GetPerfil(),
+            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
 

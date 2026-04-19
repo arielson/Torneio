@@ -1,38 +1,238 @@
 @model IEnumerable<SorteioEquipeDto>
 @using Torneio.Application.DTOs.Sorteio
+@using Torneio.Application.DTOs.Torneio
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
-    var torneio = ViewBag.Torneio as TorneioDto;
-    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
-    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    var slug              = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio           = ViewBag.Torneio as TorneioDto;
+    var labelEquipe       = torneio?.LabelEquipe       ?? "Equipe";
+    var labelMembro       = torneio?.LabelMembro       ?? "Membro";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
     ViewData["Title"] = "Sorteio";
-    var lista = Model.OrderBy(x => x.Posicao).ToList();
-    var pre = ViewBag.PreCondicoes as SorteioPreCondicoesDto;
+    var lista  = Model.ToList();
+    var pre    = ViewBag.PreCondicoes as SorteioPreCondicoesDto;
+    var isDev  = (bool)(ViewBag.IsDevelopment ?? false);
+
+    // Agrupa por equipe para exibição
+    var grupos = lista
+        .GroupBy(x => x.EquipeId)
+        .Select(g => new { NomeEquipe = g.First().NomeEquipe, Membros = g.OrderBy(x => x.Posicao).ToList() })
+        .OrderBy(g => g.NomeEquipe)
+        .ToList();
 }
+
+<style>
+/* ── Overlay do sorteio ──────────────────────────────────────── */
+.sort-overlay {
+    position: fixed; inset: 0;
+    background: rgba(8,8,18,.94);
+    z-index: 9999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; font-family: inherit;
+}
+.sort-title {
+    font-size: clamp(1.4rem,4vw,2.2rem);
+    font-weight: 700; letter-spacing: .08em; margin-bottom: 2rem;
+    text-shadow: 0 0 28px rgba(79,195,247,.9);
+}
+.sort-title-reveal {
+    font-size: clamp(1.3rem,3.5vw,2rem);
+    font-weight: 700; letter-spacing: .06em; margin-bottom: 1.2rem;
+    text-shadow: 0 0 20px rgba(79,195,247,.8);
+    flex-shrink: 0;
+}
+/* Slot machine */
+.sort-slot-box {
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid rgba(79,195,247,.35);
+    border-radius: 14px;
+    padding: 1.1rem 2.2rem;
+    width: min(380px,88vw);
+    text-align: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 32px rgba(79,195,247,.18);
+    overflow: hidden;
+}
+.sort-slot-label {
+    font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .14em; color: rgba(255,255,255,.45);
+    margin-bottom: .35rem;
+}
+.sort-slot-text {
+    font-size: clamp(1.2rem,3.5vw,1.65rem);
+    font-weight: 700; color: #4fc3f7;
+    min-height: 2.1rem; line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: opacity .07s ease;
+}
+.sort-slot-text.flash { opacity: 0; }
+.sort-slot-membro { color: #81c784; }
+.sort-status { color: rgba(255,255,255,.55); font-size: .85rem; margin-top: 1.4rem; }
+/* Bouncing dots */
+.sort-dots { display: flex; gap: 8px; margin-top: 1rem; }
+.sort-dots span {
+    width: 8px; height: 8px; border-radius: 50%; background: #4fc3f7;
+    animation: sortDotBounce 1.1s ease-in-out infinite;
+}
+.sort-dots span:nth-child(2) { animation-delay: .18s; }
+.sort-dots span:nth-child(3) { animation-delay: .36s; }
+@@keyframes sortDotBounce {
+    0%,60%,100% { transform: translateY(0); opacity: .4; }
+    30%          { transform: translateY(-9px); opacity: 1; }
+}
+/* Reveal phase */
+.sort-reveal-wrapper {
+    display: flex; flex-direction: column;
+    width: min(900px,96vw);
+    max-height: 80vh;
+    overflow: hidden;
+}
+.sort-reveal-scroll {
+    overflow-y: auto; flex: 1;
+    padding: 0 6px;
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.2) transparent;
+}
+/* Reveal: grade de barcos */
+.sort-reveal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(260px,42vw), 1fr));
+    gap: .65rem;
+    padding-bottom: .5rem;
+}
+.sort-boat-card {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(79,195,247,.22);
+    border-radius: 12px;
+    overflow: hidden;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity .42s ease-out, transform .42s ease-out;
+}
+.sort-boat-card.visible { opacity: 1; transform: translateY(0); }
+.sort-boat-header {
+    background: rgba(79,195,247,.15);
+    padding: .55rem .9rem;
+    font-weight: 700; font-size: .9rem; color: #4fc3f7;
+    border-bottom: 1px solid rgba(79,195,247,.2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sort-boat-members { padding: .4rem 0; }
+.sort-boat-member {
+    padding: .3rem .9rem;
+    font-size: .83rem; color: rgba(255,255,255,.85);
+    border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.sort-boat-member:last-child { border-bottom: none; }
+/* Fechar button */
+.sort-btn-fechar-wrap {
+    flex-shrink: 0; text-align: center; padding: 1rem 0 .5rem;
+    opacity: 0; transition: opacity .4s ease;
+}
+.sort-btn-fechar-wrap.visible { opacity: 1; }
+/* Error */
+.sort-error { color: #ef9a9a; font-size: 1.1rem; text-align: center; padding: 2rem; }
+
+/* ── Grade de resultado (tela normal) ────────────────────────── */
+.sorteio-boat-card {
+    border: 1px solid rgba(0,0,0,.1);
+    border-radius: 10px; overflow: hidden;
+}
+.sorteio-boat-header {
+    background: var(--bs-primary); color: #fff;
+    padding: .55rem 1rem; font-weight: 600; font-size: .92rem;
+}
+.sorteio-boat-member {
+    padding: .4rem 1rem; font-size: .88rem;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.sorteio-boat-member:last-child { border-bottom: none; }
+</style>
+
+<!-- ── Animation overlay ──────────────────────────────────────── -->
+<div id="sortOverlay" class="sort-overlay" style="display:none">
+
+    <!-- Phase 1: spinning -->
+    <div id="sortPhaseGirando">
+        <div class="sort-title">🎰&nbsp; SORTEIO</div>
+        <div class="sort-slot-box">
+            <div class="sort-slot-label">@labelEquipe</div>
+            <div id="sortSlotEquipe" class="sort-slot-text">---</div>
+        </div>
+        <div class="sort-slot-box">
+            <div class="sort-slot-label">@labelMembro</div>
+            <div id="sortSlotMembro" class="sort-slot-text sort-slot-membro">---</div>
+        </div>
+        <div class="sort-status">Sorteando @labelMembroPlural para cada @labelEquipe...</div>
+        <div class="sort-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- Phase 2: reveal -->
+    <div id="sortPhaseRevelando" style="display:none" class="sort-reveal-wrapper">
+        <div class="sort-title-reveal">📋&nbsp; Resultado do Sorteio</div>
+        <div class="sort-reveal-scroll">
+            <div id="sortRevealGrid" class="sort-reveal-grid"></div>
+        </div>
+        <div id="sortBtnFecharWrap" class="sort-btn-fechar-wrap">
+            <button type="button" id="btnConfirmarSorteio" class="btn btn-success px-5 me-2" onclick="confirmarSorteio()">
+                <i class="bi bi-check-circle me-2"></i>Confirmar Sorteio
+            </button>
+            <button type="button" class="btn btn-outline-light px-4" onclick="cancelarSorteio()">
+                <i class="bi bi-x me-1"></i>Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- Error -->
+    <div id="sortPhaseErro" style="display:none">
+        <div class="sort-error">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span id="sortErroMsg">Erro ao realizar sorteio.</span>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form: CSRF + URL do endpoint AJAX -->
+<form id="frmSortearAjax"
+      asp-controller="Sorteio" asp-action="RealizarAjax" asp-route-slug="@slug"
+      method="post" style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+<form id="frmConfirmarAjax"
+      asp-controller="Sorteio" asp-action="ConfirmarAjax" asp-route-slug="@slug"
+      method="post" style="display:none">
+    @Html.AntiForgeryToken()
+</form>
 
 <div class="page-header">
     <div class="page-header-left">
         <h1>Sorteio</h1>
     </div>
-    <div class="page-header-actions">
+    <div class="page-header-actions d-flex gap-2">
         @if (!lista.Any())
         {
-            <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post" class="d-inline">
-                @Html.AntiForgeryToken()
-                <button class="btn btn-success btn-sm" onclick="return confirm('Realizar sorteio?')"
-                        @(pre is { Valido: false } ? "disabled" : "")>
-                    <i class="bi bi-shuffle me-1"></i>Sortear
-                </button>
-            </form>
+            <button type="button" class="btn btn-success btn-sm"
+                    onclick="realizarSorteio()"
+                    @(pre is { Valido: false } ? "disabled" : "")>
+                <i class="bi bi-shuffle me-1"></i>Sortear
+            </button>
         }
         @if (lista.Any())
         {
             <form asp-controller="Sorteio" asp-action="Limpar" asp-route-slug="@slug" method="post" class="d-inline">
                 @Html.AntiForgeryToken()
-                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Limpar o sorteio?')">
+                <button class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Limpar o sorteio atual?')">
                     <i class="bi bi-trash me-1"></i>Limpar
                 </button>
             </form>
+        }
+        @if (isDev)
+        {
+            <button type="button" class="btn btn-outline-warning btn-sm" onclick="simularSorteio()"
+                    title="Simula 6 embarcações × 5 pescadores (apenas em desenvolvimento)">
+                <i class="bi bi-bug me-1"></i>Simular
+                <span class="badge bg-warning text-dark ms-1">DEV</span>
+            </button>
         }
     </div>
 </div>
@@ -56,9 +256,9 @@
         <div>
             <strong>Sorteio indisponível.</strong> @pre.MensagemErro
             <div class="mt-1 small text-muted">
-                @(torneio?.LabelEquipePlural ?? "Equipes"): @pre.QtdEquipes &nbsp;·&nbsp;
+                @labelEquipePlural: @pre.QtdEquipes &nbsp;·&nbsp;
                 Vagas totais: @pre.TotalVagas &nbsp;·&nbsp;
-                @(torneio?.LabelMembroPlural ?? "Membros") cadastrados: @pre.QtdMembros
+                @labelMembroPlural cadastrados: @pre.QtdMembros
             </div>
         </div>
     </div>
@@ -70,13 +270,16 @@
         <div class="card-body-pad">
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-shuffle" style="font-size:2.5rem;opacity:.3"></i>
-                <p class="mt-2 mb-3">Nenhum sorteio realizado ainda.</p>
-                <form asp-controller="Sorteio" asp-action="Realizar" asp-route-slug="@slug" method="post">
-                    @Html.AntiForgeryToken()
-                    <button class="btn btn-primary" @(pre is { Valido: false } ? "disabled" : "")>
-                        <i class="bi bi-shuffle me-1"></i>Realizar Sorteio
-                    </button>
-                </form>
+                <p class="mt-2 mb-1">Nenhum sorteio realizado ainda.</p>
+                <p class="small mb-3">
+                    Serão sorteados <strong>@(pre?.TotalVagas ?? 0)</strong> @labelMembroPlural
+                    para <strong>@(pre?.QtdEquipes ?? 0)</strong> @labelEquipePlural.
+                </p>
+                <button type="button" class="btn btn-primary"
+                        onclick="realizarSorteio()"
+                        @(pre is { Valido: false } ? "disabled" : "")>
+                    <i class="bi bi-shuffle me-1"></i>Realizar Sorteio
+                </button>
             </div>
         </div>
     </div>
@@ -85,40 +288,307 @@ else
 {
     <div class="content-card">
         <div class="card-header-bar">
-            <h5><i class="bi bi-list-ol me-2"></i>Resultado — @lista.Count registros</h5>
+            <h5>
+                <i class="bi bi-grid-3x3-gap me-2"></i>
+                @grupos.Count @labelEquipePlural &nbsp;·&nbsp;
+                @lista.Count @labelMembroPlural sorteados
+            </h5>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th style="width:80px">Posição</th>
-                        <th>@labelEquipe</th>
-                        <th>@labelMembro</th>
-                        <th style="width:160px">Ajustar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var s in lista)
-                    {
-                        <tr>
-                            <td><span class="badge bg-secondary">@s.Posicao</span></td>
-                            <td class="fw-semibold">@s.NomeEquipe</td>
-                            <td>@s.NomeMembro</td>
-                            <td>
-                                <form asp-controller="Sorteio" asp-action="Ajustar"
-                                      asp-route-slug="@slug"
-                                      asp-route-sorteioEquipeId="@s.Id"
-                                      method="post" class="d-flex align-items-center gap-2">
-                                    @Html.AntiForgeryToken()
-                                    <input type="number" name="novaPosicao" value="@s.Posicao" min="1"
-                                           class="form-control form-control-sm" style="width:70px" />
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">OK</button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="card-body-pad">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
+                @foreach (var g in grupos)
+                {
+                    <div class="col">
+                        <div class="sorteio-boat-card h-100">
+                            <div class="sorteio-boat-header">
+                                <i class="bi bi-water me-2 opacity-75"></i>@g.NomeEquipe
+                            </div>
+                            @foreach (var m in g.Membros)
+                            {
+                                <div class="sorteio-boat-member">@m.NomeMembro</div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
+}
+
+@section Scripts {
+<script>
+(function () {
+    const LABEL_MEMBRO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labelMembro));
+
+    // ── Pools reais (embarcações e membros cadastrados) ────
+    const POOL_EQUIPES_REAL = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        (ViewBag.NomesEquipes as List<string>) ?? new List<string>()));
+    const POOL_MEMBROS_REAL = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        (ViewBag.NomesMembros as List<string>) ?? new List<string>()));
+
+    // ── Mock: 6 embarcações × 5 pescadores ───────────────
+    const MOCK_EQUIPES_INFO = [
+        { id: 'eq-1', nome: 'Barco Peixe Espada'     },
+        { id: 'eq-2', nome: 'Barco Marlim Azul'       },
+        { id: 'eq-3', nome: 'Barco Tubarão Martelo'   },
+        { id: 'eq-4', nome: 'Barco Arraia Manta'      },
+        { id: 'eq-5', nome: 'Barco Golfinho Prateado' },
+        { id: 'eq-6', nome: 'Barco Orca Negra'        },
+    ];
+    const TODOS_PESCADORES = [
+        'Ana Silva',     'Bruno Costa',   'Carlos Lima',    'Diana Melo',    'Eduardo Neto',
+        'Fernanda Gomes','Gabriel Souza', 'Helena Alves',   'Igor Martins',  'Juliana Reis',
+        'Klaus Weber',   'Laura Dias',    'Marcos Brum',    'Natália Cruz',  'Oscar Faria',
+        'Patricia Barros','Quirino Moura','Renata Pinto',   'Sérgio Leal',   'Tânia Vaz',
+        'Ulisses Torres','Vânia Ribeiro', 'Wilson Cunha',   'Ximena Pereira','Yago Duarte',
+        'Zara Monteiro', 'André Felix',   'Bianca Gama',    'Cássio Rios',   'Débora Sena',
+    ];
+
+    // ── Utilitários ───────────────────────────────────────
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Agrupa lista plana [{equipeId, nomeEquipe, nomeMembro}] por equipeId
+    function agruparPorEquipe(lista) {
+        const map = new Map();
+        for (const item of lista) {
+            const key  = item.equipeId  ?? item.EquipeId;
+            const nome = item.nomeEquipe ?? item.NomeEquipe;
+            const memb = item.nomeMembro ?? item.NomeMembro;
+            if (!map.has(key)) map.set(key, { nome, membros: [] });
+            map.get(key).membros.push(memb);
+        }
+        return [...map.values()].sort((a, b) => a.nome.localeCompare(b.nome));
+    }
+
+    // ── Spinning ──────────────────────────────────────────
+    let spinInterval = null;
+    let spinIdx = 0;
+
+    function startSpinning(poolEquipes, poolMembros) {
+        const elEq = document.getElementById('sortSlotEquipe');
+        const elMb = document.getElementById('sortSlotMembro');
+        spinIdx = 0;
+        spinInterval = setInterval(() => {
+            elEq.classList.add('flash');
+            setTimeout(() => {
+                elEq.textContent = poolEquipes[spinIdx % poolEquipes.length];
+                elEq.classList.remove('flash');
+            }, 70);
+            elMb.classList.add('flash');
+            setTimeout(() => {
+                elMb.textContent = poolMembros[(spinIdx + 4) % poolMembros.length];
+                elMb.classList.remove('flash');
+            }, 100);
+            spinIdx++;
+        }, 145);
+    }
+
+    function stopSpinning() { clearInterval(spinInterval); spinInterval = null; }
+
+    // ── Abrir overlay ─────────────────────────────────────
+    function abrirOverlay() {
+        document.getElementById('sortOverlay').style.display         = 'flex';
+        document.getElementById('sortPhaseGirando').style.display    = 'block';
+        document.getElementById('sortPhaseRevelando').style.display  = 'none';
+        document.getElementById('sortPhaseErro').style.display       = 'none';
+        document.getElementById('sortBtnFecharWrap').classList.remove('visible');
+    }
+
+    // ── Estado de fechar ──────────────────────────────────
+    let _isSimulacao    = false;
+    let _ultimoResultado = null;
+
+    window.fecharOverlay = function () {
+        document.getElementById('sortOverlay').style.display = 'none';
+        if (!_isSimulacao) window.location.reload();
+    };
+
+    window.cancelarSorteio = function () {
+        document.getElementById('sortOverlay').style.display = 'none';
+        _ultimoResultado = null;
+    };
+
+    window.confirmarSorteio = async function () {
+        if (!_ultimoResultado || _ultimoResultado.length === 0) return;
+
+        const btn = document.getElementById('btnConfirmarSorteio');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Salvando...';
+
+        const form  = document.getElementById('frmConfirmarAjax');
+        const token = form.querySelector('[name="__RequestVerificationToken"]').value;
+        const url   = form.action;
+
+        // Monta payload: equipeId, nomeEquipe, membroId, nomeMembro, posicao
+        const payload = _ultimoResultado.map(i => ({
+            equipeId:   i.equipeId   ?? i.EquipeId,
+            nomeEquipe: i.nomeEquipe ?? i.NomeEquipe ?? '',
+            membroId:   i.membroId   ?? i.MembroId,
+            nomeMembro: i.nomeMembro ?? i.NomeMembro ?? '',
+            posicao:    i.posicao    ?? i.Posicao
+        }));
+
+        try {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(payload)
+            }).then(r => r.json());
+
+            if (resp.ok) {
+                document.getElementById('sortOverlay').style.display = 'none';
+                window.location.reload();
+            } else {
+                alert('Erro ao confirmar sorteio: ' + (resp.erro ?? 'erro desconhecido'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirmar Sorteio';
+            }
+        } catch (_) {
+            alert('Erro de comunicação ao confirmar sorteio.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirmar Sorteio';
+        }
+    };
+
+    // ── Reveal: grupos de barcos ──────────────────────────
+    async function revelarResultados(resultado, isSimulacao) {
+        _isSimulacao = isSimulacao;
+
+        document.getElementById('sortPhaseGirando').style.display   = 'none';
+        document.getElementById('sortPhaseRevelando').style.display  = 'flex';
+        document.getElementById('sortBtnFecharWrap').classList.remove('visible');
+
+        const grid = document.getElementById('sortRevealGrid');
+        grid.innerHTML = '';
+
+        const grupos = agruparPorEquipe(resultado);
+
+        for (const grupo of grupos) {
+            // Constrói card do barco
+            const card = document.createElement('div');
+            card.className = 'sort-boat-card';
+
+            const header = document.createElement('div');
+            header.className = 'sort-boat-header';
+            header.textContent = grupo.nome;
+            card.appendChild(header);
+
+            const membList = document.createElement('div');
+            membList.className = 'sort-boat-members';
+            for (const memb of grupo.membros) {
+                const row = document.createElement('div');
+                row.className = 'sort-boat-member';
+                row.textContent = memb;
+                membList.appendChild(row);
+            }
+            card.appendChild(membList);
+            grid.appendChild(card);
+
+            // Aguarda e anima
+            await delay(420);
+            card.classList.add('visible');
+        }
+
+        await delay(500);
+        document.getElementById('sortBtnFecharWrap').classList.add('visible');
+    }
+
+    // ── Sorteio real (AJAX) ───────────────────────────────
+    window.realizarSorteio = async function () {
+        abrirOverlay();
+        startSpinning(POOL_EQUIPES_REAL, POOL_MEMBROS_REAL);
+
+        const form  = document.getElementById('frmSortearAjax');
+        const token = form.querySelector('[name="__RequestVerificationToken"]').value;
+        const url   = form.action;
+
+        try {
+            const [resp] = await Promise.all([
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }
+                }).then(r => r.json()),
+                delay(3500)
+            ]);
+
+            stopSpinning();
+
+            if (!resp.ok) {
+                document.getElementById('sortPhaseGirando').style.display = 'none';
+                document.getElementById('sortErroMsg').textContent = resp.erro ?? 'Erro ao realizar sorteio.';
+                document.getElementById('sortPhaseErro').style.display = 'block';
+                await delay(2500);
+                document.getElementById('sortOverlay').style.display = 'none';
+                return;
+            }
+
+            _ultimoResultado = resp.resultado;
+            await revelarResultados(resp.resultado, false);
+
+        } catch (_) {
+            stopSpinning();
+            document.getElementById('sortPhaseGirando').style.display = 'none';
+            document.getElementById('sortErroMsg').textContent = 'Erro de comunicação com o servidor.';
+            document.getElementById('sortPhaseErro').style.display = 'block';
+            await delay(2500);
+            document.getElementById('sortOverlay').style.display = 'none';
+        }
+    };
+
+    // ── Simulação (dev) ───────────────────────────────────
+    const POOL_EQUIPES_MOCK = [
+        'Mar Bravo','Peixe Espada','Águia do Mar','Barco Veloz',
+        'Corredeira','Maré Alta','Vento Sul','Onda Brava',
+        'Estrela do Mar','Boto Cinza','Albatroz','Marlim Azul'
+    ];
+    const POOL_MEMBROS_MOCK = [
+        'João Silva','Pedro Costa','Ana Lima','Carlos Melo',
+        'Maria Santos','Lucas Ferreira','Beatriz Neves','Rafael Torres',
+        'Priya Mendes','Sonia Cruz','Diego Rocha','Camila Duarte'
+    ];
+
+    window.simularSorteio = async function () {
+        abrirOverlay();
+        startSpinning(POOL_EQUIPES_MOCK, POOL_MEMBROS_MOCK);
+
+        await delay(3500);
+        stopSpinning();
+
+        // Embaralha todos os 30 pescadores e distribui 5 para cada barco
+        const pescadores = shuffle([...TODOS_PESCADORES]);
+        const resultado  = [];
+        let idx = 0;
+        for (const eq of MOCK_EQUIPES_INFO) {
+            for (let pos = 1; pos <= 5; pos++) {
+                resultado.push({
+                    equipeId:   eq.id,
+                    nomeEquipe: eq.nome,
+                    nomeMembro: pescadores[idx++],
+                    posicao:    pos,
+                });
+            }
+        }
+
+        await revelarResultados(resultado, true);
+    };
+})();
+</script>
 }

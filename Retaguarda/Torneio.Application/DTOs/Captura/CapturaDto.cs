@@ -1,3 +1,5 @@
+using Torneio.Domain.Enums;
+
 namespace Torneio.Application.DTOs.Captura;
 
 public class CapturaDto
@@ -13,7 +15,11 @@ public class CapturaDto
     public decimal TamanhoMedida { get; init; }
     public decimal FatorMultiplicador { get; init; }
     public decimal Pontuacao { get; init; }
-    public string FotoUrl { get; init; } = null!;
+    public string? FotoUrl { get; init; }
     public DateTime DataHora { get; init; }
     public bool PendenteSync { get; init; }
+    public OrigemCaptura Origem { get; init; }
+    public FonteFoto? FonteFoto { get; init; }
+    public bool Invalidada { get; init; }
+    public string? MotivoInvalidacao { get; init; }
 }
