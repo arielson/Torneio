@@ -31,6 +31,7 @@ public class SorteioController : TorneioBaseController
             return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
 
         ViewBag.Torneio = torneio;
+        ViewBag.PreCondicoes = await _servico.VerificarPreCondicoes();
         var resultado = await _servico.ObterResultado();
         return View(resultado);
     }

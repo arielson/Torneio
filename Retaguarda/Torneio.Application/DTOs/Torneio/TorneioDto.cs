@@ -27,4 +27,5 @@ public class TorneioDto
     public int QtdGanhadores { get; init; }
     public TipoTorneio TipoTorneio { get; init; }
     public DateTime CriadoEm { get; init; }
+    public string? CorPrimaria { get; init; }
 }

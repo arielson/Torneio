@@ -12,19 +12,29 @@ class TorneioScreen extends StatefulWidget {
 class _TorneioScreenState extends State<TorneioScreen> {
   String? _slug;
   bool _inicializado = false;
+  late ConfigProvider _configProvider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_inicializado) {
+      _configProvider = context.read<ConfigProvider>();
       _slug = ModalRoute.of(context)?.settings.arguments as String?;
       if (_slug != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.read<ConfigProvider>().carregarConfig(_slug!);
+          _configProvider.carregarConfig(_slug!);
         });
       }
       _inicializado = true;
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configProvider.limpar();
+    });
+    super.dispose();
   }
 
   Color _corStatus(String status) => switch (status) {

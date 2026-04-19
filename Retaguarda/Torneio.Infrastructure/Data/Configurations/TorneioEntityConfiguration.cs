@@ -31,6 +31,7 @@ public class TorneioEntityConfiguration : IEntityTypeConfiguration<TorneioEntity
         builder.Property(e => e.QtdGanhadores).IsRequired().HasDefaultValue(3);
         builder.Property(e => e.TipoTorneio).IsRequired().HasDefaultValue(Torneio.Domain.Enums.TipoTorneio.Pesca);
         builder.Property(e => e.CriadoEm).IsRequired();
+        builder.Property(e => e.CorPrimaria).HasMaxLength(7);
 
         builder.HasIndex(e => e.Slug).IsUnique();
     }

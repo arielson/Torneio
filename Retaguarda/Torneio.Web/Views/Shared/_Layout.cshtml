@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @{
+        var torneioTheme = ViewBag.Torneio as TorneioDto;
+        var corPrimariaTheme = torneioTheme?.CorPrimaria;
+    }
+    @if (!string.IsNullOrEmpty(corPrimariaTheme))
+    {
+        <style>:root { --brand: @corPrimariaTheme; --brand-dark: @corPrimariaTheme; }</style>
+    }
 </head>
 @{
     var isAuthPage  = ViewData["IsAuthPage"] as bool? == true;

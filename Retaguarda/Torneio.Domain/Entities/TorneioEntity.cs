@@ -39,6 +39,9 @@ public class TorneioEntity
     // Tipo (define terminologia fixa)
     public TipoTorneio TipoTorneio { get; private set; } = TipoTorneio.Pesca;
 
+    // Tema visual (cor primária em hex, ex: "#1976D2"). null = usa o padrão da plataforma.
+    public string? CorPrimaria { get; private set; }
+
     public DateTime CriadoEm { get; private set; }
 
     private TorneioEntity() { }
@@ -62,7 +65,8 @@ public class TorneioEntity
         bool usarFatorMultiplicador = false,
         bool permitirCapturaOffline = true,
         int qtdGanhadores = 3,
-        string? logoUrl = null)
+        string? logoUrl = null,
+        string? corPrimaria = null)
     {
         return new TorneioEntity
         {
@@ -88,6 +92,7 @@ public class TorneioEntity
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
+            CorPrimaria = corPrimaria,
             CriadoEm = DateTime.UtcNow,
         };
     }
@@ -134,7 +139,8 @@ public class TorneioEntity
         bool usarFatorMultiplicador,
         bool permitirCapturaOffline,
         int qtdGanhadores,
-        string? logoUrl = null)
+        string? logoUrl = null,
+        string? corPrimaria = null)
     {
         NomeTorneio = nomeTorneio;
         LabelEquipe = labelEquipe;
@@ -153,5 +159,6 @@ public class TorneioEntity
         PermitirCapturaOffline = permitirCapturaOffline;
         QtdGanhadores = qtdGanhadores;
         if (logoUrl != null) LogoUrl = logoUrl;
+        CorPrimaria = corPrimaria;
     }
 }

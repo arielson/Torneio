@@ -16,6 +16,10 @@ public class SorteioController : BaseController
 
     public SorteioController(ISorteioAppServico servico) => _servico = servico;
 
+    [HttpGet("pre-condicoes")]
+    public async Task<IActionResult> PreCondicoes() =>
+        Ok(await _servico.VerificarPreCondicoes());
+
     [HttpGet]
     public async Task<IActionResult> ObterResultado() =>
         Ok(await _servico.ObterResultado());

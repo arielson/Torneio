@@ -147,6 +147,26 @@
             <label asp-for="PermitirCapturaOffline" class="form-check-label">Permitir Captura Offline</label>
         </div>
 
+        <div class="form-section-title">Tema Visual</div>
+        <div class="form-text text-muted mb-3">
+            <i class="bi bi-palette me-1"></i>
+            Opcional — deixe em branco para usar as cores padrão da plataforma.
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="CorPrimaria" class="form-label">Cor Primária</label>
+                <div class="input-group">
+                    <input asp-for="CorPrimaria" type="color" class="form-control form-control-color"
+                           value="#1976D2" title="Cor primária" style="max-width:56px;"
+                           oninput="document.getElementById('CorPrimariaHex').value=this.value" />
+                    <input id="CorPrimariaHex" class="form-control" placeholder="#1976D2" maxlength="7"
+                           oninput="document.getElementById('CorPrimaria').value=this.value"
+                           value="@(Model?.CorPrimaria ?? "")" />
+                </div>
+                <span asp-validation-for="CorPrimaria" class="text-danger small"></span>
+            </div>
+        </div>
+
         <div class="d-flex gap-2 pt-2">
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-check-lg me-1"></i>Criar Torneio

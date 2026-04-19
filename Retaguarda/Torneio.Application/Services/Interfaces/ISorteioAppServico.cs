@@ -4,6 +4,7 @@ namespace Torneio.Application.Services.Interfaces;
 
 public interface ISorteioAppServico
 {
+    Task<SorteioPreCondicoesDto> VerificarPreCondicoes();
     Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio();
     Task<IEnumerable<SorteioEquipeDto>> ObterResultado();
     Task AjustarPosicao(Guid sorteioEquipeId, int novaPosicao);

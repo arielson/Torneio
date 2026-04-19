@@ -49,7 +49,8 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
     if (confirm == true && mounted) {
       context.read<AuthProvider>().logout();
       context.read<CapturaProvider>().limpar();
-      Navigator.pushReplacementNamed(context, '/home');
+      context.read<ConfigProvider>().limpar();
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
     }
   }
 

@@ -50,4 +50,7 @@ public class AtualizarTorneioDto
 
     [System.ComponentModel.DataAnnotations.Range(1, 100, ErrorMessage = "Informe entre 1 e 100 ganhadores.")]
     public int QtdGanhadores { get; init; } = 3;
+
+    [System.ComponentModel.DataAnnotations.RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "Cor inválida. Use o formato #RRGGBB.")]
+    public string? CorPrimaria { get; init; }
 }

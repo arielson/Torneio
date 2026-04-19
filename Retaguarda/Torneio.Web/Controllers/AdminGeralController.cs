@@ -137,6 +137,7 @@ public class AdminGeralController : Controller
             PermitirCapturaOffline = torneio.PermitirCapturaOffline,
             ModoSorteio = Enum.Parse<ModoSorteio>(torneio.ModoSorteio),
             QtdGanhadores = torneio.QtdGanhadores,
+            CorPrimaria = torneio.CorPrimaria,
         };
         return View(dto);
     }

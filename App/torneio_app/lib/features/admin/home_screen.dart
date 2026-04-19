@@ -43,7 +43,8 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     );
     if (confirm == true && mounted) {
       context.read<AuthProvider>().logout();
-      Navigator.pushReplacementNamed(context, '/home');
+      context.read<ConfigProvider>().limpar();
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
     }
   }
 

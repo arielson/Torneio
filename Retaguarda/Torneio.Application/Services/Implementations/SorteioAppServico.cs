@@ -32,6 +32,31 @@ public class SorteioAppServico : ISorteioAppServico
         _tenantContext = tenantContext;
     }
 
+    public async Task<SorteioPreCondicoesDto> VerificarPreCondicoes()
+    {
+        var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
+            ?? throw new KeyNotFoundException($"Torneio '{_tenantContext.TorneioId}' não encontrado.");
+
+        var equipes    = (await _equipeRepositorio.ListarTodos()).ToList();
+        var membros    = (await _membroRepositorio.ListarTodos()).ToList();
+        var totalVagas = equipes.Sum(e => e.QtdVagas);
+
+        string? erro = null;
+        if (equipes.Count < 2)
+            erro = $"São necessárias pelo menos 2 {torneio.LabelEquipePlural.ToLower()} para realizar o sorteio. Cadastradas: {equipes.Count}.";
+        else if (membros.Count < totalVagas)
+            erro = $"Número de {torneio.LabelMembroPlural.ToLower()} insuficiente. Vagas totais: {totalVagas}, {torneio.LabelMembroPlural.ToLower()} cadastrados: {membros.Count}.";
+
+        return new SorteioPreCondicoesDto
+        {
+            QtdEquipes = equipes.Count,
+            TotalVagas = totalVagas,
+            QtdMembros = membros.Count,
+            Valido     = erro is null,
+            MensagemErro = erro,
+        };
+    }
+
     public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio()
     {
         var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
@@ -40,6 +65,10 @@ public class SorteioAppServico : ISorteioAppServico
         var sorteioExistente = await _sorteioRepositorio.ListarPorTorneio(torneio.Id);
         if (sorteioExistente.Any())
             throw new InvalidOperationException("O sorteio já foi realizado. Limpe o resultado atual antes de sortear novamente.");
+
+        var preCondicoes = await VerificarPreCondicoes();
+        if (!preCondicoes.Valido)
+            throw new InvalidOperationException(preCondicoes.MensagemErro!);
 
         var resultado = await _sorteioServico.RealizarSorteioAsync(torneio.Id);
         return await ParaDtoLista(resultado);

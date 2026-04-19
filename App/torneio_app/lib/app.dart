@@ -15,6 +15,7 @@ import 'features/fiscal/registrar_captura_screen.dart';
 import 'features/fiscal/capturas_screen.dart';
 import 'features/fiscal/sync_screen.dart';
 import 'features/admin/home_screen.dart';
+import 'features/admin/capturas_screen.dart';
 import 'features/admin/equipes_screen.dart';
 import 'features/admin/fiscais_screen.dart';
 import 'features/admin/itens_screen.dart';
@@ -23,7 +24,6 @@ import 'features/admin/relatorios_equipes_screen.dart';
 import 'features/admin/relatorios_membros_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
-import 'features/admin/section_placeholder_screen.dart';
 import 'features/admin/sorteio_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -71,11 +71,12 @@ class _TorneioAppState extends State<TorneioApp> {
         ChangeNotifierProvider(create: (_) => CapturaProvider(api)),
         ChangeNotifierProvider(create: (_) => HomeProvider(api)),
       ],
-      child: MaterialApp(
+      child: Consumer<ConfigProvider>(
+        builder: (context, configProvider, _) => MaterialApp(
         navigatorKey: _navigatorKey,
         title: 'Torneio',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.theme,
+        theme: AppTheme.fromConfig(configProvider.config),
         initialRoute: '/',
         routes: {
           '/': (_) => const _SplashRedirect(),
@@ -91,13 +92,14 @@ class _TorneioAppState extends State<TorneioApp> {
           '/admin/membros': (_) => const MembrosAdminScreen(),
           '/admin/itens': (_) => const ItensAdminScreen(),
           '/admin/fiscais': (_) => const FiscaisAdminScreen(),
-          '/admin/capturas': (_) => const AdminSectionPlaceholderScreen(titulo: 'Capturas'),
+          '/admin/capturas': (_) => const CapturasAdminScreen(),
           '/admin/sorteio': (_) => const SorteioAdminScreen(),
           '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
           '/admin/relatorios/equipes': (_) => const RelatoriosEquipesScreen(),
           '/admin/relatorios/membros': (_) => const RelatoriosMembrosScreen(),
           '/admin/relatorios/ganhadores': (_) => const RelatoriosGanhadoresScreen(),
         },
+      ),
       ),
     );
   }

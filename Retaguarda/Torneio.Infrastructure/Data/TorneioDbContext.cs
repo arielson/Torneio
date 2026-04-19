@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Services;
 
@@ -25,6 +26,12 @@ public class TorneioDbContext : DbContext
     public DbSet<Captura> Capturas { get; set; }
     public DbSet<SorteioEquipe> SorteiosEquipe { get; set; }
     public DbSet<Premio> Premios { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

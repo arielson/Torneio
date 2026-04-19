@@ -91,7 +91,8 @@ public class TorneioServico : ITorneioServico
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
             dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline,
-            dto.QtdGanhadores, dto.LogoUrl);
+            dto.QtdGanhadores, dto.LogoUrl,
+            dto.CorPrimaria);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -113,7 +114,8 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.QtdGanhadores, dto.LogoUrl);
+            dto.PermitirCapturaOffline, dto.QtdGanhadores, dto.LogoUrl,
+            dto.CorPrimaria);
 
         await _repositorio.Atualizar(entidade);
     }
@@ -223,7 +225,8 @@ public class TorneioServico : ITorneioServico
             origem.MedidaCaptura,
             origem.ModoSorteio, origem.TipoTorneio,
             origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline,
-            origem.QtdGanhadores, origem.LogoUrl);
+            origem.QtdGanhadores, origem.LogoUrl,
+            origem.CorPrimaria);
 
         await _repositorio.Adicionar(novoTorneio);
 
@@ -293,6 +296,7 @@ public class TorneioServico : ITorneioServico
         QtdGanhadores = e.QtdGanhadores,
         TipoTorneio = e.TipoTorneio,
         CriadoEm = e.CriadoEm,
+        CorPrimaria = e.CorPrimaria,
     };
 
     public async Task<IEnumerable<TorneioResumoDto>> ListarRecentes(int limite = 5)

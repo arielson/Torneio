@@ -1,3 +1,5 @@
+import '../flavor_config.dart';
+
 class Captura {
   final String id;
   final String torneioId;
@@ -43,7 +45,7 @@ class Captura {
         tamanhoMedida: (json['tamanhoMedida'] as num).toDouble(),
         fatorMultiplicador: (json['fatorMultiplicador'] as num).toDouble(),
         pontuacao: (json['pontuacao'] as num).toDouble(),
-        fotoUrl: json['fotoUrl'] as String? ?? '',
+        fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?) ?? '',
         dataHora: DateTime.parse(json['dataHora'] as String),
         pendenteSync: json['pendenteSync'] as bool? ?? false,
       );
