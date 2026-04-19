@@ -25,6 +25,8 @@ public class TorneioDto
     public bool PermitirCapturaOffline { get; init; }
     public string ModoSorteio { get; init; } = null!;
     public int QtdGanhadores { get; init; }
+    public bool PremiacaoPorEquipe { get; init; }
+    public bool PremiacaoPorMembro { get; init; }
     public TipoTorneio TipoTorneio { get; init; }
     public DateTime CriadoEm { get; init; }
     public string? CorPrimaria { get; init; }

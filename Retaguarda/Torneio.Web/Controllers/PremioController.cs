@@ -11,16 +11,21 @@ namespace Torneio.Web.Controllers;
 public class PremioController : TorneioBaseController
 {
     private readonly IPremioServico _premioServico;
+    private readonly ITorneioServico _torneioServico;
 
-    public PremioController(TenantContext tenantContext, IPremioServico premioServico)
+    public PremioController(TenantContext tenantContext, IPremioServico premioServico, ITorneioServico torneioServico)
         : base(tenantContext)
     {
         _premioServico = premioServico;
+        _torneioServico = torneioServico;
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        ViewBag.Torneio = torneio;
         var premios = await _premioServico.ListarPorTorneio(TenantContext.TorneioId);
         return View(premios);
     }

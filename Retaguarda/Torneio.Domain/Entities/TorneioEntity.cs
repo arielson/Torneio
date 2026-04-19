@@ -36,6 +36,10 @@ public class TorneioEntity
     // Premiação — quantos lugares premiados (1º, 2º, 3º…)
     public int QtdGanhadores { get; private set; } = 3;
 
+    // Premiação — a quem se destina o ranking de ganhadores
+    public bool PremiacaoPorEquipe { get; private set; } = true;
+    public bool PremiacaoPorMembro { get; private set; } = false;
+
     // Tipo (define terminologia fixa)
     public TipoTorneio TipoTorneio { get; private set; } = TipoTorneio.Pesca;
 
@@ -65,6 +69,8 @@ public class TorneioEntity
         bool usarFatorMultiplicador = false,
         bool permitirCapturaOffline = true,
         int qtdGanhadores = 3,
+        bool premiacaoPorEquipe = true,
+        bool premiacaoPorMembro = false,
         string? logoUrl = null,
         string? corPrimaria = null)
     {
@@ -92,6 +98,8 @@ public class TorneioEntity
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
+            PremiacaoPorEquipe = premiacaoPorEquipe,
+            PremiacaoPorMembro = premiacaoPorMembro,
             CorPrimaria = corPrimaria,
             CriadoEm = DateTime.UtcNow,
         };
@@ -139,6 +147,8 @@ public class TorneioEntity
         bool usarFatorMultiplicador,
         bool permitirCapturaOffline,
         int qtdGanhadores,
+        bool premiacaoPorEquipe = true,
+        bool premiacaoPorMembro = false,
         string? logoUrl = null,
         string? corPrimaria = null)
     {
@@ -158,6 +168,8 @@ public class TorneioEntity
         UsarFatorMultiplicador = usarFatorMultiplicador;
         PermitirCapturaOffline = permitirCapturaOffline;
         QtdGanhadores = qtdGanhadores;
+        PremiacaoPorEquipe = premiacaoPorEquipe;
+        PremiacaoPorMembro = premiacaoPorMembro;
         if (logoUrl != null) LogoUrl = logoUrl;
         CorPrimaria = corPrimaria;
     }

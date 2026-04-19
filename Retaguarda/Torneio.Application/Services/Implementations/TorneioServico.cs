@@ -91,8 +91,8 @@ public class TorneioServico : ITorneioServico
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
             dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline,
-            dto.QtdGanhadores, dto.LogoUrl,
-            dto.CorPrimaria);
+            dto.QtdGanhadores, dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
+            dto.LogoUrl, dto.CorPrimaria);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -114,8 +114,9 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.QtdGanhadores, dto.LogoUrl,
-            dto.CorPrimaria);
+            dto.PermitirCapturaOffline, dto.QtdGanhadores,
+            dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
+            dto.LogoUrl, dto.CorPrimaria);
 
         await _repositorio.Atualizar(entidade);
     }
@@ -225,8 +226,8 @@ public class TorneioServico : ITorneioServico
             origem.MedidaCaptura,
             origem.ModoSorteio, origem.TipoTorneio,
             origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline,
-            origem.QtdGanhadores, origem.LogoUrl,
-            origem.CorPrimaria);
+            origem.QtdGanhadores, origem.PremiacaoPorEquipe, origem.PremiacaoPorMembro,
+            origem.LogoUrl, origem.CorPrimaria);
 
         await _repositorio.Adicionar(novoTorneio);
 
@@ -294,6 +295,8 @@ public class TorneioServico : ITorneioServico
         PermitirCapturaOffline = e.PermitirCapturaOffline,
         ModoSorteio = e.ModoSorteio.ToString(),
         QtdGanhadores = e.QtdGanhadores,
+        PremiacaoPorEquipe = e.PremiacaoPorEquipe,
+        PremiacaoPorMembro = e.PremiacaoPorMembro,
         TipoTorneio = e.TipoTorneio,
         CriadoEm = e.CriadoEm,
         CorPrimaria = e.CorPrimaria,

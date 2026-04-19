@@ -1,9 +1,8 @@
-@model IEnumerable<Torneio.Web.Models.GanhadorRelatorioViewModel>
+@model GanhadoresPageViewModel
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
     ViewData["Title"] = "Relatorio dos Ganhadores";
-    var lista = Model.ToList();
 }
 
 <div class="page-header">
@@ -15,16 +14,17 @@
     <i class="bi bi-arrow-left"></i> Relatorios
 </a>
 
-@if (!lista.Any())
+@if (!Model.Equipes.Any() && !Model.Membros.Any())
 {
     <div class="alert alert-info d-flex gap-2 align-items-center">
         <i class="bi bi-info-circle-fill"></i>
         Nenhum ganhador encontrado com base nas capturas atuais.
     </div>
 }
-else
+
+@if (Model.Equipes.Any())
 {
-    <div class="content-card">
+    <div class="content-card mb-4">
         <div class="card-header-bar">
             <h5><i class="bi bi-trophy me-2"></i>Top @torneio.QtdGanhadores @torneio.LabelEquipePlural</h5>
         </div>
@@ -40,7 +40,7 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var g in lista)
+                    @foreach (var g in Model.Equipes)
                     {
                         <tr>
                             <td><span class="badge bg-warning text-dark">@(g.Posicao + "º")</span></td>
@@ -54,6 +54,49 @@ else
                                         <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
                                     </a>
                                     <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=true"
+                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
+                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.Membros.Any())
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-person-badge me-2"></i>Top @torneio.QtdGanhadores @torneio.LabelMembroPlural</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Posicao</th>
+                        <th>@torneio.LabelMembro</th>
+                        <th>Pontos</th>
+                        <th class="text-end">Relatorios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var g in Model.Membros)
+                    {
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "º")</span></td>
+                            <td class="fw-semibold">@g.NomeMembro</td>
+                            <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=false"
+                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
+                                    </a>
+                                    <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=true"
                                        class="btn btn-sm btn-primary" target="_blank" title="Analitico">
                                         <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
                                     </a>

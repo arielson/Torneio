@@ -23,6 +23,8 @@ class TorneioConfig {
   final String modoSorteio;
   final bool permitirEscolhaManual;
   final int qtdGanhadores;
+  final bool premiacaoPorEquipe;
+  final bool premiacaoPorMembro;
   final String? corPrimaria;
 
   const TorneioConfig({
@@ -48,6 +50,8 @@ class TorneioConfig {
     required this.modoSorteio,
     required this.permitirEscolhaManual,
     required this.qtdGanhadores,
+    required this.premiacaoPorEquipe,
+    required this.premiacaoPorMembro,
     this.corPrimaria,
   });
 
@@ -74,6 +78,8 @@ class TorneioConfig {
         modoSorteio: json['modoSorteio'] as String? ?? 'Sorteio',
         permitirEscolhaManual: json['permitirEscolhaManual'] as bool? ?? false,
         qtdGanhadores: json['qtdGanhadores'] as int? ?? 3,
+        premiacaoPorEquipe: json['premiacaoPorEquipe'] as bool? ?? true,
+        premiacaoPorMembro: json['premiacaoPorMembro'] as bool? ?? false,
         corPrimaria: json['corPrimaria'] as String?,
       );
 }

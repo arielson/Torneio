@@ -104,33 +104,50 @@ public class RelatorioController : TorneioBaseController
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
 
-        var equipes = (await _equipeServico.ListarTodos()).ToList();
         var capturas = (await _capturaServico.ListarTodos()).ToList();
+        var vm = new GanhadoresPageViewModel();
 
-        var ganhadores = equipes
-            .Select(e => new GanhadorRelatorioViewModel
-            {
-                EquipeId = e.Id,
-                NomeEquipe = e.Nome,
-                Capitao = e.Capitao,
-                TotalPontos = capturas
-                    .Where(c => c.EquipeId == e.Id)
-                    .Sum(c => c.Pontuacao)
-            })
-            .OrderByDescending(x => x.TotalPontos)
-            .ThenBy(x => x.NomeEquipe)
-            .Take(torneio.QtdGanhadores)
-            .Select((x, index) => new GanhadorRelatorioViewModel
-            {
-                Posicao = index + 1,
-                EquipeId = x.EquipeId,
-                NomeEquipe = x.NomeEquipe,
-                Capitao = x.Capitao,
-                TotalPontos = x.TotalPontos
-            })
-            .ToList();
+        if (torneio.PremiacaoPorEquipe)
+        {
+            var equipes = (await _equipeServico.ListarTodos()).ToList();
+            vm.Equipes.AddRange(equipes
+                .Select(e => new GanhadorRelatorioViewModel
+                {
+                    EquipeId = e.Id,
+                    NomeEquipe = e.Nome,
+                    Capitao = e.Capitao,
+                    TotalPontos = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao)
+                })
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeEquipe)
+                .Take(torneio.QtdGanhadores)
+                .Select((x, i) => new GanhadorRelatorioViewModel
+                {
+                    Posicao = i + 1, EquipeId = x.EquipeId,
+                    NomeEquipe = x.NomeEquipe, Capitao = x.Capitao,
+                    TotalPontos = x.TotalPontos
+                }));
+        }
+
+        if (torneio.PremiacaoPorMembro)
+        {
+            var membros = (await _membroServico.ListarTodos()).ToList();
+            vm.Membros.AddRange(membros
+                .Select(m => new GanhadorRelatorioViewModel
+                {
+                    MembroId = m.Id,
+                    NomeMembro = m.Nome,
+                    TotalPontos = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao)
+                })
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeMembro)
+                .Take(torneio.QtdGanhadores)
+                .Select((x, i) => new GanhadorRelatorioViewModel
+                {
+                    Posicao = i + 1, MembroId = x.MembroId,
+                    NomeMembro = x.NomeMembro, TotalPontos = x.TotalPontos
+                }));
+        }
 
         ViewBag.Torneio = torneio;
-        return View(ganhadores);
+        return View(vm);
     }
 }

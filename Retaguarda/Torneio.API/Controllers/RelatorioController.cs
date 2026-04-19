@@ -21,6 +21,7 @@ public class RelatorioController : BaseController
     public async Task<IActionResult> Ganhadores(
         [FromServices] ITorneioServico torneioServico,
         [FromServices] IEquipeServico equipeServico,
+        [FromServices] IMembroServico membroServico,
         [FromServices] ICapturaServico capturaServico)
     {
         var torneioId = GetTorneioIdClaim();
@@ -31,32 +32,51 @@ public class RelatorioController : BaseController
         if (torneio is null)
             return NotFound(new { erro = "Torneio não encontrado." });
 
-        var equipes = (await equipeServico.ListarTodos()).ToList();
         var capturas = (await capturaServico.ListarTodos()).ToList();
 
-        var ganhadores = equipes
-            .Select(e => new
-            {
-                EquipeId = e.Id,
-                NomeEquipe = e.Nome,
-                Capitao = e.Capitao,
-                TotalPontos = capturas
-                    .Where(c => c.EquipeId == e.Id)
-                    .Sum(c => c.Pontuacao)
-            })
-            .OrderByDescending(x => x.TotalPontos)
-            .ThenBy(x => x.NomeEquipe)
-            .Take(torneio.QtdGanhadores)
-            .Select((x, index) => new
-            {
-                Posicao = index + 1,
-                x.EquipeId,
-                x.NomeEquipe,
-                x.Capitao,
-                x.TotalPontos
-            });
+        IEnumerable<object> equipesGanhadoras = [];
+        IEnumerable<object> membrosGanhadores = [];
 
-        return Ok(ganhadores);
+        if (torneio.PremiacaoPorEquipe)
+        {
+            var equipes = (await equipeServico.ListarTodos()).ToList();
+            equipesGanhadoras = equipes
+                .Select(e => new
+                {
+                    EquipeId = e.Id,
+                    NomeEquipe = e.Nome,
+                    Capitao = e.Capitao,
+                    TotalPontos = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao)
+                })
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeEquipe)
+                .Take(torneio.QtdGanhadores)
+                .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.Capitao, x.TotalPontos })
+                .ToList();
+        }
+
+        if (torneio.PremiacaoPorMembro)
+        {
+            var membros = (await membroServico.ListarTodos()).ToList();
+            membrosGanhadores = membros
+                .Select(m => new
+                {
+                    MembroId = m.Id,
+                    NomeMembro = m.Nome,
+                    TotalPontos = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao)
+                })
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeMembro)
+                .Take(torneio.QtdGanhadores)
+                .Select((x, i) => (object)new { Posicao = i + 1, x.MembroId, x.NomeMembro, x.TotalPontos })
+                .ToList();
+        }
+
+        return Ok(new
+        {
+            torneio.PremiacaoPorEquipe,
+            torneio.PremiacaoPorMembro,
+            EquipesGanhadoras = equipesGanhadoras,
+            MembrosGanhadores = membrosGanhadores,
+        });
     }
 
     /// <summary>

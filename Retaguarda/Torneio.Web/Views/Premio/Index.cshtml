@@ -1,8 +1,14 @@
 @model IEnumerable<PremioDto>
 @{
-    var slug  = Context.GetRouteData().Values["slug"]?.ToString();
+    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
     ViewData["Title"] = "Prêmios";
     var lista = Model.OrderBy(x => x.Posicao).ToList();
+
+    var tiposPremiacao = new List<string>();
+    if (torneio.PremiacaoPorEquipe) tiposPremiacao.Add(torneio.LabelEquipePlural);
+    if (torneio.PremiacaoPorMembro) tiposPremiacao.Add(torneio.LabelMembroPlural);
+    var labelTipos = tiposPremiacao.Any() ? string.Join(" e ", tiposPremiacao) : "Nenhum";
 }
 
 <div class="page-header">
@@ -22,6 +28,12 @@
 {
     <div class="alert alert-danger">@erro</div>
 }
+
+<div class="alert alert-info d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-trophy-fill"></i>
+    <span>Premiação destinada a: <strong>@labelTipos</strong></span>
+    <a href="/admin/torneios/@torneio.Id/editar" class="ms-auto btn btn-sm btn-outline-secondary">Alterar</a>
+</div>
 
 <div class="row g-3">
     <div class="col-lg-7">
