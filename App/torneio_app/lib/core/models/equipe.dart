@@ -7,10 +7,10 @@ class Equipe {
   final String? fotoUrl;
   final String capitao;
   final String? fotoCapitaoUrl;
-  final String fiscalId;
   final int qtdVagas;
   final int qtdMembros;
   final List<String> membroIds;
+  final List<String> fiscalIds;
 
   const Equipe({
     required this.id,
@@ -19,10 +19,10 @@ class Equipe {
     this.fotoUrl,
     required this.capitao,
     this.fotoCapitaoUrl,
-    required this.fiscalId,
     required this.qtdVagas,
     required this.qtdMembros,
     this.membroIds = const [],
+    this.fiscalIds = const [],
   });
 
   factory Equipe.fromJson(Map<String, dynamic> json) => Equipe(
@@ -32,12 +32,9 @@ class Equipe {
     fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?),
     capitao: json['capitao'] as String,
     fotoCapitaoUrl: AppConfig.resolverUrl(json['fotoCapitaoUrl'] as String?),
-    fiscalId: json['fiscalId'] as String,
     qtdVagas: json['qtdVagas'] as int,
     qtdMembros: json['qtdMembros'] as int,
-    membroIds:
-        (json['membroIds'] as List<dynamic>? ?? [])
-            .map((e) => e as String)
-            .toList(),
+    membroIds: (json['membroIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
+    fiscalIds: (json['fiscalIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
   );
 }

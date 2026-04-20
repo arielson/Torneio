@@ -10,7 +10,6 @@ public class CriarEquipeValidator : AbstractValidator<CriarEquipeDto>
         RuleFor(x => x.TorneioId).NotEmpty();
         RuleFor(x => x.Nome).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Capitao).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.FiscalId).NotEmpty();
         RuleFor(x => x.QtdVagas)
             .GreaterThan(0).WithMessage("Quantidade de vagas deve ser maior que zero.");
     }

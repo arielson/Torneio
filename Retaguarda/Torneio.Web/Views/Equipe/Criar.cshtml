@@ -1,11 +1,9 @@
 @model CriarEquipeDto
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
-    var fiscais = (IEnumerable<FiscalDto>)ViewBag.Fiscais;
     var torneio = (TorneioDto)ViewBag.Torneio;
     var label = torneio?.LabelEquipe ?? "Equipe";
     var labelPlural = torneio?.LabelEquipePlural ?? "Equipes";
-    var labelSupervisor = torneio?.LabelSupervisor ?? "Fiscal";
     var exibirVagas = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
     ViewData["Title"] = $"Nova {label}";
 }
@@ -21,6 +19,7 @@
 
 <div class="form-card">
     <form asp-controller="Equipe" asp-action="Criar" asp-route-slug="@slug" method="post" enctype="multipart/form-data">
+        <input asp-for="TorneioId" type="hidden" />
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
@@ -35,17 +34,6 @@
             <label asp-for="Capitao" class="form-label">Capitao</label>
             <input asp-for="Capitao" class="form-control" />
             <span asp-validation-for="Capitao" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="FiscalId" class="form-label">@labelSupervisor</label>
-            <select asp-for="FiscalId" class="form-select">
-                <option value="">Selecione</option>
-                @foreach (var f in fiscais)
-                {
-                    <option value="@f.Id">@f.Nome (@f.Usuario)</option>
-                }
-            </select>
-            <span asp-validation-for="FiscalId" class="text-danger small"></span>
         </div>
         @if (exibirVagas)
         {

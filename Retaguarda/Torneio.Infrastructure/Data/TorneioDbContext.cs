@@ -20,6 +20,7 @@ public class TorneioDbContext : DbContext
     public DbSet<AdminGeral> AdminsGeral { get; set; }
     public DbSet<AdminTorneio> AdminsTorneio { get; set; }
     public DbSet<Fiscal> Fiscais { get; set; }
+    public DbSet<FiscalEquipe> FiscaisEquipes { get; set; }
     public DbSet<Equipe> Equipes { get; set; }
     public DbSet<Membro> Membros { get; set; }
     public DbSet<Item> Itens { get; set; }

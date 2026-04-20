@@ -8,11 +8,13 @@ public class Equipe
     public string? FotoUrl { get; private set; }
     public string Capitao { get; private set; } = null!;
     public string? FotoCapitaoUrl { get; private set; }
-    public Guid FiscalId { get; private set; }
     public int QtdVagas { get; private set; }
 
     private readonly List<Membro> _membros = new();
+    private readonly List<FiscalEquipe> _fiscais = new();
+
     public IReadOnlyCollection<Membro> Membros => _membros.AsReadOnly();
+    public IReadOnlyCollection<FiscalEquipe> Fiscais => _fiscais.AsReadOnly();
 
     private Equipe() { }
 
@@ -20,7 +22,6 @@ public class Equipe
         Guid torneioId,
         string nome,
         string capitao,
-        Guid fiscalId,
         int qtdVagas,
         string? fotoUrl = null,
         string? fotoCapitaoUrl = null)
@@ -31,7 +32,6 @@ public class Equipe
             TorneioId = torneioId,
             Nome = nome,
             Capitao = capitao,
-            FiscalId = fiscalId,
             QtdVagas = qtdVagas,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
@@ -41,9 +41,9 @@ public class Equipe
     public void AdicionarMembro(Membro membro)
     {
         if (_membros.Count >= QtdVagas)
-            throw new InvalidOperationException("A equipe já atingiu o número máximo de vagas.");
+            throw new InvalidOperationException("A equipe ja atingiu o numero maximo de vagas.");
         if (_membros.Any(m => m.Id == membro.Id))
-            throw new InvalidOperationException("O membro já pertence a esta equipe.");
+            throw new InvalidOperationException("O membro ja pertence a esta equipe.");
         _membros.Add(membro);
     }
 
@@ -51,7 +51,7 @@ public class Equipe
     {
         var membro = _membros.FirstOrDefault(m => m.Id == membroId);
         if (membro is null)
-            throw new InvalidOperationException("Membro não encontrado na equipe.");
+            throw new InvalidOperationException("Membro nao encontrado na equipe.");
         _membros.Remove(membro);
     }
 
@@ -63,6 +63,4 @@ public class Equipe
         if (fotoUrl != null) FotoUrl = fotoUrl;
         if (fotoCapitaoUrl != null) FotoCapitaoUrl = fotoCapitaoUrl;
     }
-
-    public void AtribuirFiscal(Guid fiscalId) => FiscalId = fiscalId;
 }

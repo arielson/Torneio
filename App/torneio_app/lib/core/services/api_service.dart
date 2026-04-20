@@ -70,7 +70,7 @@ class ApiService {
 
   Future<dynamic> postMultipart(
     String url, {
-    required Map<String, String> fields,
+    required Map<String, dynamic> fields,
     Map<String, String>? files,
     String? token,
   }) async {
@@ -78,8 +78,9 @@ class ApiService {
       ..headers.addAll({
         'Accept': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
-      })
-      ..fields.addAll(fields);
+      });
+
+    _addMultipartFields(request, fields);
 
     if (files != null) {
       for (final entry in files.entries) {
@@ -94,7 +95,7 @@ class ApiService {
 
   Future<dynamic> putMultipart(
     String url, {
-    required Map<String, String> fields,
+    required Map<String, dynamic> fields,
     Map<String, String>? files,
     String? token,
   }) async {
@@ -102,8 +103,9 @@ class ApiService {
       ..headers.addAll({
         'Accept': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
-      })
-      ..fields.addAll(fields);
+      });
+
+    _addMultipartFields(request, fields);
 
     if (files != null) {
       for (final entry in files.entries) {
@@ -130,5 +132,28 @@ class ApiService {
       }
     } catch (_) {}
     throw ApiException(response.statusCode, message);
+  }
+
+  void _addMultipartFields(
+    http.MultipartRequest request,
+    Map<String, dynamic> fields,
+  ) {
+    for (final entry in fields.entries) {
+      final value = entry.value;
+      if (value == null) continue;
+
+      if (value is Iterable) {
+        var index = 0;
+        for (final item in value) {
+          if (item != null) {
+            request.fields['${entry.key}[$index]'] = item.toString();
+            index++;
+          }
+        }
+        continue;
+      }
+
+      request.fields[entry.key] = value.toString();
+    }
   }
 }

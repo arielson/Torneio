@@ -8,8 +8,8 @@ public class EquipeDto
     public string? FotoUrl { get; init; }
     public string Capitao { get; init; } = null!;
     public string? FotoCapitaoUrl { get; init; }
-    public Guid FiscalId { get; init; }
     public int QtdVagas { get; init; }
     public int QtdMembros { get; init; }
     public List<Guid> MembroIds { get; init; } = new();
+    public List<Guid> FiscalIds { get; init; } = new();
 }

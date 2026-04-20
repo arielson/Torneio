@@ -9,9 +9,6 @@ using Torneio.Infrastructure.Services;
 
 namespace Torneio.API.Controllers;
 
-/// <summary>
-/// /api/{slug}/membros — AdminTorneio
-/// </summary>
 [Authorize]
 [Route("api/{slug}/membros")]
 public class MembroController : BaseController
@@ -39,9 +36,8 @@ public class MembroController : BaseController
         if (GetPerfil() == "Fiscal")
         {
             var fiscalId = GetUserId();
-            var equipes = await _equipeRepositorio.ListarPorTorneio(_tenantContext.TorneioId);
+            var equipes = await _equipeRepositorio.ListarPorFiscal(_tenantContext.TorneioId, fiscalId);
             var membros = equipes
-                .Where(e => e.FiscalId == fiscalId)
                 .SelectMany(e => e.Membros)
                 .GroupBy(m => m.Id)
                 .Select(g => new MembroDto
@@ -140,14 +136,14 @@ public class MembroController : BaseController
 
 public class CriarMembroFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
     public IFormFile? Foto { get; init; }
 }
 
 public class AtualizarMembroFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
     public IFormFile? Foto { get; init; }
 }

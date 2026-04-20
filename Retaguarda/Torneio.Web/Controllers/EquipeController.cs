@@ -13,7 +13,6 @@ namespace Torneio.Web.Controllers;
 public class EquipeController : TorneioBaseController
 {
     private readonly IEquipeServico _servico;
-    private readonly IFiscalServico _fiscalServico;
     private readonly IMembroServico _membroServico;
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _log;
@@ -21,13 +20,11 @@ public class EquipeController : TorneioBaseController
     public EquipeController(
         TenantContext tenantContext,
         IEquipeServico servico,
-        IFiscalServico fiscalServico,
         IMembroServico membroServico,
         ITorneioServico torneioServico,
         ILogAuditoriaServico log) : base(tenantContext)
     {
         _servico = servico;
-        _fiscalServico = fiscalServico;
         _membroServico = membroServico;
         _torneioServico = torneioServico;
         _log = log;
@@ -49,7 +46,6 @@ public class EquipeController : TorneioBaseController
     [HttpGet("criar")]
     public async Task<IActionResult> Criar()
     {
-        ViewBag.Fiscais = await _fiscalServico.ListarTodos();
         await SetTorneioViewBag();
         return View(new CriarEquipeDto { TorneioId = TenantContext.TorneioId });
     }
@@ -58,6 +54,8 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarEquipeDto dto)
     {
+        ModelState.Remove(nameof(dto.TorneioId));
+
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is not null && string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
         {
@@ -66,19 +64,14 @@ public class EquipeController : TorneioBaseController
                 TorneioId = TenantContext.TorneioId,
                 Nome = dto.Nome,
                 Capitao = dto.Capitao,
-                FiscalId = dto.FiscalId,
                 QtdVagas = 1,
                 FotoUrl = dto.FotoUrl,
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
             };
         }
 
-        if (dto.FiscalId == Guid.Empty)
-            ModelState.AddModelError(nameof(dto.FiscalId), "Selecione um fiscal.");
-
         if (!ModelState.IsValid)
         {
-            ViewBag.Fiscais = await _fiscalServico.ListarTodos();
             await SetTorneioViewBag();
             return View(dto);
         }
@@ -92,7 +85,6 @@ public class EquipeController : TorneioBaseController
                 TorneioId = TenantContext.TorneioId,
                 Nome = dto.Nome,
                 Capitao = dto.Capitao,
-                FiscalId = dto.FiscalId,
                 QtdVagas = dto.QtdVagas,
                 FotoUrl = fotoUrl,
                 FotoCapitaoUrl = fotoCapitaoUrl,
@@ -110,7 +102,6 @@ public class EquipeController : TorneioBaseController
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            ViewBag.Fiscais = await _fiscalServico.ListarTodos();
             await SetTorneioViewBag();
             return View(dto);
         }

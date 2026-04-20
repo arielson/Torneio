@@ -6,13 +6,11 @@ public class CriarEquipeDto
 {
     public Guid TorneioId { get; init; }
 
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
 
-    [Required(ErrorMessage = "O capitão é obrigatório.")]
+    [Required(ErrorMessage = "O capitao e obrigatorio.")]
     public string Capitao { get; init; } = null!;
-
-    public Guid FiscalId { get; init; }
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]
     public int QtdVagas { get; init; }

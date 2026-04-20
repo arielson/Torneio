@@ -12,17 +12,20 @@ namespace Torneio.Application.Services.Implementations;
 public class FiscalServico : IFiscalServico
 {
     private readonly IFiscalRepositorio _repositorio;
+    private readonly IEquipeRepositorio _equipeRepositorio;
     private readonly ITenantContext _tenantContext;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IValidator<CriarFiscalDto> _validador;
 
     public FiscalServico(
         IFiscalRepositorio repositorio,
+        IEquipeRepositorio equipeRepositorio,
         ITenantContext tenantContext,
         IPasswordHasher passwordHasher,
         IValidator<CriarFiscalDto> validador)
     {
         _repositorio = repositorio;
+        _equipeRepositorio = equipeRepositorio;
         _tenantContext = tenantContext;
         _passwordHasher = passwordHasher;
         _validador = validador;
@@ -30,7 +33,7 @@ public class FiscalServico : IFiscalServico
 
     public async Task<FiscalDto?> ObterPorId(Guid id)
     {
-        var entidade = await _repositorio.ObterPorId(id);
+        var entidade = await _repositorio.ObterComEquipes(id);
         if (entidade is null || entidade.TorneioId != _tenantContext.TorneioId)
             return null;
 
@@ -46,6 +49,7 @@ public class FiscalServico : IFiscalServico
     public async Task<FiscalDto> Criar(CriarFiscalDto dto)
     {
         await _validador.ValidateAndThrowAsync(dto);
+        await ValidarEquipesAsync(dto.TorneioId, dto.EquipeIds);
 
         var existente = await _repositorio.ObterPorUsuario(dto.Usuario, dto.TorneioId);
         if (existente is not null)
@@ -53,18 +57,24 @@ public class FiscalServico : IFiscalServico
 
         var entidade = Fiscal.Criar(
             dto.TorneioId,
-            dto.Nome, dto.Usuario, _passwordHasher.Hash(dto.Senha), dto.FotoUrl);
+            dto.Nome,
+            dto.Usuario,
+            _passwordHasher.Hash(dto.Senha),
+            dto.FotoUrl);
 
+        entidade.DefinirEquipes(dto.EquipeIds);
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
     }
 
     public async Task Atualizar(Guid id, AtualizarFiscalDto dto)
     {
-        var entidade = await _repositorio.ObterPorId(id)
+        var entidade = await _repositorio.ObterComEquipes(id)
             ?? throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
+
+        await ValidarEquipesAsync(entidade.TorneioId, dto.EquipeIds);
 
         if (!string.Equals(entidade.Usuario, dto.Usuario, StringComparison.OrdinalIgnoreCase))
         {
@@ -75,6 +85,7 @@ public class FiscalServico : IFiscalServico
 
         entidade.AtualizarNome(dto.Nome);
         entidade.AtualizarUsuario(dto.Usuario);
+        entidade.DefinirEquipes(dto.EquipeIds);
         if (dto.FotoUrl is not null)
             entidade.AtualizarFoto(dto.FotoUrl);
         if (!string.IsNullOrWhiteSpace(dto.Senha))
@@ -107,12 +118,25 @@ public class FiscalServico : IFiscalServico
         await _repositorio.Remover(entidade.Id);
     }
 
+    private async Task ValidarEquipesAsync(Guid torneioId, IEnumerable<Guid> equipeIds)
+    {
+        var ids = equipeIds.Distinct().ToList();
+        if (ids.Count == 0)
+            throw new InvalidOperationException("Selecione ao menos uma embarcacao.");
+
+        var equipes = await _equipeRepositorio.ListarPorTorneio(torneioId);
+        var equipeIdSet = equipes.Select(e => e.Id).ToHashSet();
+        if (ids.Any(id => !equipeIdSet.Contains(id)))
+            throw new InvalidOperationException("Uma ou mais embarcacoes selecionadas nao pertencem ao torneio.");
+    }
+
     private static FiscalDto ParaDto(Fiscal e) => new()
     {
         Id = e.Id,
         TorneioId = e.TorneioId,
         Nome = e.Nome,
         FotoUrl = e.FotoUrl,
-        Usuario = e.Usuario
+        Usuario = e.Usuario,
+        EquipeIds = e.Equipes.Select(x => x.EquipeId).Distinct().ToList()
     };
 }

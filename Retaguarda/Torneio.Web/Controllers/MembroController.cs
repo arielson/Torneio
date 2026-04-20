@@ -47,6 +47,8 @@ public class MembroController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarMembroDto dto)
     {
+        ModelState.Remove(nameof(dto.TorneioId));
+
         if (!ModelState.IsValid)
         {
             await SetTorneioViewBag();
@@ -75,6 +77,7 @@ public class MembroController : TorneioBaseController
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+            await SetTorneioViewBag();
             return View(dto);
         }
     }

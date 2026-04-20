@@ -1,11 +1,14 @@
 @model IEnumerable<FiscalDto>
 @{
-    var slug         = Context.GetRouteData().Values["slug"]?.ToString();
-    var torneio      = ViewBag.Torneio as TorneioDto;
-    var label        = torneio?.LabelSupervisor ?? "Fiscal";
-    var labelPlural  = torneio?.LabelSupervisorPlural ?? "Fiscais";
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var equipes = (IEnumerable<EquipeDto>)(ViewBag.Equipes ?? Enumerable.Empty<EquipeDto>());
+    var label = torneio?.LabelSupervisor ?? "Fiscal";
+    var labelPlural = torneio?.LabelSupervisorPlural ?? "Fiscais";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
+    var equipesPorId = equipes.ToDictionary(e => e.Id, e => e.Nome);
 }
 
 <div class="page-header">
@@ -40,18 +43,42 @@
                     <tr>
                         <th>Nome</th>
                         <th>Usuário</th>
+                        <th>@labelEquipePlural</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var f in lista)
                     {
+                        var nomesEquipes = f.EquipeIds
+                            .Where(equipesPorId.ContainsKey)
+                            .Select(id => equipesPorId[id])
+                            .OrderBy(nome => nome)
+                            .ToList();
                         <tr>
                             <td class="fw-semibold">@f.Nome</td>
                             <td><code class="text-muted small">@f.Usuario</code></td>
+                            <td>
+                                @if (!nomesEquipes.Any())
+                                {
+                                    <span class="text-muted small">Nenhuma</span>
+                                }
+                                else
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var nomeEquipe in nomesEquipes)
+                                        {
+                                            <span class="badge text-bg-light border">@nomeEquipe</span>
+                                        }
+                                    </div>
+                                }
+                            </td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <a href="/@slug/fiscais/@f.Id/senha" class="btn btn-sm btn-outline-secondary" title="Alterar Senha">
+                                    <a href="/@slug/fiscais/@f.Id/editar" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="/@slug/fiscais/@f.Id/senha" class="btn btn-sm btn-outline-secondary" title="Alterar senha">
                                         <i class="bi bi-key"></i>
                                     </a>
                                     <form asp-controller="Fiscal" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@f.Id" method="post" class="d-inline">

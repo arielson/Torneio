@@ -1,0 +1,253 @@
+{
+  "title": "Demo Automatizada - Web Torneio",
+  "target": "web",
+  "profile": "admin-do-torneio",
+  "baseUrl": "http://localhost:5068",
+  "authProfiles": {
+    "amigos_admin": {
+      "loginPath": "/{slug_amigos}/login",
+      "usernameSelector": "input[name='Usuario']",
+      "passwordSelector": "input[name='Senha']",
+      "submitSelector": "button[type='submit']",
+      "successUrlPath": "/{slug_amigos}/admin",
+      "successSelector": "#page-content",
+      "username": "preencher-admin-amigos",
+      "password": "preencher-senha-admin-amigos"
+    },
+    "rei_admin": {
+      "loginPath": "/{slug_rei}/login",
+      "usernameSelector": "input[name='Usuario']",
+      "passwordSelector": "input[name='Senha']",
+      "submitSelector": "button[type='submit']",
+      "successUrlPath": "/{slug_rei}/admin",
+      "successSelector": "#page-content",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "bts_admin": {
+      "loginPath": "/{slug_bts}/login",
+      "usernameSelector": "input[name='Usuario']",
+      "passwordSelector": "input[name='Senha']",
+      "submitSelector": "button[type='submit']",
+      "successUrlPath": "/{slug_bts}/admin",
+      "successSelector": "#page-content",
+      "username": "preencher-admin-bts",
+      "password": "preencher-senha-admin-bts"
+    }
+  },
+  "video": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "orientation": "landscape"
+  },
+  "playwright": {
+    "headless": false
+  },
+  "voice": {
+    "provider": "google-cloud-tts",
+    "voiceName": "pt-BR-Standard-A"
+  },
+  "scenes": [
+    {
+      "title": "Acesso ao painel do torneio",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "dashboard",
+      "path": "/{slug_amigos}/admin",
+      "waitForSelector": ".page-header h1",
+      "action": "Entrar na retaguarda como administrador do torneio.",
+      "expected": "O painel inicial apresenta os atalhos e indicadores operacionais do torneio.",
+      "narration": "Na retaguarda web, o administrador do torneio acessa um painel central com os principais m\u00f3dulos de opera\u00e7\u00e3o.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Status do torneio",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "painel-admin",
+      "path": "/{slug_amigos}/admin",
+      "waitForSelector": "form[action='/{slug_amigos}/admin/liberar'], form[action='/{slug_amigos}/admin/reabrir'], form[action='/{slug_amigos}/admin/finalizar']",
+      "action": "Alterar o status do torneio entre os estados permitidos.",
+      "expected": "A altera\u00e7\u00e3o \u00e9 persistida e refletida nas demais telas.",
+      "narration": "O status do torneio pode ser ajustado conforme a etapa operacional, mantendo controle administrativo pelo painel web.",
+      "durationSeconds": 9
+    },
+    {
+      "title": "Cadastro de fiscais",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin",
+      "screen": "fiscais-criar",
+      "path": "/{slug_rei}/fiscais/criar",
+      "waitForSelector": "form",
+      "action": "Abrir o formul\u00e1rio de cadastro de fiscal.",
+      "expected": "O formul\u00e1rio de cria\u00e7\u00e3o fica vis\u00edvel para demonstra\u00e7\u00e3o do CRUD.",
+      "narration": "No m\u00f3dulo de fiscais, a retaguarda abre o formul\u00e1rio de cadastro com os campos de acesso e identifica\u00e7\u00e3o do operador.",
+      "durationSeconds": 10
+    },
+    {
+      "title": "Cadastro de embarca\u00e7\u00f5es",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin",
+      "screen": "embarcacoes-criar",
+      "path": "/{slug_rei}/equipes/criar",
+      "waitForSelector": "form",
+      "action": "Abrir o formul\u00e1rio de cadastro de embarca\u00e7\u00e3o.",
+      "expected": "O formul\u00e1rio de cria\u00e7\u00e3o da embarca\u00e7\u00e3o fica vis\u00edvel.",
+      "narration": "No cadastro de embarca\u00e7\u00f5es, a retaguarda apresenta os campos principais, o respons\u00e1vel e as informa\u00e7\u00f5es operacionais da equipe.",
+      "durationSeconds": 10
+    },
+    {
+      "title": "Cadastro de pescadores",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin",
+      "screen": "pescadores-criar",
+      "path": "/{slug_rei}/membros/criar",
+      "waitForSelector": "form",
+      "action": "Abrir o formul\u00e1rio de cadastro de pescador.",
+      "expected": "O formul\u00e1rio de cria\u00e7\u00e3o do pescador fica vis\u00edvel.",
+      "narration": "O gerenciamento de pescadores segue o mesmo padr\u00e3o de cadastro simples e objetivo adotado na plataforma.",
+      "durationSeconds": 10
+    },
+    {
+      "title": "Cadastro de peixes",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "itens-criar",
+      "path": "/{slug_amigos}/itens/criar",
+      "waitForSelector": "form",
+      "steps": [
+        { "type": "ensureHiddenValue", "name": "TorneioId", "value": "{torneioid_amigos}" },
+        { "type": "fill", "selector": "#Nome", "value": "Peixe Video {run_id}" },
+        { "type": "fill", "selector": "#Comprimento", "value": "55.5" },
+        { "type": "submit", "selector": ".form-card form button[type='submit']" },
+        { "type": "waitForURL", "pattern": "/{slug_amigos}/itens" }
+      ],
+      "action": "Criar um peixe com comprimento m\u00ednimo para demonstrar o cadastro.",
+      "expected": "O peixe \u00e9 criado e volta para a listagem.",
+      "narration": "No cadastro de peixes, o administrador informa o nome e, quando necess\u00e1rio, o comprimento m\u00ednimo para a valida\u00e7\u00e3o da captura.",
+      "durationSeconds": 11
+    },
+    {
+      "title": "Exclus\u00e3o do item de demonstra\u00e7\u00e3o",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "itens-excluir",
+      "path": "/{slug_amigos}/itens",
+      "waitForSelector": "table",
+      "steps": [
+        { "type": "click", "selector": "tr:has-text('Peixe Video {run_id}') button.btn-outline-danger", "acceptDialog": true },
+        { "type": "waitForSelector", "selector": "table" }
+      ],
+      "action": "Excluir o item criado apenas para demonstra\u00e7\u00e3o do fluxo.",
+      "expected": "O item de demonstra\u00e7\u00e3o \u00e9 removido da listagem.",
+      "narration": "Depois da demonstra\u00e7\u00e3o do cadastro, o item criado para o v\u00eddeo pode ser removido diretamente da listagem.",
+      "durationSeconds": 7
+    },
+    {
+      "title": "Reorganiza\u00e7\u00e3o emergencial",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "reorganizacao-emergencial",
+      "path": "/{slug_amigos}/equipes/reorganizacao-emergencial",
+      "waitForSelector": ".alert-danger, form",
+      "steps": [
+        { "type": "fill", "selector": "#Motivo", "value": "Demonstra\u00e7\u00e3o de ajuste emergencial para o v\u00eddeo." },
+        { "type": "fill", "selector": "#Confirmacao", "value": "REORGANIZAR" }
+      ],
+      "action": "Abrir a reorganiza\u00e7\u00e3o emergencial e evidenciar os alertas e a confirma\u00e7\u00e3o administrativa.",
+      "expected": "A tela refor\u00e7a que a medida \u00e9 excepcional, exige motivo e confirma\u00e7\u00e3o do administrador do torneio.",
+      "narration": "A reorganiza\u00e7\u00e3o emergencial \u00e9 uma medida excepcional. A tela destaca os alertas, exige um motivo e pede a confirma\u00e7\u00e3o expl\u00edcita do administrador do torneio.",
+      "durationSeconds": 11
+    },
+    {
+      "title": "Capturas na retaguarda",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "capturas",
+      "path": "/{slug_amigos}/capturas",
+      "waitForSelector": "body",
+      "action": "Abrir a \u00e1rea de capturas da retaguarda para apresentar a consulta e a gest\u00e3o administrativa.",
+      "expected": "A retaguarda centraliza as capturas registradas e permite ao administrador do torneio acompanhar e invalidar uma captura quando necess\u00e1rio.",
+      "narration": "Pela retaguarda, o administrador do torneio pode visualizar as capturas registradas e, quando necess\u00e1rio, invalidar uma captura para manter a consist\u00eancia operacional do torneio.",
+      "durationSeconds": 10
+    },
+    {
+      "title": "Sorteio em torneios habilitados",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin",
+      "screen": "sorteio",
+      "path": "/{slug_rei}/sorteio",
+      "waitForSelector": "button[onclick='simularSorteio()'], button[onclick='abrirModalSelecao()']",
+      "steps": [
+        { "type": "click", "selector": "button[onclick='simularSorteio()']" },
+        { "type": "waitForSelector", "selector": "#modalSelecionarParticipantes.show, #modalSelecionarParticipantes[style*='display: block']" },
+        { "type": "click", "selector": "#btnProsseguirSorteio" },
+        { "type": "waitForSelector", "selector": "#sortBtnFecharWrap.visible" }
+      ],
+      "action": "Abrir o m\u00f3dulo de sorteio e, apenas para a demonstra\u00e7\u00e3o em v\u00eddeo, executar um fluxo visual controlado do sorteio.",
+      "expected": "O v\u00eddeo evidencia a experi\u00eancia visual do sorteio, da sele\u00e7\u00e3o ao resultado exibido por embarca\u00e7\u00e3o.",
+      "narration": "Nos torneios com sorteio habilitado, esta grava\u00e7\u00e3o apresenta uma simula\u00e7\u00e3o visual apenas para demonstrar ao cliente como o fluxo de sorteio \u00e9 exibido na retaguarda, da sele\u00e7\u00e3o ao resultado por embarca\u00e7\u00e3o.",
+      "durationSeconds": 13
+    },
+    {
+      "title": "Aus\u00eancia de sorteio no torneio BTS",
+      "tournament": "Torneio BTS Sport Fishing 2026",
+      "authProfile": "bts_admin",
+      "screen": "menu-lateral",
+      "path": "/{slug_bts}",
+      "action": "Abrir um torneio sem sorteio e mostrar que o menu n\u00e3o aparece.",
+      "expected": "O menu de sorteio n\u00e3o \u00e9 exibido para torneios com modo Nenhum.",
+      "narration": "No torneio BTS Sport Fishing 2026, o menu de sorteio n\u00e3o aparece, pois essa funcionalidade n\u00e3o se aplica ao modo configurado.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Clonagem de torneio",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "clonar-torneio",
+      "path": "/{slug_amigos}/admin/clonar",
+      "waitForSelector": "form, body",
+      "action": "Abrir a tela de clonagem de torneio para apresentar seu significado operacional.",
+      "expected": "A tela deixa claro que a clonagem acelera a cria\u00e7\u00e3o de uma nova edi\u00e7\u00e3o a partir da estrutura do torneio atual.",
+      "narration": "A clonagem de torneio permite aproveitar a estrutura j\u00e1 cadastrada para criar uma nova edi\u00e7\u00e3o com mais rapidez, reduzindo retrabalho na prepara\u00e7\u00e3o de eventos futuros.",
+      "durationSeconds": 10
+    },
+    {
+      "title": "Premia\u00e7\u00e3o e relat\u00f3rios",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "premios-e-relatorios",
+      "path": "/{slug_amigos}/premios",
+      "waitForSelector": "body",
+      "action": "Mostrar premia\u00e7\u00e3o por pescador ou embarca\u00e7\u00e3o e abrir os relat\u00f3rios de ganhadores.",
+      "expected": "A retaguarda apresenta os relat\u00f3rios coerentes com a configura\u00e7\u00e3o da premia\u00e7\u00e3o.",
+      "narration": "A premia\u00e7\u00e3o pode ser configurada para pescador ou embarca\u00e7\u00e3o, e os relat\u00f3rios acompanham essa escolha na vis\u00e3o de ganhadores.",
+      "durationSeconds": 12
+    },
+    {
+      "title": "Relat\u00f3rios",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "relatorios",
+      "path": "/{slug_amigos}/relatorios",
+      "waitForSelector": "body",
+      "action": "Abrir a \u00e1rea de relat\u00f3rios e destacar as op\u00e7\u00f5es dispon\u00edveis para o torneio.",
+      "expected": "A \u00e1rea de relat\u00f3rios apresenta as modalidades dispon\u00edveis para emiss\u00e3o.",
+      "narration": "A retaguarda tamb\u00e9m concentra a emiss\u00e3o de relat\u00f3rios operacionais e de ganhadores em uma \u00e1rea dedicada.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Encerramento",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_admin",
+      "screen": "encerramento",
+      "path": "/{slug_amigos}/admin",
+      "waitForSelector": ".page-header h1, body",
+      "action": "Encerrar a apresenta\u00e7\u00e3o com uma mensagem final ao espectador.",
+      "expected": "O v\u00eddeo termina de forma clara e cordial, refor\u00e7ando o fechamento da demonstra\u00e7\u00e3o.",
+      "narration": "Obrigado por acompanhar esta apresenta\u00e7\u00e3o. Se precisar, podemos aprofundar qualquer m\u00f3dulo da plataforma em uma pr\u00f3xima demonstra\u00e7\u00e3o. At\u00e9 breve.",
+      "durationSeconds": 8
+    }
+  ]
+}

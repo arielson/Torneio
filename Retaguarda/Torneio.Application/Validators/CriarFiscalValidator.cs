@@ -12,6 +12,8 @@ public class CriarFiscalValidator : AbstractValidator<CriarFiscalDto>
         RuleFor(x => x.Usuario).NotEmpty().MaximumLength(100);
         RuleFor(x => x.Senha)
             .NotEmpty()
-            .MinimumLength(6).WithMessage("Senha deve ter no mínimo 6 caracteres.");
+            .MinimumLength(6).WithMessage("Senha deve ter no minimo 6 caracteres.");
+        RuleFor(x => x.EquipeIds)
+            .NotEmpty().WithMessage("Selecione ao menos uma embarcacao.");
     }
 }

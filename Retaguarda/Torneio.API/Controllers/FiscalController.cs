@@ -9,9 +9,6 @@ using Torneio.Infrastructure.Services;
 
 namespace Torneio.API.Controllers;
 
-/// <summary>
-/// /api/{slug}/fiscais — AdminTorneio
-/// </summary>
 [Authorize(Policy = "AdminTorneio")]
 [Route("api/{slug}/fiscais")]
 public class FiscalController : BaseController
@@ -51,7 +48,8 @@ public class FiscalController : BaseController
             Nome = dto.Nome,
             Usuario = dto.Usuario,
             Senha = dto.Senha,
-            FotoUrl = dto.FotoUrl
+            FotoUrl = dto.FotoUrl,
+            EquipeIds = dto.EquipeIds
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
@@ -67,7 +65,8 @@ public class FiscalController : BaseController
             Nome = dto.Nome,
             Usuario = dto.Usuario,
             Senha = dto.Senha,
-            FotoUrl = fotoUrl
+            FotoUrl = fotoUrl,
+            EquipeIds = dto.EquipeIds
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
@@ -93,7 +92,8 @@ public class FiscalController : BaseController
             Nome = dto.Nome,
             Usuario = dto.Usuario,
             Senha = dto.Senha,
-            FotoUrl = fotoUrl
+            FotoUrl = fotoUrl,
+            EquipeIds = dto.EquipeIds
         });
         return NoContent();
     }
@@ -123,27 +123,28 @@ public class FiscalController : BaseController
 
 public class CriarFiscalFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
 
-    [Required(ErrorMessage = "O usuário é obrigatório.")]
+    [Required(ErrorMessage = "O usuario e obrigatorio.")]
     public string Usuario { get; init; } = null!;
 
-    [Required(ErrorMessage = "A senha é obrigatória.")]
+    [Required(ErrorMessage = "A senha e obrigatoria.")]
     public string Senha { get; init; } = null!;
 
+    public List<Guid> EquipeIds { get; init; } = new();
     public IFormFile? Foto { get; init; }
 }
 
 public class AtualizarFiscalFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
 
-    [Required(ErrorMessage = "O usuário é obrigatório.")]
+    [Required(ErrorMessage = "O usuario e obrigatorio.")]
     public string Usuario { get; init; } = null!;
 
     public string? Senha { get; init; }
-
+    public List<Guid> EquipeIds { get; init; } = new();
     public IFormFile? Foto { get; init; }
 }

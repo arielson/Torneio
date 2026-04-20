@@ -7,4 +7,5 @@ public class FiscalDto
     public string Nome { get; init; } = null!;
     public string? FotoUrl { get; init; }
     public string Usuario { get; init; } = null!;
+    public List<Guid> EquipeIds { get; init; } = new();
 }

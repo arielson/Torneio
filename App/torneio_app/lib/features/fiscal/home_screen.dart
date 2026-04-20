@@ -75,7 +75,7 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
 
     final fiscalId = auth.usuario?.id ?? '';
     final minhasEquipes =
-        capProv.equipes.where((e) => e.fiscalId == fiscalId).toList();
+        capProv.equipes.where((e) => e.fiscalIds.contains(fiscalId)).toList();
     final exibirContagem = config?.modoSorteio != 'Nenhum';
 
     return Scaffold(

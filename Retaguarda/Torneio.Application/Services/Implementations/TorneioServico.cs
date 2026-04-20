@@ -232,29 +232,49 @@ public class TorneioServico : ITorneioServico
         await _repositorio.Adicionar(novoTorneio);
 
         // Clona Fiscais
-        var fiscais = await _fiscalRepositorio.ListarTodos();
+        var fiscais = await _fiscalRepositorio.ListarPorTorneio(torneioId);
         var mapaFiscais = new Dictionary<Guid, Guid>();
+        var mapaFiscalEquipes = new Dictionary<Guid, List<Guid>>();
         foreach (var fiscal in fiscais)
         {
             var novoFiscal = Fiscal.Criar(
                 novoTorneio.Id, fiscal.Nome, fiscal.Usuario, fiscal.SenhaHash, fiscal.FotoUrl);
             await _fiscalRepositorio.Adicionar(novoFiscal);
             mapaFiscais[fiscal.Id] = novoFiscal.Id;
+            mapaFiscalEquipes[fiscal.Id] = fiscal.Equipes.Select(x => x.EquipeId).ToList();
         }
 
         // Clona Equipes
-        var equipes = await _equipeRepositorio.ListarTodos();
+        var equipes = await _equipeRepositorio.ListarPorTorneio(torneioId);
+        var mapaEquipes = new Dictionary<Guid, Guid>();
         foreach (var equipe in equipes)
         {
-            var novoFiscalId = mapaFiscais.TryGetValue(equipe.FiscalId, out var fid) ? fid : equipe.FiscalId;
             var novaEquipe = Equipe.Criar(
                 novoTorneio.Id, equipe.Nome, equipe.Capitao,
-                novoFiscalId, equipe.QtdVagas, equipe.FotoUrl, equipe.FotoCapitaoUrl);
+                equipe.QtdVagas, equipe.FotoUrl, equipe.FotoCapitaoUrl);
             await _equipeRepositorio.Adicionar(novaEquipe);
+            mapaEquipes[equipe.Id] = novaEquipe.Id;
+        }
+
+        foreach (var fiscal in fiscais)
+        {
+            if (!mapaFiscais.TryGetValue(fiscal.Id, out var novoFiscalId))
+                continue;
+
+            var novoFiscal = await _fiscalRepositorio.ObterComEquipes(novoFiscalId);
+            if (novoFiscal is null)
+                continue;
+
+            var novasEquipes = mapaFiscalEquipes[fiscal.Id]
+                .Where(mapaEquipes.ContainsKey)
+                .Select(equipeId => mapaEquipes[equipeId]);
+
+            novoFiscal.DefinirEquipes(novasEquipes);
+            await _fiscalRepositorio.Atualizar(novoFiscal);
         }
 
         // Clona Membros
-        var membros = await _membroRepositorio.ListarTodos();
+        var membros = await _membroRepositorio.ListarPorTorneio(torneioId);
         foreach (var membro in membros)
         {
             var novoMembro = Membro.Criar(novoTorneio.Id, membro.Nome, membro.FotoUrl);

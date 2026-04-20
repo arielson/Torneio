@@ -9,6 +9,9 @@ public class Fiscal
     public string Usuario { get; private set; } = null!;
     public string SenhaHash { get; private set; } = null!;
 
+    private readonly List<FiscalEquipe> _equipes = new();
+    public IReadOnlyCollection<FiscalEquipe> Equipes => _equipes.AsReadOnly();
+
     private Fiscal() { }
 
     public static Fiscal Criar(
@@ -36,4 +39,13 @@ public class Fiscal
     public void AtualizarNome(string nome) => Nome = nome;
 
     public void AtualizarUsuario(string usuario) => Usuario = usuario;
+
+    public void DefinirEquipes(IEnumerable<Guid> equipeIds)
+    {
+        _equipes.Clear();
+        foreach (var equipeId in equipeIds.Distinct())
+        {
+            _equipes.Add(new FiscalEquipe(Id, equipeId));
+        }
+    }
 }

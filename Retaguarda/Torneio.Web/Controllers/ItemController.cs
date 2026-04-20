@@ -46,6 +46,8 @@ public class ItemController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarItemDto dto)
     {
+        ModelState.Remove(nameof(dto.TorneioId));
+
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is not null && !torneio.UsarFatorMultiplicador)
         {

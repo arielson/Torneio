@@ -1,0 +1,26 @@
+{
+  "title": "Demo Automatizada - Template",
+  "target": "web",
+  "profile": "perfil-alvo",
+  "video": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "orientation": "landscape"
+  },
+  "voice": {
+    "provider": "google-cloud-tts",
+    "voiceName": "pt-BR-Standard-A"
+  },
+  "scenes": [
+    {
+      "title": "Nome da cena",
+      "tournament": "Contexto ou tenant",
+      "screen": "nome-da-tela",
+      "action": "Acao executada pelo rob o ou automacao.",
+      "expected": "Resultado esperado em tela.",
+      "narration": "Texto exato da narracao desta cena.",
+      "durationSeconds": 8
+    }
+  ]
+}

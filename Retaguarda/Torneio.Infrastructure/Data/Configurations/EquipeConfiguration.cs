@@ -21,18 +21,16 @@ public class EquipeConfiguration : IEntityTypeConfiguration<Equipe>
             .HasForeignKey(e => e.TorneioId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Fiscal>()
-            .WithMany()
-            .HasForeignKey(e => e.FiscalId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Muitos-para-muitos com Membro via tabela de junção
         builder.HasMany(e => e.Membros)
             .WithMany()
             .UsingEntity("equipe_membro");
 
         builder.Navigation(e => e.Membros)
             .HasField("_membros")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(e => e.Fiscais)
+            .HasField("_fiscais")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

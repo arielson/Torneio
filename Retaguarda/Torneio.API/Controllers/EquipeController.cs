@@ -9,9 +9,6 @@ using Torneio.Infrastructure.Services;
 
 namespace Torneio.API.Controllers;
 
-/// <summary>
-/// /api/{slug}/equipes — AdminTorneio (escrita), Fiscal (leitura da própria equipe)
-/// </summary>
 [Authorize]
 [Route("api/{slug}/equipes")]
 public class EquipeController : BaseController
@@ -39,13 +36,9 @@ public class EquipeController : BaseController
     [HttpGet]
     public async Task<IActionResult> Listar()
     {
-        var equipes = await _servico.ListarTodos();
-
-        if (GetPerfil() == "Fiscal")
-        {
-            var fiscalId = GetUserId();
-            equipes = equipes.Where(e => e.FiscalId == fiscalId);
-        }
+        IEnumerable<EquipeDto> equipes = GetPerfil() == "Fiscal"
+            ? (await _servico.ListarTodos()).Where(e => e.FiscalIds.Contains(GetUserId()))
+            : await _servico.ListarTodos();
 
         return Ok(equipes);
     }
@@ -67,7 +60,6 @@ public class EquipeController : BaseController
             TorneioId = _tenantContext.TorneioId,
             Nome = dto.Nome,
             Capitao = dto.Capitao,
-            FiscalId = dto.FiscalId,
             QtdVagas = dto.QtdVagas,
             FotoUrl = dto.FotoUrl,
             FotoCapitaoUrl = dto.FotoCapitaoUrl
@@ -87,7 +79,6 @@ public class EquipeController : BaseController
             TorneioId = _tenantContext.TorneioId,
             Nome = dto.Nome,
             Capitao = dto.Capitao,
-            FiscalId = dto.FiscalId,
             QtdVagas = dto.QtdVagas,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
@@ -196,13 +187,11 @@ public class EquipeController : BaseController
 
 public class CriarEquipeFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
 
-    [Required(ErrorMessage = "O capitão é obrigatório.")]
+    [Required(ErrorMessage = "O capitao e obrigatorio.")]
     public string Capitao { get; init; } = null!;
-
-    public Guid FiscalId { get; init; }
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]
     public int QtdVagas { get; init; }
@@ -213,10 +202,10 @@ public class CriarEquipeFormDto
 
 public class AtualizarEquipeFormDto
 {
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
 
-    [Required(ErrorMessage = "O capitão é obrigatório.")]
+    [Required(ErrorMessage = "O capitao e obrigatorio.")]
     public string Capitao { get; init; } = null!;
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]

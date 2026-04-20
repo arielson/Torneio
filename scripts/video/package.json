@@ -1,0 +1,17 @@
+{
+  "name": "torneio-video-pipeline",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:appium-driver": "npx appium driver install uiautomator2",
+    "install:browsers": "npx playwright install chromium",
+    "record:app": "node ./app/record-app.mjs",
+    "record:web": "node ./web/record-web.mjs"
+  },
+  "devDependencies": {
+    "appium": "^3.0.1",
+    "appium-uiautomator2-driver": "^7.1.2",
+    "playwright": "^1.54.2",
+    "webdriverio": "^9.19.2"
+  }
+}

@@ -251,10 +251,6 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("capitao");
 
-                    b.Property<Guid>("FiscalId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("fiscal_id");
-
                     b.Property<string>("FotoCapitaoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -281,9 +277,6 @@ namespace Torneio.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_equipes");
-
-                    b.HasIndex("FiscalId")
-                        .HasDatabaseName("ix_equipes_fiscal_id");
 
                     b.HasIndex("TorneioId")
                         .HasDatabaseName("ix_equipes_torneio_id");
@@ -336,6 +329,25 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDatabaseName("ix_fiscais_usuario_torneio_id");
 
                     b.ToTable("fiscais", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.FiscalEquipe", b =>
+                {
+                    b.Property<Guid>("FiscalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("fiscal_id");
+
+                    b.Property<Guid>("EquipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("equipe_id");
+
+                    b.HasKey("FiscalId", "EquipeId")
+                        .HasName("pk_fiscal_equipe");
+
+                    b.HasIndex("EquipeId")
+                        .HasDatabaseName("ix_fiscal_equipe_equipe_id");
+
+                    b.ToTable("fiscal_equipe", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Grupo", b =>
@@ -884,13 +896,6 @@ namespace Torneio.Infrastructure.Migrations
 
             modelBuilder.Entity("Torneio.Domain.Entities.Equipe", b =>
                 {
-                    b.HasOne("Torneio.Domain.Entities.Fiscal", null)
-                        .WithMany()
-                        .HasForeignKey("FiscalId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_equipes_fiscais_fiscal_id");
-
                     b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
                         .WithMany()
                         .HasForeignKey("TorneioId")
@@ -907,6 +912,27 @@ namespace Torneio.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_fiscais_torneiros_torneio_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.FiscalEquipe", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.Equipe", "Equipe")
+                        .WithMany("Fiscais")
+                        .HasForeignKey("EquipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_fiscal_equipe_equipes_equipe_id");
+
+                    b.HasOne("Torneio.Domain.Entities.Fiscal", "Fiscal")
+                        .WithMany("Equipes")
+                        .HasForeignKey("FiscalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_fiscal_equipe_fiscais_fiscal_id");
+
+                    b.Navigation("Equipe");
+
+                    b.Navigation("Fiscal");
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Grupo", b =>
@@ -1031,6 +1057,16 @@ namespace Torneio.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_equipe_membro_membros_membros_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.Equipe", b =>
+                {
+                    b.Navigation("Fiscais");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.Fiscal", b =>
+                {
+                    b.Navigation("Equipes");
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Grupo", b =>

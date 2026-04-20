@@ -286,9 +286,9 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
               torneioId: 'mock',
               nome: nome,
               capitao: '',
-              fiscalId: 'mock',
               qtdVagas: 5,
               qtdMembros: 0,
+              fiscalIds: const ['mock'],
             ))
         .toList();
     final mockMembros = _todosPescadores

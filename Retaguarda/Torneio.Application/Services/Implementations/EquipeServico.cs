@@ -48,8 +48,11 @@ public class EquipeServico : IEquipeServico
 
         var entidade = Equipe.Criar(
             dto.TorneioId,
-            dto.Nome, dto.Capitao, dto.FiscalId, dto.QtdVagas,
-            dto.FotoUrl, dto.FotoCapitaoUrl);
+            dto.Nome,
+            dto.Capitao,
+            dto.QtdVagas,
+            dto.FotoUrl,
+            dto.FotoCapitaoUrl);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -150,10 +153,10 @@ public class EquipeServico : IEquipeServico
         FotoUrl = e.FotoUrl,
         Capitao = e.Capitao,
         FotoCapitaoUrl = e.FotoCapitaoUrl,
-        FiscalId = e.FiscalId,
         QtdVagas = e.QtdVagas,
         QtdMembros = e.Membros.Count,
-        MembroIds = e.Membros.Select(m => m.Id).ToList()
+        MembroIds = e.Membros.Select(m => m.Id).ToList(),
+        FiscalIds = e.Fiscais.Select(f => f.FiscalId).Distinct().ToList()
     };
 
     private static MembroDto ParaMembroDto(Membro m) => new()

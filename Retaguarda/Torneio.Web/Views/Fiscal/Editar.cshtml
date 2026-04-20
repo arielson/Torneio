@@ -1,0 +1,76 @@
+@model AtualizarFiscalDto
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var fiscal = (FiscalDto)ViewBag.Fiscal;
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var equipes = (IEnumerable<EquipeDto>)(ViewBag.Equipes ?? Enumerable.Empty<EquipeDto>());
+    var label = torneio?.LabelSupervisor ?? "Fiscal";
+    var labelPlural = torneio?.LabelSupervisorPlural ?? "Fiscais";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    ViewData["Title"] = $"Editar {label} - {fiscal.Nome}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Editar @label - @fiscal.Nome</h1>
+    </div>
+</div>
+<a href="/@slug/fiscais" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelPlural
+</a>
+
+<div class="form-card">
+    <form asp-controller="Fiscal" asp-action="Editar" asp-route-slug="@slug" asp-route-id="@fiscal.Id" method="post" enctype="multipart/form-data">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+        <div class="form-section-title">Dados do @label</div>
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+        <div class="form-section-title">Acesso</div>
+        <div class="mb-3">
+            <label asp-for="Usuario" class="form-label">Usuario</label>
+            <input asp-for="Usuario" class="form-control" autocomplete="username" />
+            <span asp-validation-for="Usuario" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Senha" class="form-label">Nova senha - opcional</label>
+            <input asp-for="Senha" class="form-control" type="password" autocomplete="new-password" />
+            <span asp-validation-for="Senha" class="text-danger small"></span>
+        </div>
+        <div class="form-section-title">@labelEquipePlural atendidas</div>
+        <div class="mb-3">
+            @if (!equipes.Any())
+            {
+                <div class="text-muted small">Nenhuma embarcacao cadastrada no torneio.</div>
+            }
+            else
+            {
+                @foreach (var equipe in equipes.OrderBy(e => e.Nome))
+                {
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="EquipeIds" value="@equipe.Id" id="eq_@equipe.Id"
+                               @(Model.EquipeIds.Contains(equipe.Id) ? "checked" : null) />
+                        <label class="form-check-label" for="eq_@equipe.Id">@equipe.Nome</label>
+                    </div>
+                }
+            }
+        </div>
+        <div class="form-section-title">Foto</div>
+        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto do {label}" }, { "fotoUrl", fiscal.FotoUrl } })' />
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Salvar Alteracoes
+            </button>
+            <a href="/@slug/fiscais" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

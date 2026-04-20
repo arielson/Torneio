@@ -20,6 +20,7 @@
 
 <div class="form-card">
     <form asp-controller="Item" asp-action="Criar" asp-route-slug="@slug" method="post" enctype="multipart/form-data">
+        <input asp-for="TorneioId" type="hidden" />
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
