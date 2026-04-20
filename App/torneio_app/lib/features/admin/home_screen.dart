@@ -26,20 +26,21 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Sair'),
-        content: const Text('Deseja encerrar a sessão?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Sair'),
+            content: const Text('Deseja encerrar a sessão?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Sair'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sair'),
-          ),
-        ],
-      ),
     );
     if (confirm == true && mounted) {
       context.read<AuthProvider>().logout();
@@ -63,12 +64,19 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     final labelFiscalPlural = config?.labelSupervisorPlural ?? 'Fiscais';
     final labelCapturaPlural = config?.labelCapturaPlural ?? 'Capturas';
     final exibirSorteio = config?.modoSorteio != 'Nenhum';
-    final exibirGrupos  = config?.modoSorteio == 'GrupoEquipe';
+    final exibirGrupos = config?.modoSorteio == 'GrupoEquipe';
+    final exibirReorganizacao = config?.modoSorteio != 'Nenhum';
 
     return Scaffold(
       appBar: AppBar(
         title: Text(config?.nomeTorneio ?? 'Admin'),
         actions: [
+          if (exibirReorganizacao)
+            IconButton(
+              icon: const Icon(Icons.warning_amber_rounded),
+              tooltip: 'Reorganizacao emergencial',
+              onPressed: () => _abrirSecao('/admin/reorganizacao-emergencial'),
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
@@ -90,7 +98,9 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               ),
               Text(
                 'Administrador do torneio',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
               if (config != null) ...[
                 const SizedBox(height: 12),
@@ -160,6 +170,33 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                   ),
                 ],
               ),
+              if (exibirReorganizacao) ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed:
+                      () => _abrirSecao('/admin/reorganizacao-emergencial'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  icon: const Icon(Icons.warning_amber_rounded),
+                  label: const Text('Abrir Reorganizacao Emergencial'),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Text(
+                    'A reorganizacao emergencial de ${labelMembroPlural.toLowerCase()} entre ${labelEquipePlural.toLowerCase()} deve ser usada apenas em caso excepcional e exige confirmacao do admin do torneio.',
+                    style: TextStyle(color: Colors.orange.shade900),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),
@@ -175,10 +212,10 @@ class _StatusBadge extends StatelessWidget {
   const _StatusBadge({required this.status});
 
   Color get _cor => switch (status) {
-        'Liberado' => Colors.green,
-        'Finalizado' => Colors.grey,
-        _ => Colors.orange,
-      };
+    'Liberado' => Colors.green,
+    'Finalizado' => Colors.grey,
+    _ => Colors.orange,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +284,11 @@ class _NavItem extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 10,
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

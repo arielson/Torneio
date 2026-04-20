@@ -24,6 +24,7 @@ import 'features/admin/relatorios_equipes_screen.dart';
 import 'features/admin/relatorios_membros_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
+import 'features/admin/reorganizacao_emergencial_screen.dart';
 import 'features/admin/sorteio_screen.dart';
 import 'features/admin/grupos_screen.dart';
 import 'theme/app_theme.dart';
@@ -73,35 +74,41 @@ class _TorneioAppState extends State<TorneioApp> {
         ChangeNotifierProvider(create: (_) => HomeProvider(api)),
       ],
       child: Consumer<ConfigProvider>(
-        builder: (context, configProvider, _) => MaterialApp(
-        navigatorKey: _navigatorKey,
-        title: 'Torneio',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.fromConfig(configProvider.config),
-        initialRoute: '/',
-        routes: {
-          '/': (_) => const _SplashRedirect(),
-          '/home': (_) => const HomeScreen(),
-          '/torneio': (_) => const TorneioScreen(),
-          '/login': (_) => const LoginScreen(),
-          '/fiscal/home': (_) => const HomeFiscalScreen(),
-          '/fiscal/registrar': (_) => const RegistrarCapturaScreen(),
-          '/fiscal/capturas': (_) => const CapturasScreen(),
-          '/fiscal/sync': (_) => const SyncScreen(),
-          '/admin/home': (_) => const HomeAdminScreen(),
-          '/admin/equipes': (_) => const EquipesAdminScreen(),
-          '/admin/membros': (_) => const MembrosAdminScreen(),
-          '/admin/itens': (_) => const ItensAdminScreen(),
-          '/admin/fiscais': (_) => const FiscaisAdminScreen(),
-          '/admin/capturas': (_) => const CapturasAdminScreen(),
-          '/admin/sorteio': (_) => const SorteioAdminScreen(),
-          '/admin/grupos': (_) => const GruposAdminScreen(),
-          '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
-          '/admin/relatorios/equipes': (_) => const RelatoriosEquipesScreen(),
-          '/admin/relatorios/membros': (_) => const RelatoriosMembrosScreen(),
-          '/admin/relatorios/ganhadores': (_) => const RelatoriosGanhadoresScreen(),
-        },
-      ),
+        builder:
+            (context, configProvider, _) => MaterialApp(
+              navigatorKey: _navigatorKey,
+              title: 'Torneio',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.fromConfig(configProvider.config),
+              initialRoute: '/',
+              routes: {
+                '/': (_) => const _SplashRedirect(),
+                '/home': (_) => const HomeScreen(),
+                '/torneio': (_) => const TorneioScreen(),
+                '/login': (_) => const LoginScreen(),
+                '/fiscal/home': (_) => const HomeFiscalScreen(),
+                '/fiscal/registrar': (_) => const RegistrarCapturaScreen(),
+                '/fiscal/capturas': (_) => const CapturasScreen(),
+                '/fiscal/sync': (_) => const SyncScreen(),
+                '/admin/home': (_) => const HomeAdminScreen(),
+                '/admin/equipes': (_) => const EquipesAdminScreen(),
+                '/admin/membros': (_) => const MembrosAdminScreen(),
+                '/admin/itens': (_) => const ItensAdminScreen(),
+                '/admin/fiscais': (_) => const FiscaisAdminScreen(),
+                '/admin/capturas': (_) => const CapturasAdminScreen(),
+                '/admin/reorganizacao-emergencial':
+                    (_) => const ReorganizacaoEmergencialScreen(),
+                '/admin/sorteio': (_) => const SorteioAdminScreen(),
+                '/admin/grupos': (_) => const GruposAdminScreen(),
+                '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
+                '/admin/relatorios/equipes':
+                    (_) => const RelatoriosEquipesScreen(),
+                '/admin/relatorios/membros':
+                    (_) => const RelatoriosMembrosScreen(),
+                '/admin/relatorios/ganhadores':
+                    (_) => const RelatoriosGanhadoresScreen(),
+              },
+            ),
       ),
     );
   }
@@ -156,10 +163,16 @@ class _SplashRedirectState extends State<_SplashRedirect> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.emoji_events, size: 80, color: Theme.of(context).colorScheme.onPrimary),
+            Icon(
+              Icons.emoji_events,
+              size: 80,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
             const SizedBox(height: 16),
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
           ],
         ),

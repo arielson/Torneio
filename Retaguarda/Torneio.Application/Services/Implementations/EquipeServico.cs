@@ -1,5 +1,6 @@
 using FluentValidation;
 using Torneio.Application.DTOs.Equipe;
+using Torneio.Application.DTOs.Membro;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
@@ -102,6 +103,45 @@ public class EquipeServico : IEquipeServico
         await _repositorio.Atualizar(equipe);
     }
 
+    public async Task<(EquipeDto Origem, EquipeDto Destino, MembroDto Membro)> ReorganizarMembroEmergencia(
+        Guid membroId,
+        Guid equipeDestinoId)
+    {
+        var membro = await _membroRepositorio.ObterPorId(membroId)
+            ?? throw new KeyNotFoundException($"Membro '{membroId}' nao encontrado.");
+        if (membro.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Membro '{membroId}' nao encontrado.");
+
+        var equipes = (await _repositorio.ListarPorTorneio(_tenantContext.TorneioId)).ToList();
+        var equipeDestino = equipes.FirstOrDefault(e => e.Id == equipeDestinoId)
+            ?? throw new KeyNotFoundException($"Equipe '{equipeDestinoId}' nao encontrada.");
+
+        if (equipeDestino.Membros.Any(m => m.Id == membroId))
+            throw new InvalidOperationException("O membro ja esta vinculado a embarcacao de destino.");
+
+        var equipesOrigem = equipes
+            .Where(e => e.Id != equipeDestinoId && e.Membros.Any(m => m.Id == membroId))
+            .ToList();
+
+        if (equipesOrigem.Count == 0)
+            throw new InvalidOperationException("O membro informado nao esta vinculado a nenhuma embarcacao de origem.");
+
+        if (equipeDestino.Membros.Count >= equipeDestino.QtdVagas)
+            throw new InvalidOperationException("A embarcacao de destino nao possui vagas disponiveis.");
+
+        foreach (var equipeOrigem in equipesOrigem)
+        {
+            equipeOrigem.RemoverMembro(membroId);
+            await _repositorio.Atualizar(equipeOrigem);
+        }
+
+        equipeDestino.AdicionarMembro(membro);
+        await _repositorio.Atualizar(equipeDestino);
+
+        var origemPrincipal = equipesOrigem.First();
+        return (ParaDto(origemPrincipal), ParaDto(equipeDestino), ParaMembroDto(membro));
+    }
+
     private static EquipeDto ParaDto(Equipe e) => new()
     {
         Id = e.Id,
@@ -114,5 +154,13 @@ public class EquipeServico : IEquipeServico
         QtdVagas = e.QtdVagas,
         QtdMembros = e.Membros.Count,
         MembroIds = e.Membros.Select(m => m.Id).ToList()
+    };
+
+    private static MembroDto ParaMembroDto(Membro m) => new()
+    {
+        Id = m.Id,
+        TorneioId = m.TorneioId,
+        Nome = m.Nome,
+        FotoUrl = m.FotoUrl
     };
 }

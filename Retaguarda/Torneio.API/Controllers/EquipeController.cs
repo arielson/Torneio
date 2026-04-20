@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Torneio.Application.DTOs.Equipe;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
@@ -18,15 +19,21 @@ public class EquipeController : BaseController
     private readonly IEquipeServico _servico;
     private readonly TenantContext _tenantContext;
     private readonly IFileStorage _fileStorage;
+    private readonly ILogAuditoriaServico _log;
+    private readonly ITorneioServico _torneioServico;
 
     public EquipeController(
         IEquipeServico servico,
         TenantContext tenantContext,
-        IFileStorage fileStorage)
+        IFileStorage fileStorage,
+        ILogAuditoriaServico log,
+        ITorneioServico torneioServico)
     {
         _servico = servico;
         _tenantContext = tenantContext;
         _fileStorage = fileStorage;
+        _log = log;
+        _torneioServico = torneioServico;
     }
 
     [HttpGet]
@@ -141,6 +148,41 @@ public class EquipeController : BaseController
     {
         await _servico.RemoverMembro(id, membroId);
         return NoContent();
+    }
+
+    [Authorize(Policy = "AdminTorneio")]
+    [HttpPost("reorganizacao-emergencial")]
+    public async Task<IActionResult> ReorganizacaoEmergencial([FromBody] ReorganizacaoEmergencialEquipeDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        if (!string.Equals(dto.Confirmacao?.Trim(), "REORGANIZAR", StringComparison.OrdinalIgnoreCase))
+        {
+            ModelState.AddModelError(nameof(dto.Confirmacao), "Digite REORGANIZAR para confirmar a operacao.");
+            return ValidationProblem(ModelState);
+        }
+
+        var resultado = await _servico.ReorganizarMembroEmergencia(dto.MembroId, dto.EquipeDestinoId);
+        var torneio = await _torneioServico.ObterPorId(_tenantContext.TorneioId);
+
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = _tenantContext.TorneioId,
+            NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Equipes,
+            Acao = "ReorganizacaoEmergencialMembroEquipe",
+            Descricao = $"REORGANIZACAO EMERGENCIAL | Membro: {resultado.Membro.Nome} | Origem: {resultado.Origem.Nome} | Destino: {resultado.Destino.Nome} | Motivo: {dto.Motivo}",
+            UsuarioNome = User.Identity?.Name ?? "App",
+            UsuarioPerfil = GetPerfil(),
+            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        });
+
+        return Ok(new
+        {
+            membro = resultado.Membro,
+            origem = resultado.Origem,
+            destino = resultado.Destino
+        });
     }
 
     private async Task<string?> SalvarFotoAsync(IFormFile? foto, string subpasta)

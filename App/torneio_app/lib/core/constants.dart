@@ -22,6 +22,7 @@ class ApiConstants {
   static String sorteioPreCondicoes(String slug) => '$_base/api/$slug/sorteio/pre-condicoes';
   static String grupos(String slug) => '$_base/api/$slug/grupos';
   static String grupoMembros(String slug, String grupoId) => '$_base/api/$slug/grupos/$grupoId/membros';
+  static String reorganizacaoEmergencialEquipe(String slug) => '$_base/api/$slug/equipes/reorganizacao-emergencial';
   static String sorteioGrupo(String slug) => '$_base/api/$slug/sorteio-grupo';
   static String sorteioGrupoConfirmar(String slug) => '$_base/api/$slug/sorteio-grupo/confirmar';
   static String sorteioGrupoPreCondicoes(String slug) => '$_base/api/$slug/sorteio-grupo/pre-condicoes';

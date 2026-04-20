@@ -1,4 +1,5 @@
 using Torneio.Application.DTOs.Equipe;
+using Torneio.Application.DTOs.Membro;
 
 namespace Torneio.Application.Services.Interfaces;
 
@@ -11,4 +12,5 @@ public interface IEquipeServico
     Task Remover(Guid id);
     Task AdicionarMembro(Guid equipeId, Guid membroId);
     Task RemoverMembro(Guid equipeId, Guid membroId);
+    Task<(EquipeDto Origem, EquipeDto Destino, MembroDto Membro)> ReorganizarMembroEmergencia(Guid membroId, Guid equipeDestinoId);
 }

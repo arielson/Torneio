@@ -280,4 +280,67 @@ public class EquipeController : TorneioBaseController
         });
         return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }
+
+    [HttpGet("reorganizacao-emergencial")]
+    public async Task<IActionResult> ReorganizacaoEmergencial()
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+
+        ViewBag.Torneio = torneio;
+        ViewBag.Equipes = await _servico.ListarTodos();
+        ViewBag.Membros = await _membroServico.ListarTodos();
+        return View(new ReorganizacaoEmergencialEquipeDto());
+    }
+
+    [HttpPost("reorganizacao-emergencial")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReorganizacaoEmergencial(ReorganizacaoEmergencialEquipeDto dto)
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+        if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+
+        if (!string.Equals(dto.Confirmacao?.Trim(), "REORGANIZAR", StringComparison.OrdinalIgnoreCase))
+            ModelState.AddModelError(nameof(dto.Confirmacao), "Digite REORGANIZAR para confirmar a operacao.");
+
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Torneio = torneio;
+            ViewBag.Equipes = await _servico.ListarTodos();
+            ViewBag.Membros = await _membroServico.ListarTodos();
+            return View(dto);
+        }
+
+        try
+        {
+            var resultado = await _servico.ReorganizarMembroEmergencia(dto.MembroId, dto.EquipeDestinoId);
+            TempData["Sucesso"] = "Reorganizacao emergencial registrada com sucesso.";
+
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio.NomeTorneio,
+                Categoria = CategoriaLog.Equipes,
+                Acao = "ReorganizacaoEmergencialMembroEquipe",
+                Descricao = $"REORGANIZACAO EMERGENCIAL | Membro: {resultado.Membro.Nome} | Origem: {resultado.Origem.Nome} | Destino: {resultado.Destino.Nome} | Motivo: {dto.Motivo}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
+
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            ViewBag.Torneio = torneio;
+            ViewBag.Equipes = await _servico.ListarTodos();
+            ViewBag.Membros = await _membroServico.ListarTodos();
+            return View(dto);
+        }
+    }
 }

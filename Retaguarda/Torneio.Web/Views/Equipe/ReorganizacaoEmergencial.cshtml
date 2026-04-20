@@ -1,0 +1,89 @@
+@model ReorganizacaoEmergencialEquipeDto
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var equipes = ((IEnumerable<EquipeDto>)ViewBag.Equipes).ToList();
+    var membros = ((IEnumerable<MembroDto>)ViewBag.Membros).ToList();
+    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    ViewData["Title"] = "Reorganizacao Emergencial";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Reorganizacao Emergencial</h1>
+        <p class="text-muted mb-0">Use apenas em caso de problema com embarcacao ou necessidade operacional critica.</p>
+    </div>
+</div>
+<a href="/@slug/equipes" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelEquipePlural
+</a>
+
+<div class="alert alert-danger d-flex gap-3 align-items-start mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+    <div>
+        <div class="fw-semibold">Medida de emergencia</div>
+        <div>Esta operacao altera manualmente a distribuicao de @labelMembro.ToLower() entre @labelEquipePlural.ToLower() e sera registrada em log de auditoria com motivo obrigatorio.</div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-shuffle me-2"></i>Confirmar reorganizacao</h5>
+    </div>
+    <div class="card-body-pad">
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="MembroId" class="form-label">@labelMembro</label>
+                <select asp-for="MembroId" class="form-select">
+                    <option value="">Selecione</option>
+                    @foreach (var membro in membros.OrderBy(m => m.Nome))
+                    {
+                        <option value="@membro.Id">@membro.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="MembroId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EquipeDestinoId" class="form-label">@labelEquipe de destino</label>
+                <select asp-for="EquipeDestinoId" class="form-select">
+                    <option value="">Selecione</option>
+                    @foreach (var equipe in equipes.OrderBy(e => e.Nome))
+                    {
+                        <option value="@equipe.Id">@equipe.Nome</option>
+                    }
+                </select>
+                <span asp-validation-for="EquipeDestinoId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Motivo" class="form-label">Motivo da emergencia</label>
+                <textarea asp-for="Motivo" class="form-control" rows="4" placeholder="Descreva o problema com a embarcacao e por que a reorganizacao e necessaria."></textarea>
+                <span asp-validation-for="Motivo" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Confirmacao" class="form-label">Confirmacao do admin do torneio</label>
+                <input asp-for="Confirmacao" class="form-control" placeholder="Digite REORGANIZAR" />
+                <div class="form-text">Digite <strong>REORGANIZAR</strong> para confirmar esta medida excepcional.</div>
+                <span asp-validation-for="Confirmacao" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Executar reorganizacao emergencial
+                </button>
+                <a href="/@slug/equipes" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

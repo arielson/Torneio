@@ -6,6 +6,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
 import 'equipe_form_screen.dart';
+import 'reorganizacao_emergencial_screen.dart';
 
 class EquipesAdminScreen extends StatefulWidget {
   const EquipesAdminScreen({super.key});
@@ -72,6 +73,17 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
     }
   }
 
+  Future<void> _abrirReorganizacaoEmergencial() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ReorganizacaoEmergencialScreen()),
+    );
+
+    if (mounted) {
+      await _carregar();
+    }
+  }
+
   Future<void> _remover(Equipe equipe) async {
     final config = context.read<ConfigProvider>().config;
     final auth = context.read<AuthProvider>().usuario;
@@ -127,6 +139,14 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(labelPlural),
+        actions: [
+          if (exibirMembros)
+            IconButton(
+              onPressed: _abrirReorganizacaoEmergencial,
+              tooltip: 'Reorganizacao emergencial',
+              icon: const Icon(Icons.warning_amber_rounded),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _abrirFormulario(),
@@ -152,6 +172,19 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
                   : _equipes.isEmpty
                       ? ListView(
                           children: [
+                            if (exibirMembros)
+                              Container(
+                                margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.orange.shade200),
+                                ),
+                                child: const Text(
+                                  'Reorganizacao de emergencia deve ser usada apenas em caso critico e exige confirmacao do administrador do torneio.',
+                                ),
+                              ),
                             Padding(
                               padding: const EdgeInsets.all(24),
                               child: Text(
