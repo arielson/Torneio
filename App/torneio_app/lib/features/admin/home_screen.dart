@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
+import '../../core/services/api_service.dart';
 
 class HomeAdminScreen extends StatefulWidget {
   const HomeAdminScreen({super.key});
@@ -11,6 +13,14 @@ class HomeAdminScreen extends StatefulWidget {
 }
 
 class _HomeAdminScreenState extends State<HomeAdminScreen> {
+  late final ApiService _api;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _api = context.read<AuthProvider>().api;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +61,58 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
 
   void _abrirSecao(String rota) {
     Navigator.pushNamed(context, rota);
+  }
+
+  Future<void> _alterarStatus({
+    required String titulo,
+    required String mensagem,
+    required String endpoint,
+    required String sucesso,
+  }) async {
+    final auth = context.read<AuthProvider>().usuario;
+    final configProvider = context.read<ConfigProvider>();
+    final config = configProvider.config;
+    if (auth == null || config == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: Text(titulo),
+            content: Text(mensagem),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirmar'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      await _api.post(endpoint, null, token: auth.token);
+      await configProvider.carregarConfig(auth.slug!);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(sucesso)));
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nao foi possivel alterar o status do torneio.')),
+      );
+    }
   }
 
   @override
@@ -105,6 +167,31 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               if (config != null) ...[
                 const SizedBox(height: 12),
                 _StatusBadge(status: config.status),
+                const SizedBox(height: 12),
+                _StatusActions(
+                  status: config.status,
+                  onLiberar:
+                      () => _alterarStatus(
+                        titulo: 'Liberar torneio',
+                        mensagem: 'Deseja alterar o status do torneio para Liberado?',
+                        endpoint: ApiConstants.torneioLiberar(config.slug),
+                        sucesso: 'Torneio liberado com sucesso.',
+                      ),
+                  onReabrir:
+                      () => _alterarStatus(
+                        titulo: 'Voltar para aberto',
+                        mensagem: 'Deseja voltar o torneio para o status Aberto?',
+                        endpoint: ApiConstants.torneioReabrir(config.slug),
+                        sucesso: 'Torneio reaberto com sucesso.',
+                      ),
+                  onFinalizar:
+                      () => _alterarStatus(
+                        titulo: 'Finalizar torneio',
+                        mensagem: 'Deseja alterar o status do torneio para Finalizado?',
+                        endpoint: ApiConstants.torneioFinalizar(config.slug),
+                        sucesso: 'Torneio finalizado com sucesso.',
+                      ),
+                ),
               ],
               const SizedBox(height: 20),
               Text('Cadastros', style: Theme.of(context).textTheme.titleMedium),
@@ -229,6 +316,72 @@ class _StatusBadge extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _StatusActions extends StatelessWidget {
+  final String status;
+  final VoidCallback onLiberar;
+  final VoidCallback onReabrir;
+  final VoidCallback onFinalizar;
+
+  const _StatusActions({
+    required this.status,
+    required this.onLiberar,
+    required this.onReabrir,
+    required this.onFinalizar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (status == 'Aberto') {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          FilledButton.icon(
+            onPressed: onLiberar,
+            icon: const Icon(Icons.play_circle_outline),
+            label: const Text('Liberar'),
+          ),
+        ],
+      );
+    }
+
+    if (status == 'Liberado') {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          OutlinedButton.icon(
+            onPressed: onReabrir,
+            icon: const Icon(Icons.arrow_back),
+            label: const Text('Voltar para Aberto'),
+          ),
+          FilledButton.icon(
+            onPressed: onFinalizar,
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('Finalizar'),
+          ),
+        ],
+      );
+    }
+
+    if (status == 'Finalizado') {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          OutlinedButton.icon(
+            onPressed: onReabrir,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reabrir'),
+          ),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 

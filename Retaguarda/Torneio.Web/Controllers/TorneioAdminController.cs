@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
 
@@ -10,11 +11,16 @@ namespace Torneio.Web.Controllers;
 public class TorneioAdminController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _logAuditoriaServico;
 
-    public TorneioAdminController(TenantContext tenantContext, ITorneioServico torneioServico)
+    public TorneioAdminController(
+        TenantContext tenantContext,
+        ITorneioServico torneioServico,
+        ILogAuditoriaServico logAuditoriaServico)
         : base(tenantContext)
     {
         _torneioServico = torneioServico;
+        _logAuditoriaServico = logAuditoriaServico;
     }
 
     [HttpGet("")]
@@ -32,6 +38,18 @@ public class TorneioAdminController : TorneioBaseController
         try
         {
             await _torneioServico.Liberar(TenantContext.TorneioId);
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _logAuditoriaServico.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Torneios,
+                Acao = "LiberarTorneio",
+                Descricao = "Status do torneio alterado para Liberado via retaguarda web.",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
             TempData["Sucesso"] = "Torneio liberado.";
         }
         catch (Exception ex)
@@ -48,6 +66,18 @@ public class TorneioAdminController : TorneioBaseController
         try
         {
             await _torneioServico.Finalizar(TenantContext.TorneioId);
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _logAuditoriaServico.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Torneios,
+                Acao = "FinalizarTorneio",
+                Descricao = "Status do torneio alterado para Finalizado via retaguarda web.",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
             TempData["Sucesso"] = "Torneio finalizado.";
         }
         catch (Exception ex)
@@ -64,6 +94,18 @@ public class TorneioAdminController : TorneioBaseController
         try
         {
             await _torneioServico.Reabrir(TenantContext.TorneioId);
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _logAuditoriaServico.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Torneios,
+                Acao = "ReabrirTorneio",
+                Descricao = "Status do torneio alterado para Aberto via retaguarda web.",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
             TempData["Sucesso"] = "Torneio reaberto.";
         }
         catch (Exception ex)

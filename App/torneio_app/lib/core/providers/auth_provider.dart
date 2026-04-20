@@ -15,6 +15,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider(this._api);
 
   UsuarioAutenticado? get usuario => _usuario;
+  ApiService get api => _api;
   bool get carregando => _carregando;
   String? get erro => _erro;
   bool get autenticado => _usuario != null && !(_usuario!.tokenExpirado);

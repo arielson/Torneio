@@ -50,6 +50,12 @@
         }
         else if (Model.Status == "Liberado")
         {
+            <form method="post" action="/@slug/admin/reabrir">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Voltar para Aberto
+                </button>
+            </form>
             <form method="post" action="/@slug/admin/finalizar">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-secondary">
