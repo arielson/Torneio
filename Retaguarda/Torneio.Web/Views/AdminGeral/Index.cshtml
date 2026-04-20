@@ -105,6 +105,12 @@
                                     <a href="/@t.Slug/admin" class="btn btn-sm btn-outline-primary" title="Painel do Torneio">
                                         <i class="bi bi-box-arrow-in-right"></i>
                                     </a>
+                                    @if (!string.Equals(t.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a href="/@t.Slug/equipes/reorganizacao-emergencial" class="btn btn-sm btn-outline-danger" title="Reorganizacao Emergencial">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </a>
+                                    }
                                     <a asp-action="EditarTorneio" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>

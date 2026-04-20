@@ -7,6 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - @(Configuration["Branding:ApplicationName"] ?? "Torneio")</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -37,6 +38,15 @@
         (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
     bool IsExact(string path) =>
         string.Equals(Context.Request.Path.Value, path, StringComparison.OrdinalIgnoreCase);
+    bool IsEquipeSectionActive(string slugValue)
+    {
+        var currentPath = Context.Request.Path.Value ?? "";
+        var reorganizacaoPath = $"/{slugValue}/equipes/reorganizacao-emergencial";
+        if (currentPath.StartsWith(reorganizacaoPath, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return currentPath.StartsWith($"/{slugValue}/equipes", StringComparison.OrdinalIgnoreCase);
+    }
 }
 @if (isAuthPage)
 {
@@ -85,7 +95,7 @@ else if (isAdmin)
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{effectiveSlug}/equipes") ? "active" : "")" href="/@effectiveSlug/equipes">
+                            <a class="nav-link @(IsEquipeSectionActive(effectiveSlug) ? "active" : "")" href="/@effectiveSlug/equipes">
                                 <i class="bi bi-people"></i> @(torneioNav?.LabelEquipePlural ?? "Equipes")
                             </a>
                         </li>
