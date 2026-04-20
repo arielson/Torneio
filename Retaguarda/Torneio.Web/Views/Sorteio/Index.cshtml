@@ -556,14 +556,25 @@ else
         const membroIds = getSelecionados('chk-membro');
         // Obtém os nomes das equipes/membros selecionados para a animação
         const nomesEquipes = equipeIds.map(id => {
-            const lbl = document.querySelector(`#eq_${id}`)?.closest('.form-check')?.querySelector('.form-check-label');
+            const lbl = document.querySelector(`label[for="eq_${id}"]`);
             return lbl ? lbl.firstChild.textContent.trim() : id;
         });
         const nomesMembros = membroIds.map(id => {
-            const lbl = document.querySelector(`#mb_${id} + label`);
+            const lbl = document.querySelector(`label[for="mb_${id}"]`);
             return lbl ? lbl.textContent.trim() : id;
         });
-        realizarSorteio(equipeIds, membroIds, nomesEquipes, nomesMembros);
+
+        if (_modoSimulacao) {
+            // Coleta vagas por equipe do DOM para distribuição correta
+            const equipesComVagas = equipeIds.map(id => ({
+                id,
+                nome: nomesEquipes[equipeIds.indexOf(id)],
+                vagas: parseInt(document.querySelector(`#eq_${id}`)?.dataset?.vagas || '5', 10)
+            }));
+            realizarSorteioMock(equipesComVagas, nomesMembros);
+        } else {
+            realizarSorteio(equipeIds, membroIds, nomesEquipes, nomesMembros);
+        }
     };
 
     // ── Spinning ──────────────────────────────────────────
@@ -602,7 +613,10 @@ else
 
     // ── Estado de fechar ──────────────────────────────────
     let _isSimulacao    = false;
+    let _modoSimulacao  = false;
     let _ultimoResultado = null;
+    let _listaEquipesOriginal = '';
+    let _listaMembrosOriginal = '';
 
     window.fecharOverlay = function () {
         document.getElementById('sortOverlay').style.display = 'none';
@@ -665,6 +679,12 @@ else
         document.getElementById('sortPhaseGirando').style.display   = 'none';
         document.getElementById('sortPhaseRevelando').style.display  = 'flex';
         document.getElementById('sortBtnFecharWrap').classList.remove('visible');
+
+        // Em simulação: esconde Confirmar e renomeia Cancelar → Fechar
+        const btnConfirmar = document.getElementById('btnConfirmarSorteio');
+        const btnCancelar  = document.querySelector('#sortBtnFecharWrap .btn-outline-light');
+        btnConfirmar.style.display = isSimulacao ? 'none' : '';
+        if (btnCancelar) btnCancelar.textContent = isSimulacao ? 'Fechar' : 'Cancelar';
 
         const grid = document.getElementById('sortRevealGrid');
         grid.innerHTML = '';
@@ -753,29 +773,63 @@ else
     };
 
     // ── Simulação (dev) ───────────────────────────────────
-    const POOL_EQUIPES_MOCK = [
-        'Mar Bravo','Peixe Espada','Águia do Mar','Barco Veloz',
-        'Corredeira','Maré Alta','Vento Sul','Onda Brava',
-        'Estrela do Mar','Boto Cinza','Albatroz','Marlim Azul'
-    ];
-    const POOL_MEMBROS_MOCK = [
-        'João Silva','Pedro Costa','Ana Lima','Carlos Melo',
-        'Maria Santos','Lucas Ferreira','Beatriz Neves','Rafael Torres',
-        'Priya Mendes','Sonia Cruz','Diego Rocha','Camila Duarte'
-    ];
 
-    window.simularSorteio = async function () {
+    // Abre o modal de seleção preenchido com dados fictícios
+    window.simularSorteio = function () {
+        _modoSimulacao = true;
+
+        // Salva listas originais para restaurar ao fechar
+        const listEq = document.getElementById('listEquipes');
+        const listMb = document.getElementById('listMembros');
+        _listaEquipesOriginal = listEq.innerHTML;
+        _listaMembrosOriginal = listMb.innerHTML;
+
+        // Popula com embarcações fictícias (5 vagas cada)
+        listEq.innerHTML = MOCK_EQUIPES_INFO.map(eq => `
+            <div class="form-check">
+                <input class="form-check-input chk-equipe" type="checkbox"
+                       id="eq_${eq.id}" value="${eq.id}" data-vagas="5" checked />
+                <label class="form-check-label" for="eq_${eq.id}">
+                    ${eq.nome}
+                    <span class="sel-vagas-badge">(5 vagas)</span>
+                </label>
+            </div>`).join('');
+
+        // Popula com pescadores fictícios
+        listMb.innerHTML = TODOS_PESCADORES.map((nome, i) => `
+            <div class="form-check">
+                <input class="form-check-input chk-membro" type="checkbox"
+                       id="mb_mock-mb-${i}" value="mock-mb-${i}" checked />
+                <label class="form-check-label" for="mb_mock-mb-${i}">${nome}</label>
+            </div>`).join('');
+
+        abrirModalSelecao();
+    };
+
+    // Restaura modal ao fechar (em modo simulação)
+    document.getElementById('modalSelecionarParticipantes').addEventListener('hidden.bs.modal', function () {
+        if (_modoSimulacao) {
+            document.getElementById('listEquipes').innerHTML = _listaEquipesOriginal;
+            document.getElementById('listMembros').innerHTML = _listaMembrosOriginal;
+            _modoSimulacao = false;
+        }
+    });
+
+    // Sorteio fictício: distribui pescadores selecionados pelas equipes selecionadas
+    window.realizarSorteioMock = async function (equipesComVagas, nomesMembros) {
         abrirOverlay();
-        startSpinning(POOL_EQUIPES_MOCK, POOL_MEMBROS_MOCK);
+        const nomesEq = equipesComVagas.map(e => e.nome);
+        startSpinning(nomesEq.length > 0 ? nomesEq : MOCK_EQUIPES_INFO.map(e => e.nome),
+                      nomesMembros.length > 0 ? nomesMembros : [...TODOS_PESCADORES]);
 
         await delay(3500);
         stopSpinning();
 
-        const pescadores = shuffle([...TODOS_PESCADORES]);
+        const pescadores = shuffle([...nomesMembros]);
         const resultado  = [];
         let idx = 0;
-        for (const eq of MOCK_EQUIPES_INFO) {
-            for (let pos = 1; pos <= 5; pos++) {
+        for (const eq of equipesComVagas) {
+            for (let pos = 1; pos <= eq.vagas && idx < pescadores.length; pos++) {
                 resultado.push({
                     equipeId:   eq.id,
                     nomeEquipe: eq.nome,

@@ -158,17 +158,17 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
     List<Equipe>? mockEquipes,
     List<Membro>? mockMembros,
   }) async {
+    final isMock = mockEquipes != null && mockMembros != null;
     final authNullable = context.read<AuthProvider>().usuario;
-    if (authNullable?.slug == null || authNullable?.token == null) return null;
-    final auth = authNullable!;
+    if (!isMock && (authNullable?.slug == null || authNullable?.token == null)) return null;
     final config = context.read<ConfigProvider>().config;
 
     return showDialog<_SelecaoParticipantes>(
       context: context,
       barrierDismissible: false,
       builder: (_) => _SelecionarParticipantesDialog(
-        slug: auth.slug!,
-        token: auth.token,
+        slug: authNullable?.slug ?? 'mock',
+        token: authNullable?.token ?? '',
         labelEquipe: config?.labelEquipe ?? 'Equipe',
         labelEquipePlural: config?.labelEquipePlural ?? 'Equipes',
         labelMembro: config?.labelMembro ?? 'Membro',
