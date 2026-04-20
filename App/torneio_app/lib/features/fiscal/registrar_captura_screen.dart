@@ -406,9 +406,8 @@ class _SearchSelectField<T> extends FormField<T> {
            final selected = state.value;
            return InkWell(
              onTap: () async {
-               final selectedItem = await showModalBottomSheet<T>(
+               final selectedItem = await showDialog<T>(
                  context: state.context,
-                 isScrollControlled: true,
                  builder:
                      (_) => _SearchSelectionSheet<T>(
                        title: label,
@@ -490,81 +489,102 @@ class _SearchSelectionSheetState<T> extends State<_SearchSelectionSheet<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     final filtered =
         widget.items.where((item) {
           final label = widget.itemLabel(item).toLowerCase();
           return _query.isEmpty || label.contains(_query.toLowerCase());
         }).toList();
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _searchController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: widget.searchHint,
-                    prefixIcon: const Icon(Icons.search),
-                    border: const OutlineInputBorder(),
-                  ),
-                  onChanged: (value) => setState(() => _query = value.trim()),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child:
-                    filtered.isEmpty
-                        ? Center(
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxHeight =
+              constraints.maxHeight.isFinite
+                  ? constraints.maxHeight
+                  : mediaQuery.size.height * 0.72;
+
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 640,
+              maxHeight: maxHeight,
+            ),
+            child: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: Text(
-                            widget.emptyText,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.grey),
+                            widget.title,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
-                        )
-                        : ListView.separated(
-                          itemCount: filtered.length,
-                          separatorBuilder:
-                              (_, separatorIndex) => const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final item = filtered[index];
-                            return ListTile(
-                              leading: _SelectionAvatar(
-                                url: widget.itemImageUrl(item),
-                              ),
-                              title: Text(widget.itemLabel(item)),
-                              onTap: () => Navigator.pop(context, item),
-                            );
-                          },
                         ),
+                        IconButton.filledTonal(
+                          onPressed: () => Navigator.pop(context),
+                          tooltip: 'Fechar',
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: widget.searchHint,
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (value) => setState(() => _query = value.trim()),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child:
+                        filtered.isEmpty
+                            ? Center(
+                              child: Text(
+                                widget.emptyText,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey),
+                              ),
+                            )
+                            : ListView.separated(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              itemCount: filtered.length,
+                              separatorBuilder:
+                                  (_, separatorIndex) =>
+                                      const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final item = filtered[index];
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 4,
+                                  ),
+                                  leading: _SelectionAvatar(
+                                    url: widget.itemImageUrl(item),
+                                  ),
+                                  title: Text(widget.itemLabel(item)),
+                                  onTap: () => Navigator.pop(context, item),
+                                );
+                              },
+                            ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
