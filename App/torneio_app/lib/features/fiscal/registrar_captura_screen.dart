@@ -427,9 +427,11 @@ class _SearchSelectField<T> extends FormField<T> {
              child: InputDecorator(
                decoration: InputDecoration(
                  labelText: label,
+                 floatingLabelBehavior: FloatingLabelBehavior.always,
                  border: const OutlineInputBorder(),
                  errorText: state.errorText,
                  suffixIcon: const Icon(Icons.search),
+                 contentPadding: const EdgeInsets.fromLTRB(12, 18, 12, 12),
                ),
                isEmpty: selected == null,
                child: Row(
@@ -587,20 +589,80 @@ class _SelectionAvatar extends StatelessWidget {
       );
     }
 
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: Colors.grey.shade200,
-      child: ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url!,
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-          errorWidget:
-              (context, imageUrl, error) =>
-                  const Icon(Icons.image_not_supported, size: 18),
+    return GestureDetector(
+      onTap: () => _abrirImagem(context, url!),
+      child: CircleAvatar(
+        radius: 20,
+        backgroundColor: Colors.grey.shade200,
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: url!,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            errorWidget:
+                (context, imageUrl, error) =>
+                    const Icon(Icons.image_not_supported, size: 18),
+          ),
         ),
       ),
+    );
+  }
+
+  Future<void> _abrirImagem(BuildContext context, String imageUrl) {
+    return showDialog<void>(
+      context: context,
+      builder:
+          (_) => Dialog.fullscreen(
+            child: Scaffold(
+              appBar: AppBar(title: const Text('Visualizar imagem')),
+              backgroundColor: Colors.black,
+              body: Stack(
+                children: [
+                  Positioned.fill(
+                    child: InteractiveViewer(
+                      minScale: 0.8,
+                      maxScale: 4,
+                      child: Center(
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.contain,
+                          errorWidget:
+                              (context, failedUrl, error) => const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Colors.white70,
+                                  size: 56,
+                                ),
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 16,
+                    bottom: 16,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Pinça para ampliar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
     );
   }
 }

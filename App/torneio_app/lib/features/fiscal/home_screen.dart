@@ -319,18 +319,50 @@ class _FotoLista extends StatelessWidget {
       return CircleAvatar(radius: 24, child: Icon(icon));
     }
 
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: Colors.grey.shade200,
-      child: ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url!,
-          width: 48,
-          height: 48,
-          fit: BoxFit.cover,
-          errorWidget: (context, imageUrl, error) => Icon(icon, size: 22),
+    return GestureDetector(
+      onTap: () => _abrirImagem(context, url!),
+      child: CircleAvatar(
+        radius: 24,
+        backgroundColor: Colors.grey.shade200,
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: url!,
+            width: 48,
+            height: 48,
+            fit: BoxFit.cover,
+            errorWidget: (context, imageUrl, error) => Icon(icon, size: 22),
+          ),
         ),
       ),
+    );
+  }
+
+  Future<void> _abrirImagem(BuildContext context, String imageUrl) {
+    return showDialog<void>(
+      context: context,
+      builder:
+          (_) => Dialog.fullscreen(
+            child: Scaffold(
+              appBar: AppBar(title: const Text('Visualizar imagem')),
+              backgroundColor: Colors.black,
+              body: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4,
+                child: Center(
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                    errorWidget:
+                        (context, failedUrl, error) => const Icon(
+                          Icons.broken_image_outlined,
+                          color: Colors.white70,
+                          size: 56,
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          ),
     );
   }
 }
