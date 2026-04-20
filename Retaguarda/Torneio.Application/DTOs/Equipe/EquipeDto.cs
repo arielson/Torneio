@@ -11,4 +11,5 @@ public class EquipeDto
     public Guid FiscalId { get; init; }
     public int QtdVagas { get; init; }
     public int QtdMembros { get; init; }
+    public List<Guid> MembroIds { get; init; } = new();
 }

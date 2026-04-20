@@ -34,6 +34,7 @@ dependencies:
 
   # Imagens em cache
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
 
   # Câmera / imagem
   image_picker: ^1.1.2

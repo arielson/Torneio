@@ -1,3 +1,5 @@
+import '../flavor_config.dart';
+
 class Item {
   final String id;
   final String nome;
@@ -14,10 +16,10 @@ class Item {
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => Item(
-        id: json['id'] as String,
-        nome: json['nome'] as String,
-        comprimento: (json['comprimento'] as num?)?.toDouble(),
-        fatorMultiplicador: (json['fatorMultiplicador'] as num).toDouble(),
-        fotoUrl: json['fotoUrl'] as String?,
-      );
+    id: json['id'] as String,
+    nome: json['nome'] as String,
+    comprimento: (json['comprimento'] as num?)?.toDouble(),
+    fatorMultiplicador: (json['fatorMultiplicador'] as num).toDouble(),
+    fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?),
+  );
 }

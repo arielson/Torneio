@@ -1,15 +1,20 @@
-import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../constants.dart';
 import '../models/captura.dart';
 import '../models/equipe.dart';
-import '../models/membro.dart';
 import '../models/item.dart';
+import '../models/membro.dart';
 import '../services/api_service.dart';
 import '../services/local_db.dart';
 import '../services/sync_service.dart';
 
 class CapturaProvider extends ChangeNotifier {
+  static const _cacheEquipes = 'equipes';
+  static const _cacheMembros = 'membros';
+  static const _cacheItens = 'itens';
+
   final ApiService _api;
   final SyncService _sync;
 
@@ -45,13 +50,23 @@ class CapturaProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future.wait([
+      final resultados = await Future.wait<dynamic>([
         _carregarEquipes(slug, token),
         _carregarMembros(slug, token),
         _carregarItens(slug, token),
         _carregarCapturas(slug, token, equipeId),
         _atualizarContadorPendentes(),
       ]);
+
+      final colecoesCarregadas = resultados
+          .take(4)
+          .whereType<bool>()
+          .any((carregado) => carregado);
+      if (!colecoesCarregadas) {
+        _erro = 'Erro ao carregar dados.';
+      }
+
+      await _sincronizarAutomaticasSePossivel(slug, token);
     } catch (e) {
       _erro = 'Erro ao carregar dados.';
     } finally {
@@ -60,56 +75,125 @@ class CapturaProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _carregarEquipes(String slug, String token) async {
-    final data = await _api.get(
-      ApiConstants.equipes(slug),
-      token: token,
-    );
-    if (data is List) {
-      _equipes = data.map((e) => Equipe.fromJson(e as Map<String, dynamic>)).toList();
+  Future<bool> _carregarEquipes(String slug, String token) async {
+    try {
+      final data = await _api.get(ApiConstants.equipes(slug), token: token);
+      if (data is List) {
+        final rows =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _equipes = rows.map(Equipe.fromJson).toList();
+        await LocalDb.salvarCacheLista(slug, _cacheEquipes, rows);
+        await _precarregarImagens([
+          for (final equipe in _equipes) equipe.fotoUrl,
+          for (final equipe in _equipes) equipe.fotoCapitaoUrl,
+        ]);
+        return true;
+      }
+    } catch (_) {
+      // Usa cache local.
     }
+
+    final cache = await LocalDb.carregarCacheLista(slug, _cacheEquipes);
+    if (cache == null) return false;
+    _equipes = cache.map(Equipe.fromJson).toList();
+    return true;
   }
 
-  Future<void> _carregarMembros(String slug, String token) async {
-    final data = await _api.get(
-      ApiConstants.membros(slug),
-      token: token,
-    );
-    if (data is List) {
-      _membros = data.map((e) => Membro.fromJson(e as Map<String, dynamic>)).toList();
+  Future<bool> _carregarMembros(String slug, String token) async {
+    try {
+      final data = await _api.get(ApiConstants.membros(slug), token: token);
+      if (data is List) {
+        final rows =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _membros = rows.map(Membro.fromJson).toList();
+        await LocalDb.salvarCacheLista(slug, _cacheMembros, rows);
+        await _precarregarImagens(_membros.map((m) => m.fotoUrl));
+        return true;
+      }
+    } catch (_) {
+      // Usa cache local.
     }
+
+    final cache = await LocalDb.carregarCacheLista(slug, _cacheMembros);
+    if (cache == null) return false;
+    _membros = cache.map(Membro.fromJson).toList();
+    return true;
   }
 
-  Future<void> _carregarItens(String slug, String token) async {
-    final data = await _api.get(ApiConstants.itens(slug), token: token);
-    if (data is List) {
-      _itens = data.map((e) => Item.fromJson(e as Map<String, dynamic>)).toList();
+  Future<bool> _carregarItens(String slug, String token) async {
+    try {
+      final data = await _api.get(ApiConstants.itens(slug), token: token);
+      if (data is List) {
+        final rows =
+            data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _itens = rows.map(Item.fromJson).toList();
+        await LocalDb.salvarCacheLista(slug, _cacheItens, rows);
+        await _precarregarImagens(_itens.map((i) => i.fotoUrl));
+        return true;
+      }
+    } catch (_) {
+      // Usa cache local.
     }
+
+    final cache = await LocalDb.carregarCacheLista(slug, _cacheItens);
+    if (cache == null) return false;
+    _itens = cache.map(Item.fromJson).toList();
+    return true;
   }
 
-  Future<void> _carregarCapturas(
+  Future<bool> _carregarCapturas(
     String slug,
     String token,
     String equipeId,
   ) async {
-    final url = equipeId.trim().isEmpty
-        ? ApiConstants.capturas(slug)
-        : '${ApiConstants.capturas(slug)}?equipeId=$equipeId';
-    final data = await _api.get(
-      url,
-      token: token,
-    );
-    if (data is List) {
-      _capturas = data.map((e) => Captura.fromJson(e as Map<String, dynamic>)).toList()
-        ..sort((a, b) => b.dataHora.compareTo(a.dataHora));
+    try {
+      final url =
+          equipeId.trim().isEmpty
+              ? ApiConstants.capturas(slug)
+              : '${ApiConstants.capturas(slug)}?equipeId=$equipeId';
+      final data = await _api.get(url, token: token);
+      if (data is List) {
+        _capturas =
+            data
+                .map((e) => Captura.fromJson(e as Map<String, dynamic>))
+                .toList()
+              ..sort((a, b) => b.dataHora.compareTo(a.dataHora));
+        return true;
+      }
+    } catch (_) {
+      // Capturas podem falhar sem bloquear o cadastro offline.
     }
+
+    return _capturas.isNotEmpty;
   }
 
   Future<void> _atualizarContadorPendentes() async {
     _pendentesSync = await LocalDb.contarPendentes();
   }
 
-  /// Registra captura — online direto na API, offline salva no SQLite
+  Future<void> _sincronizarAutomaticasSePossivel(
+    String slug,
+    String token,
+  ) async {
+    if (_sincronizando) return;
+
+    final connectivity = await Connectivity().checkConnectivity();
+    final online = !connectivity.contains(ConnectivityResult.none);
+    if (!online) return;
+
+    final pendentesAutomaticas = await LocalDb.contarPendentes(
+      sincronizacaoManual: false,
+    );
+    if (pendentesAutomaticas == 0) return;
+
+    try {
+      await _sync.sincronizar(slug, token, sincronizacaoManual: false);
+      await _atualizarContadorPendentes();
+    } catch (_) {
+      // Sincronizacao automatica e silenciosa.
+    }
+  }
+
   Future<bool> registrarCaptura({
     required String slug,
     required String token,
@@ -133,19 +217,20 @@ class CapturaProvider extends ChangeNotifier {
             return true;
           }
         } on ApiException {
-          // Cai para offline se a API falhar
+          // Cai para sincronizacao automatica posterior se a API falhar agora.
         }
       }
     }
 
-    // Modo offline
-    await LocalDb.salvarCapturaPendente(req.copyWith(pendenteSync: true));
+    await LocalDb.salvarCapturaPendente(
+      req.copyWith(pendenteSync: true),
+      sincronizacaoManual: forcarOffline,
+    );
     _pendentesSync++;
     notifyListeners();
     return true;
   }
 
-  /// Sincroniza capturas pendentes com o servidor
   Future<void> sincronizar(String slug, String token) async {
     if (_sincronizando) return;
     _sincronizando = true;
@@ -155,14 +240,15 @@ class CapturaProvider extends ChangeNotifier {
 
     try {
       final total = await _sync.sincronizar(slug, token);
-      _pendentesSync = 0;
-      _mensagemSync = total > 0
-          ? '$total captura(s) sincronizada(s) com sucesso!'
-          : 'Nenhuma captura pendente.';
+      await _atualizarContadorPendentes();
+      _mensagemSync =
+          total > 0
+              ? '$total captura(s) sincronizada(s) com sucesso!'
+              : 'Nenhuma captura pendente.';
     } on ApiException catch (e) {
       _erro = 'Erro ao sincronizar: ${e.message}';
     } catch (e) {
-      _erro = 'Sem conexão. Tente novamente mais tarde.';
+      _erro = 'Sem conexao. Tente novamente mais tarde.';
     } finally {
       _sincronizando = false;
       notifyListeners();
@@ -181,8 +267,27 @@ class CapturaProvider extends ChangeNotifier {
   }
 }
 
+extension on CapturaProvider {
+  Future<void> _precarregarImagens(Iterable<String?> urls) async {
+    final imagens =
+        urls
+            .whereType<String>()
+            .where((url) => url.trim().isNotEmpty && url.startsWith('http'))
+            .toSet();
+
+    for (final url in imagens) {
+      try {
+        await DefaultCacheManager().downloadFile(url);
+      } catch (_) {
+        // Cache de imagem e oportunistico.
+      }
+    }
+  }
+}
+
 extension on RegistrarCapturaRequest {
-  RegistrarCapturaRequest copyWith({bool? pendenteSync}) => RegistrarCapturaRequest(
+  RegistrarCapturaRequest copyWith({bool? pendenteSync}) =>
+      RegistrarCapturaRequest(
         torneioId: torneioId,
         itemId: itemId,
         membroId: membroId,

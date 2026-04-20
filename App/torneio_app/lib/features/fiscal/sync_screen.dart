@@ -15,7 +15,7 @@ class SyncScreen extends StatelessWidget {
     final pendentes = capProv.pendentesSync;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sincronização')),
+      appBar: AppBar(title: const Text('Sincronizacao')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -30,7 +30,7 @@ class SyncScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               pendentes > 0
-                  ? '$pendentes captura(s) aguardando sincronização'
+                  ? '$pendentes captura(s) aguardando sincronizacao'
                   : 'Tudo sincronizado!',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
@@ -38,8 +38,8 @@ class SyncScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               pendentes > 0
-                  ? 'As capturas abaixo foram registradas offline e precisam ser enviadas ao servidor.'
-                  : 'Não há capturas pendentes de sincronização.',
+                  ? 'As capturas pendentes precisam ser enviadas ao servidor.'
+                  : 'Nao ha capturas pendentes de sincronizacao.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
             ),
@@ -103,7 +103,7 @@ class SyncScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'A sincronização automática ocorre quando o dispositivo reconecta à internet.',
+              'Capturas marcadas como "Sincronizar depois" so sao enviadas ao tocar em "Sincronizar agora". Capturas registradas para envio imediato podem sincronizar automaticamente quando a internet voltar.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),

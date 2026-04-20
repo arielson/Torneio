@@ -1,6 +1,7 @@
 @model IEnumerable<TorneioDto>
+@inject IConfiguration Configuration
 @{
-    ViewData["Title"] = "Torneios";
+    ViewData["Title"] = Configuration["Branding:ApplicationName"] ?? "Torneio";
     var lista = Model.ToList();
 }
 

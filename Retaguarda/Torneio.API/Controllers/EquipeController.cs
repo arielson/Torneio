@@ -30,8 +30,18 @@ public class EquipeController : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar() =>
-        Ok(await _servico.ListarTodos());
+    public async Task<IActionResult> Listar()
+    {
+        var equipes = await _servico.ListarTodos();
+
+        if (GetPerfil() == "Fiscal")
+        {
+            var fiscalId = GetUserId();
+            equipes = equipes.Where(e => e.FiscalId == fiscalId);
+        }
+
+        return Ok(equipes);
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> ObterPorId(Guid id)

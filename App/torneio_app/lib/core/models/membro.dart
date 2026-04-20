@@ -1,3 +1,5 @@
+import '../flavor_config.dart';
+
 class Membro {
   final String id;
   final String nome;
@@ -6,8 +8,8 @@ class Membro {
   const Membro({required this.id, required this.nome, this.fotoUrl});
 
   factory Membro.fromJson(Map<String, dynamic> json) => Membro(
-        id: json['id'] as String,
-        nome: json['nome'] as String,
-        fotoUrl: json['fotoUrl'] as String?,
-      );
+    id: json['id'] as String,
+    nome: json['nome'] as String,
+    fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?),
+  );
 }

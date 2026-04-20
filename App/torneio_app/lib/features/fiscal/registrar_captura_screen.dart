@@ -1,8 +1,12 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/captura.dart';
+import '../../core/models/equipe.dart';
+import '../../core/models/item.dart';
+import '../../core/models/membro.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
@@ -47,40 +51,41 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      builder:
+          (_) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                  title: const Text('Tirar foto'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _escolherFoto(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.green),
+                  title: const Text('Escolher da galeria'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _escolherFoto(ImageSource.gallery);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
-              title: const Text('Tirar foto'),
-              onTap: () {
-                Navigator.pop(context);
-                _escolherFoto(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.green),
-              title: const Text('Escolher da galeria'),
-              onTap: () {
-                Navigator.pop(context);
-                _escolherFoto(ImageSource.gallery);
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -101,12 +106,13 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
     final minhasEquipes =
         capProv.equipes.where((e) => e.fiscalId == fiscalId).toList();
 
-    final equipeIdFinal = _equipeId ??
+    final equipeIdFinal =
+        _equipeId ??
         (minhasEquipes.length == 1 ? minhasEquipes.first.id : null);
 
     if (equipeIdFinal == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione uma embarcação.')),
+        const SnackBar(content: Text('Selecione uma embarcacao.')),
       );
       return;
     }
@@ -143,7 +149,9 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
                 : 'Captura registrada com sucesso!',
           ),
           backgroundColor:
-              forcarOffline || capProv.pendentesSync > 0 ? Colors.orange : Colors.green,
+              forcarOffline || capProv.pendentesSync > 0
+                  ? Colors.orange
+                  : Colors.green,
         ),
       );
       Navigator.pop(context);
@@ -167,6 +175,20 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
     final fiscalId = auth.usuario?.id ?? '';
     final minhasEquipes =
         capProv.equipes.where((e) => e.fiscalId == fiscalId).toList();
+    final equipeSelecionadaId =
+        _equipeId ??
+        (minhasEquipes.length == 1 ? minhasEquipes.first.id : null);
+    final membroIdsPermitidos =
+        minhasEquipes
+            .where(
+              (e) => equipeSelecionadaId == null || e.id == equipeSelecionadaId,
+            )
+            .expand((e) => e.membroIds)
+            .toSet();
+    final membrosDisponiveis =
+        membroIdsPermitidos.isEmpty
+            ? membros
+            : membros.where((m) => membroIdsPermitidos.contains(m.id)).toList();
     final multiEquipe = minhasEquipes.length > 1;
 
     return Scaffold(
@@ -180,65 +202,74 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Equipe — só exibe quando o fiscal tem mais de uma
               if (multiEquipe) ...[
-                DropdownButtonFormField<String>(
-                  initialValue: _equipeId,
-                  decoration: InputDecoration(
-                    labelText: config?.labelEquipe ?? 'Embarcação',
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: minhasEquipes
-                      .map((e) => DropdownMenuItem(value: e.id, child: Text(e.nome)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _equipeId = v),
-                  validator: (v) => v == null
-                      ? 'Selecione uma ${config?.labelEquipe ?? "embarcação"}'
-                      : null,
+                _SearchSelectField<Equipe>(
+                  label: config?.labelEquipe ?? 'Embarcacao',
+                  value:
+                      minhasEquipes.where((e) => e.id == _equipeId).firstOrNull,
+                  items: minhasEquipes,
+                  itemLabel: (e) => e.nome,
+                  itemImageUrl: (e) => e.fotoUrl,
+                  searchHint:
+                      'Pesquisar ${(config?.labelEquipe ?? "embarcacao").toLowerCase()}',
+                  emptyText: 'Nenhuma embarcacao encontrada.',
+                  onChanged:
+                      (e) => setState(() {
+                        _equipeId = e?.id;
+                        _membroId = null;
+                      }),
+                  validator:
+                      () =>
+                          _equipeId == null
+                              ? 'Selecione uma ${config?.labelEquipe ?? "embarcacao"}'
+                              : null,
                 ),
                 const SizedBox(height: 16),
               ],
 
-              // Membro
-              DropdownButtonFormField<String>(
-                initialValue: _membroId,
-                decoration: InputDecoration(
-                  labelText: config?.labelMembro ?? 'Membro',
-                  border: const OutlineInputBorder(),
-                ),
-                items: membros
-                    .map((m) => DropdownMenuItem(value: m.id, child: Text(m.nome)))
-                    .toList(),
-                onChanged: (v) => setState(() => _membroId = v),
-                validator: (v) =>
-                    v == null ? 'Selecione um ${config?.labelMembro ?? "membro"}' : null,
+              _SearchSelectField<Membro>(
+                label: config?.labelMembro ?? 'Membro',
+                value:
+                    membrosDisponiveis
+                        .where((m) => m.id == _membroId)
+                        .firstOrNull,
+                items: membrosDisponiveis,
+                itemLabel: (m) => m.nome,
+                itemImageUrl: (m) => m.fotoUrl,
+                searchHint:
+                    'Pesquisar ${(config?.labelMembro ?? "membro").toLowerCase()}',
+                emptyText: 'Nenhum membro encontrado.',
+                onChanged: (m) => setState(() => _membroId = m?.id),
+                validator:
+                    () =>
+                        _membroId == null
+                            ? 'Selecione um ${config?.labelMembro ?? "membro"}'
+                            : null,
               ),
               const SizedBox(height: 16),
 
-              // Item
-              DropdownButtonFormField<String>(
-                initialValue: _itemId,
-                decoration: InputDecoration(
-                  labelText: config?.labelItem ?? 'Item',
-                  border: const OutlineInputBorder(),
-                ),
-                items: itens
-                    .map((i) => DropdownMenuItem(
-                          value: i.id,
-                          child: Text(
-                            i.comprimento != null
-                                ? '${i.nome} (mín. ${i.comprimento!.toStringAsFixed(1)} ${config?.medidaCaptura ?? "cm"})'
-                                : i.nome,
-                          ),
-                        ))
-                    .toList(),
-                onChanged: (v) => setState(() => _itemId = v),
-                validator: (v) =>
-                    v == null ? 'Selecione um ${config?.labelItem ?? "item"}' : null,
+              _SearchSelectField<Item>(
+                label: config?.labelItem ?? 'Item',
+                value: itens.where((i) => i.id == _itemId).firstOrNull,
+                items: itens,
+                itemLabel:
+                    (i) =>
+                        i.comprimento != null
+                            ? '${i.nome} (min. ${i.comprimento!.toStringAsFixed(1)} ${config?.medidaCaptura ?? "cm"})'
+                            : i.nome,
+                itemImageUrl: (i) => i.fotoUrl,
+                searchHint:
+                    'Pesquisar ${(config?.labelItem ?? "item").toLowerCase()}',
+                emptyText: 'Nenhum item encontrado.',
+                onChanged: (i) => setState(() => _itemId = i?.id),
+                validator:
+                    () =>
+                        _itemId == null
+                            ? 'Selecione um ${config?.labelItem ?? "item"}'
+                            : null,
               ),
               const SizedBox(height: 16),
 
-              // Tamanho
               TextFormField(
                 controller: _tamanhoController,
                 decoration: InputDecoration(
@@ -246,17 +277,18 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
                   border: const OutlineInputBorder(),
                   suffixText: config?.medidaCaptura ?? 'cm',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Informe a medida';
                   final d = double.tryParse(v.replaceAll(',', '.'));
-                  if (d == null || d <= 0) return 'Medida inválida';
+                  if (d == null || d <= 0) return 'Medida invalida';
                   return null;
                 },
               ),
               const SizedBox(height: 24),
 
-              // Foto
               Text(
                 'Foto da ${config?.labelCaptura ?? "captura"}',
                 style: Theme.of(context).textTheme.titleSmall,
@@ -271,32 +303,40 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.grey.shade100,
                   ),
-                  child: _fotoPath != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(File(_fotoPath!), fit: BoxFit.cover),
-                            ),
-                            Positioned(
-                              top: 6,
-                              right: 6,
-                              child: _FotoOrigemBadge(fonteFoto: _fonteFoto),
-                            ),
-                          ],
-                        )
-                      : const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text(
-                              'Câmera ou galeria',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                  child:
+                      _fotoPath != null
+                          ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(_fotoPath!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: _FotoOrigemBadge(fonteFoto: _fonteFoto),
+                              ),
+                            ],
+                          )
+                          : const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Camera ou galeria',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ],
+                          ),
                 ),
               ),
               if (_fotoPath != null)
@@ -307,7 +347,7 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
                     children: [
                       TextButton.icon(
                         icon: const Icon(Icons.camera_alt, size: 16),
-                        label: const Text('Câmera'),
+                        label: const Text('Camera'),
                         onPressed: () => _escolherFoto(ImageSource.camera),
                       ),
                       TextButton.icon(
@@ -323,13 +363,15 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
               FilledButton.icon(
                 icon: const Icon(Icons.send),
                 label: Text(_salvando ? 'Salvando...' : 'Registrar agora'),
-                onPressed: _salvando ? null : () => _salvar(forcarOffline: false),
+                onPressed:
+                    _salvando ? null : () => _salvar(forcarOffline: false),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 icon: const Icon(Icons.schedule),
                 label: Text(_salvando ? 'Salvando...' : 'Sincronizar depois'),
-                onPressed: _salvando ? null : () => _salvar(forcarOffline: true),
+                onPressed:
+                    _salvando ? null : () => _salvar(forcarOffline: true),
               ),
             ],
           ),
@@ -342,6 +384,224 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
   void dispose() {
     _tamanhoController.dispose();
     super.dispose();
+  }
+}
+
+class _SearchSelectField<T> extends FormField<T> {
+  _SearchSelectField({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required String Function(T item) itemLabel,
+    required String? Function(T item) itemImageUrl,
+    required String searchHint,
+    required String emptyText,
+    required ValueChanged<T?> onChanged,
+    required String? Function() validator,
+  }) : super(
+         initialValue: value,
+         validator: (_) => validator(),
+         builder: (state) {
+           final selected = state.value;
+           return InkWell(
+             onTap: () async {
+               final selectedItem = await showModalBottomSheet<T>(
+                 context: state.context,
+                 isScrollControlled: true,
+                 builder:
+                     (_) => _SearchSelectionSheet<T>(
+                       title: label,
+                       items: items,
+                       itemLabel: itemLabel,
+                       itemImageUrl: itemImageUrl,
+                       searchHint: searchHint,
+                       emptyText: emptyText,
+                     ),
+               );
+
+               if (selectedItem != null) {
+                 state.didChange(selectedItem);
+                 onChanged(selectedItem);
+               }
+             },
+             child: InputDecorator(
+               decoration: InputDecoration(
+                 labelText: label,
+                 border: const OutlineInputBorder(),
+                 errorText: state.errorText,
+                 suffixIcon: const Icon(Icons.search),
+               ),
+               isEmpty: selected == null,
+               child: Row(
+                 children: [
+                   if (selected != null) ...[
+                     _SelectionAvatar(url: itemImageUrl(selected)),
+                     const SizedBox(width: 12),
+                   ],
+                   Expanded(
+                     child: Text(
+                       selected == null
+                           ? 'Toque para pesquisar e selecionar'
+                           : itemLabel(selected),
+                       style:
+                           selected == null
+                               ? TextStyle(
+                                 color: Theme.of(state.context).hintColor,
+                               )
+                               : null,
+                     ),
+                   ),
+                 ],
+               ),
+             ),
+           );
+         },
+       );
+}
+
+class _SearchSelectionSheet<T> extends StatefulWidget {
+  final String title;
+  final List<T> items;
+  final String Function(T item) itemLabel;
+  final String? Function(T item) itemImageUrl;
+  final String searchHint;
+  final String emptyText;
+
+  const _SearchSelectionSheet({
+    required this.title,
+    required this.items,
+    required this.itemLabel,
+    required this.itemImageUrl,
+    required this.searchHint,
+    required this.emptyText,
+  });
+
+  @override
+  State<_SearchSelectionSheet<T>> createState() =>
+      _SearchSelectionSheetState<T>();
+}
+
+class _SearchSelectionSheetState<T> extends State<_SearchSelectionSheet<T>> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered =
+        widget.items.where((item) {
+          final label = widget.itemLabel(item).toLowerCase();
+          return _query.isEmpty || label.contains(_query.toLowerCase());
+        }).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: widget.searchHint,
+                    prefixIcon: const Icon(Icons.search),
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (value) => setState(() => _query = value.trim()),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child:
+                    filtered.isEmpty
+                        ? Center(
+                          child: Text(
+                            widget.emptyText,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey),
+                          ),
+                        )
+                        : ListView.separated(
+                          itemCount: filtered.length,
+                          separatorBuilder:
+                              (_, separatorIndex) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final item = filtered[index];
+                            return ListTile(
+                              leading: _SelectionAvatar(
+                                url: widget.itemImageUrl(item),
+                              ),
+                              title: Text(widget.itemLabel(item)),
+                              onTap: () => Navigator.pop(context, item),
+                            );
+                          },
+                        ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+}
+
+class _SelectionAvatar extends StatelessWidget {
+  final String? url;
+
+  const _SelectionAvatar({this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    if (url == null || url!.isEmpty) {
+      return const CircleAvatar(
+        radius: 20,
+        child: Icon(Icons.image_outlined, size: 18),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 20,
+      backgroundColor: Colors.grey.shade200,
+      child: ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url!,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorWidget:
+              (context, imageUrl, error) =>
+                  const Icon(Icons.image_not_supported, size: 18),
+        ),
+      ),
+    );
   }
 }
 
@@ -368,11 +628,15 @@ class _FotoOrigemBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            isGaleria ? 'Galeria' : 'Câmera',
+            isGaleria ? 'Galeria' : 'Camera',
             style: const TextStyle(color: Colors.white, fontSize: 11),
           ),
         ],
       ),
     );
   }
+}
+
+extension _IterableFirstOrNullExtension<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

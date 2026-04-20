@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Torneio.Application.DTOs.Membro;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Interfaces.Repositories;
 using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
 
@@ -18,20 +19,45 @@ public class MembroController : BaseController
     private readonly IMembroServico _servico;
     private readonly TenantContext _tenantContext;
     private readonly IFileStorage _fileStorage;
+    private readonly IEquipeRepositorio _equipeRepositorio;
 
     public MembroController(
         IMembroServico servico,
         TenantContext tenantContext,
-        IFileStorage fileStorage)
+        IFileStorage fileStorage,
+        IEquipeRepositorio equipeRepositorio)
     {
         _servico = servico;
         _tenantContext = tenantContext;
         _fileStorage = fileStorage;
+        _equipeRepositorio = equipeRepositorio;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar() =>
-        Ok(await _servico.ListarTodos());
+    public async Task<IActionResult> Listar()
+    {
+        if (GetPerfil() == "Fiscal")
+        {
+            var fiscalId = GetUserId();
+            var equipes = await _equipeRepositorio.ListarPorTorneio(_tenantContext.TorneioId);
+            var membros = equipes
+                .Where(e => e.FiscalId == fiscalId)
+                .SelectMany(e => e.Membros)
+                .GroupBy(m => m.Id)
+                .Select(g => new MembroDto
+                {
+                    Id = g.Key,
+                    TorneioId = g.First().TorneioId,
+                    Nome = g.First().Nome,
+                    FotoUrl = g.First().FotoUrl
+                })
+                .ToList();
+
+            return Ok(membros);
+        }
+
+        return Ok(await _servico.ListarTodos());
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> ObterPorId(Guid id)

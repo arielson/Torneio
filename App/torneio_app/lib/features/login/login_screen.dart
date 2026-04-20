@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
 
 enum _Perfil { fiscal, admin }
@@ -44,12 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
     // Rota baseada no perfil retornado pelo backend
     switch (auth.usuario!.perfil) {
       case 'Fiscal':
+        await context.read<CapturaProvider>().carregarDadosEquipe(
+          config.slug,
+          auth.usuario!.token,
+          '',
+        );
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/fiscal/home');
+        return;
       case 'AdminTorneio':
       case 'AdminGeral':
         Navigator.pushReplacementNamed(context, '/admin/home');
+        return;
       default:
         Navigator.pushReplacementNamed(context, '/home');
+        return;
     }
   }
 
@@ -116,8 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 autocorrect: false,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Informe o usuário' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? 'Informe o usuário'
+                            : null,
               ),
 
               const SizedBox(height: 16),
@@ -129,30 +142,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                        _senhaVisivel ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () =>
-                        setState(() => _senhaVisivel = !_senhaVisivel),
+                      _senhaVisivel ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed:
+                        () => setState(() => _senhaVisivel = !_senhaVisivel),
                   ),
                 ),
                 obscureText: !_senhaVisivel,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _login(),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Informe a senha' : null,
+                validator:
+                    (v) => (v == null || v.isEmpty) ? 'Informe a senha' : null,
               ),
 
               const SizedBox(height: 24),
 
               FilledButton(
                 onPressed: auth.carregando ? null : _login,
-                child: auth.carregando
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Entrar'),
+                child:
+                    auth.carregando
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Entrar'),
               ),
             ],
           ),

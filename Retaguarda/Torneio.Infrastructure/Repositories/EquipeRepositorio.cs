@@ -14,11 +14,14 @@ public class EquipeRepositorio : RepositorioBase<Equipe>, IEquipeRepositorio
 
     public async Task<IEnumerable<Equipe>> ListarPorTorneio(Guid torneioId) =>
         await _dbSet.IgnoreQueryFilters()
+            .Include(e => e.Membros)
             .Where(e => e.TorneioId == torneioId)
             .ToListAsync();
 
     public async Task<Equipe?> ObterPorFiscal(Guid fiscalId) =>
-        await _dbSet.FirstOrDefaultAsync(e => e.FiscalId == fiscalId);
+        await _dbSet
+            .Include(e => e.Membros)
+            .FirstOrDefaultAsync(e => e.FiscalId == fiscalId);
 
     public async Task<Equipe?> ObterComMembros(Guid id) =>
         await _dbSet.Include(e => e.Membros).FirstOrDefaultAsync(e => e.Id == id);

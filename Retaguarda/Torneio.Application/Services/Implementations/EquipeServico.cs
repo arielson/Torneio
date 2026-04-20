@@ -112,6 +112,7 @@ public class EquipeServico : IEquipeServico
         FotoCapitaoUrl = e.FotoCapitaoUrl,
         FiscalId = e.FiscalId,
         QtdVagas = e.QtdVagas,
-        QtdMembros = e.Membros.Count
+        QtdMembros = e.Membros.Count,
+        MembroIds = e.Membros.Select(m => m.Id).ToList()
     };
 }

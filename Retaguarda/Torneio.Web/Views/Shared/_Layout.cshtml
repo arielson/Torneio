@@ -1,11 +1,12 @@
 @using System.Security.Claims
 @using Torneio.Application.DTOs.Torneio
+@inject IConfiguration Configuration
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — Torneio</title>
+    <title>@ViewData["Title"] - @(Configuration["Branding:ApplicationName"] ?? "Torneio")</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -30,6 +31,7 @@
     var labelItem   = torneioNav?.LabelItem ?? "Item";
     var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
     var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
+    var applicationName = Configuration["Branding:ApplicationName"] ?? "Torneio";
 
     bool IsActive(string path) =>
         (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
@@ -69,7 +71,7 @@ else if (isAdmin)
                             </li>
                             <hr class="sidebar-divider" />
                         }
-                        <li class="sidebar-section-label">Torneio</li>
+                        <li class="sidebar-section-label">@applicationName</li>
                         <li>
                             <a class="nav-link @(IsExact($"/{effectiveSlug}/admin") ? "active" : "")" href="/@effectiveSlug/admin">
                                 <i class="bi bi-house"></i> Painel
@@ -140,7 +142,7 @@ else if (isAdmin)
                     <!-- Platform context brand -->
                     <a class="sidebar-brand" href="/admin">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
-                        <span>Torvia</span>
+                        <span>@applicationName</span>
                     </a>
                     <ul class="sidebar-nav">
                         <li class="sidebar-section-label">Geral</li>
@@ -227,7 +229,7 @@ else if (isAdmin)
                 </main>
 
                 <footer class="page-footer">
-                    &copy; @DateTime.Now.Year — Torneio
+                    &copy; @DateTime.Now.Year - @applicationName
                 </footer>
             </div>
 
@@ -247,7 +249,7 @@ else
         <nav class="navbar navbar-expand-sm navbar-dark public-navbar border-bottom mb-4">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="/">
-                    <i class="bi bi-trophy-fill me-2" style="color:#3b82f6"></i>Torneio
+                    <i class="bi bi-trophy-fill me-2" style="color:#3b82f6"></i>@applicationName
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPublic">
                     <span class="navbar-toggler-icon"></span>
@@ -293,7 +295,7 @@ else
         </div>
         <footer class="border-top py-3 mt-4">
             <div class="container">
-                <small class="text-muted">&copy; @DateTime.Now.Year — Torvia</small>
+                <small class="text-muted">&copy; @DateTime.Now.Year - @applicationName</small>
             </div>
         </footer>
         <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -302,3 +304,4 @@ else
     </body>
 }
 </html>
+
