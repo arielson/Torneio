@@ -51,10 +51,16 @@ public class AuthController : BaseController
         var torneio = await _tenantResolver.ResolverAsync(slug);
         if (torneio is null) return NotFound(new { erro = $"Torneio '{slug}' não encontrado." });
 
-        // Tenta AdminTorneio primeiro, depois Fiscal
-        var usuario =
-            await _autenticacaoServico.AutenticarAdminTorneio(dto.Usuario, dto.Senha, torneio.Id)
-            ?? await _autenticacaoServico.AutenticarFiscal(dto.Usuario, dto.Senha, torneio.Id);
+        UsuarioAutenticadoDto? usuario = dto.Perfil?.Trim().ToLowerInvariant() switch
+        {
+            "fiscal" =>
+                await _autenticacaoServico.AutenticarFiscal(dto.Usuario, dto.Senha, torneio.Id),
+            "admin" or "admintorneio" =>
+                await _autenticacaoServico.AutenticarAdminTorneio(dto.Usuario, dto.Senha, torneio.Id),
+            _ =>
+                await _autenticacaoServico.AutenticarAdminTorneio(dto.Usuario, dto.Senha, torneio.Id)
+                ?? await _autenticacaoServico.AutenticarFiscal(dto.Usuario, dto.Senha, torneio.Id)
+        };
 
         if (usuario is null) return Unauthorized(new { erro = "Usuário ou senha inválidos." });
 

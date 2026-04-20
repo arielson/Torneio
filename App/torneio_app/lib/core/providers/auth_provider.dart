@@ -45,26 +45,34 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loginTorneio(String slug, String usuario, String senha) async {
+  Future<void> loginTorneio(
+    String slug,
+    String usuario,
+    String senha, {
+    String? perfil,
+  }) async {
     await _login(
       url: ApiConstants.login(slug),
       usuario: usuario,
       senha: senha,
       slug: slug,
+      perfil: perfil,
     );
   }
 
   Future<void> loginFiscal(String slug, String usuario, String senha) =>
-      loginTorneio(slug, usuario, senha);
+      loginTorneio(slug, usuario, senha, perfil: 'Fiscal');
 
   Future<void> _login({
     required String url,
     required String usuario,
     required String senha,
     String? slug,
+    String? perfil,
   }) async {
     _carregando = true;
     _erro = null;
+    _usuario = null;
     notifyListeners();
 
     try {
@@ -72,6 +80,7 @@ class AuthProvider extends ChangeNotifier {
         'usuario': usuario,
         'senha': senha,
         if (slug != null) 'slug': slug,
+        if (perfil != null) 'perfil': perfil,
       });
 
       final token = data['token'] as String;
@@ -89,8 +98,10 @@ class AuthProvider extends ChangeNotifier {
 
       await _salvarPrefs(_usuario!);
     } on ApiException catch (e) {
+      _usuario = null;
       _erro = e.message;
     } catch (e) {
+      _usuario = null;
       _erro = 'Erro de conexao. Verifique sua internet.';
     } finally {
       _carregando = false;

@@ -45,8 +45,7 @@ public class AutenticacaoServico : IAutenticacaoServico
 
     public async Task<UsuarioAutenticadoDto?> AutenticarAdminTorneio(string usuario, string senha, Guid torneioId)
     {
-        var admins = await _adminTorneioRepositorio.ListarPorTorneio(torneioId);
-        var entidade = admins.FirstOrDefault(a => a.Usuario == usuario);
+        var entidade = await _adminTorneioRepositorio.ObterPorUsuario(usuario, torneioId);
         if (entidade is null || !_passwordHasher.Verificar(senha, entidade.SenhaHash))
             return null;
 

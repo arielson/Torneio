@@ -26,6 +26,7 @@
     var slug        = Context.GetRouteData()?.Values["slug"]?.ToString();
     var nomeUsuario = User.Identity?.Name;
     var torneioNav  = ViewBag.Torneio as TorneioDto;
+    var effectiveSlug = slug ?? torneioNav?.Slug;
     var labelItem   = torneioNav?.LabelItem ?? "Item";
     var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
     var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
@@ -51,12 +52,12 @@ else if (isAdmin)
 
             <!-- ── Sidebar ─────────────────────────────────────────────── -->
             <nav id="sidebar">
-                @if (!string.IsNullOrEmpty(slug))
+                @if (!string.IsNullOrEmpty(effectiveSlug))
                 {
                     <!-- Tournament context brand -->
-                    <a class="sidebar-brand" href="/@slug/admin">
+                    <a class="sidebar-brand" href="/@effectiveSlug/admin">
                         <i class="bi bi-trophy-fill"></i>
-                        <span class="text-truncate">@(torneioNav?.NomeTorneio ?? slug)</span>
+                        <span class="text-truncate">@(torneioNav?.NomeTorneio ?? effectiveSlug)</span>
                     </a>
                     <ul class="sidebar-nav">
                         @if (isAdminGeral)
@@ -70,54 +71,54 @@ else if (isAdmin)
                         }
                         <li class="sidebar-section-label">Torneio</li>
                         <li>
-                            <a class="nav-link @(IsExact($"/{slug}/admin") ? "active" : "")" href="/@slug/admin">
+                            <a class="nav-link @(IsExact($"/{effectiveSlug}/admin") ? "active" : "")" href="/@effectiveSlug/admin">
                                 <i class="bi bi-house"></i> Painel
                             </a>
                         </li>
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Cadastros</li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/fiscais") ? "active" : "")" href="/@slug/fiscais">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/fiscais") ? "active" : "")" href="/@effectiveSlug/fiscais">
                                 <i class="bi bi-person-badge"></i> @(torneioNav?.LabelSupervisorPlural ?? "Fiscais")
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/equipes") ? "active" : "")" href="/@slug/equipes">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/equipes") ? "active" : "")" href="/@effectiveSlug/equipes">
                                 <i class="bi bi-people"></i> @(torneioNav?.LabelEquipePlural ?? "Equipes")
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/membros") ? "active" : "")" href="/@slug/membros">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/membros") ? "active" : "")" href="/@effectiveSlug/membros">
                                 <i class="bi bi-person"></i> @(torneioNav?.LabelMembroPlural ?? "Membros")
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/itens") ? "active" : "")" href="/@slug/itens">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/itens") ? "active" : "")" href="/@effectiveSlug/itens">
                                 <i class="bi bi-collection"></i> @(torneioNav?.LabelItemPlural ?? "Itens")
                             </a>
                         </li>
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Operações</li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/capturas") ? "active" : "")" href="/@slug/capturas">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/capturas") ? "active" : "")" href="/@effectiveSlug/capturas">
                                 <i class="bi bi-camera"></i> @(torneioNav?.LabelCapturaPlural ?? "Capturas")
                             </a>
                         </li>
                         @if (exibirSorteio)
                         {
                             <li>
-                                <a class="nav-link @(IsActive($"/{slug}/sorteio") ? "active" : "")" href="/@slug/sorteio">
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/sorteio") ? "active" : "")" href="/@effectiveSlug/sorteio">
                                     <i class="bi bi-shuffle"></i> Sorteio
                                 </a>
                             </li>
                         }
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/premios") ? "active" : "")" href="/@slug/premios">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/premios") ? "active" : "")" href="/@effectiveSlug/premios">
                                 <i class="bi bi-trophy"></i> Prêmios
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{slug}/relatorios") ? "active" : "")" href="/@slug/relatorios">
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/relatorios") ? "active" : "")" href="/@effectiveSlug/relatorios">
                                 <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
                             </a>
                         </li>

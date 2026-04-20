@@ -10,11 +10,20 @@ public class AdminTorneioRepositorio : RepositorioBase<AdminTorneio>, IAdminTorn
     public AdminTorneioRepositorio(TorneioDbContext context) : base(context) { }
 
     public async Task<AdminTorneio?> ObterPorUsuario(string usuario) =>
-        await _dbSet.FirstOrDefaultAsync(a => a.Usuario == usuario);
+        await _dbSet.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.Usuario == usuario);
+
+    public async Task<AdminTorneio?> ObterPorUsuario(string usuario, Guid torneioId) =>
+        await _dbSet.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.Usuario == usuario && a.TorneioId == torneioId);
 
     public async Task<IEnumerable<AdminTorneio>> ListarPorTorneio(Guid torneioId) =>
-        await _dbSet.Where(a => a.TorneioId == torneioId).ToListAsync();
+        await _dbSet.IgnoreQueryFilters()
+            .Where(a => a.TorneioId == torneioId)
+            .ToListAsync();
 
     public async Task<IEnumerable<AdminTorneio>> ListarPorUsuarioId(Guid usuarioId) =>
-        await _dbSet.Where(a => a.UsuarioId == usuarioId).ToListAsync();
+        await _dbSet.IgnoreQueryFilters()
+            .Where(a => a.UsuarioId == usuarioId)
+            .ToListAsync();
 }

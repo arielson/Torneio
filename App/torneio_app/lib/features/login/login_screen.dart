@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       config.slug,
       _usuarioController.text.trim(),
       _senhaController.text,
+      perfil: _perfil == _Perfil.fiscal ? 'Fiscal' : 'Admin',
     );
 
     if (!mounted) return;
