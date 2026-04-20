@@ -5,21 +5,25 @@ using Torneio.Application.DTOs.Fiscal;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Domain.Interfaces.Services;
 
 namespace Torneio.Application.Services.Implementations;
 
 public class FiscalServico : IFiscalServico
 {
     private readonly IFiscalRepositorio _repositorio;
+    private readonly ITenantContext _tenantContext;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IValidator<CriarFiscalDto> _validador;
 
     public FiscalServico(
         IFiscalRepositorio repositorio,
+        ITenantContext tenantContext,
         IPasswordHasher passwordHasher,
         IValidator<CriarFiscalDto> validador)
     {
         _repositorio = repositorio;
+        _tenantContext = tenantContext;
         _passwordHasher = passwordHasher;
         _validador = validador;
     }
@@ -27,12 +31,15 @@ public class FiscalServico : IFiscalServico
     public async Task<FiscalDto?> ObterPorId(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id);
-        return entidade is null ? null : ParaDto(entidade);
+        if (entidade is null || entidade.TorneioId != _tenantContext.TorneioId)
+            return null;
+
+        return ParaDto(entidade);
     }
 
     public async Task<IEnumerable<FiscalDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarTodos();
+        var lista = await _repositorio.ListarPorTorneio(_tenantContext.TorneioId);
         return lista.Select(ParaDto);
     }
 
@@ -42,7 +49,7 @@ public class FiscalServico : IFiscalServico
 
         var existente = await _repositorio.ObterPorUsuario(dto.Usuario, dto.TorneioId);
         if (existente is not null)
-            throw new InvalidOperationException($"Usuário '{dto.Usuario}' já existe neste torneio.");
+            throw new InvalidOperationException($"Usuario '{dto.Usuario}' ja existe neste torneio.");
 
         var entidade = Fiscal.Criar(
             dto.TorneioId,
@@ -55,13 +62,15 @@ public class FiscalServico : IFiscalServico
     public async Task Atualizar(Guid id, AtualizarFiscalDto dto)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Fiscal '{id}' não encontrado.");
+            ?? throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
 
         if (!string.Equals(entidade.Usuario, dto.Usuario, StringComparison.OrdinalIgnoreCase))
         {
             var existente = await _repositorio.ObterPorUsuario(dto.Usuario, entidade.TorneioId);
             if (existente is not null && existente.Id != id)
-                throw new InvalidOperationException($"Usuário '{dto.Usuario}' já existe neste torneio.");
+                throw new InvalidOperationException($"Usuario '{dto.Usuario}' ja existe neste torneio.");
         }
 
         entidade.AtualizarNome(dto.Nome);
@@ -77,7 +86,9 @@ public class FiscalServico : IFiscalServico
     public async Task AtualizarSenha(Guid id, AtualizarSenhaDto dto)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Fiscal '{id}' não encontrado.");
+            ?? throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
 
         if (!_passwordHasher.Verificar(dto.SenhaAtual, entidade.SenhaHash))
             throw new InvalidOperationException("Senha atual incorreta.");
@@ -89,7 +100,10 @@ public class FiscalServico : IFiscalServico
     public async Task Remover(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Fiscal '{id}' não encontrado.");
+            ?? throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Fiscal '{id}' nao encontrado.");
+
         await _repositorio.Remover(entidade.Id);
     }
 

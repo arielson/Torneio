@@ -3,24 +3,33 @@ using Torneio.Application.DTOs.Item;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Domain.Interfaces.Services;
 
 namespace Torneio.Application.Services.Implementations;
 
 public class ItemServico : IItemServico
 {
     private readonly IItemRepositorio _repositorio;
+    private readonly ITenantContext _tenantContext;
     private readonly IValidator<CriarItemDto> _validador;
 
-    public ItemServico(IItemRepositorio repositorio, IValidator<CriarItemDto> validador)
+    public ItemServico(
+        IItemRepositorio repositorio,
+        ITenantContext tenantContext,
+        IValidator<CriarItemDto> validador)
     {
         _repositorio = repositorio;
+        _tenantContext = tenantContext;
         _validador = validador;
     }
 
     public async Task<ItemDto?> ObterPorId(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id);
-        return entidade is null ? null : ParaDto(entidade);
+        if (entidade is null || entidade.TorneioId != _tenantContext.TorneioId)
+            return null;
+
+        return ParaDto(entidade);
     }
 
     public async Task<IEnumerable<ItemDto>> ListarPorTorneio(Guid torneioId)
@@ -41,7 +50,9 @@ public class ItemServico : IItemServico
     public async Task Atualizar(Guid id, AtualizarItemDto dto)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Item '{id}' não encontrado.");
+            ?? throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
 
         entidade.Atualizar(dto.Nome, dto.Comprimento, dto.FatorMultiplicador, dto.FotoUrl);
         await _repositorio.Atualizar(entidade);
@@ -50,7 +61,10 @@ public class ItemServico : IItemServico
     public async Task Remover(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Item '{id}' não encontrado.");
+            ?? throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
+
         await _repositorio.Remover(entidade.Id);
     }
 

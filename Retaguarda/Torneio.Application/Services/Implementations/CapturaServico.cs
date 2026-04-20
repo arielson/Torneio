@@ -3,6 +3,7 @@ using Torneio.Application.DTOs.Captura;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Interfaces.Repositories;
+using Torneio.Domain.Interfaces.Services;
 
 namespace Torneio.Application.Services.Implementations;
 
@@ -12,6 +13,7 @@ public class CapturaServico : ICapturaServico
     private readonly IItemRepositorio _itemRepositorio;
     private readonly IMembroRepositorio _membroRepositorio;
     private readonly IEquipeRepositorio _equipeRepositorio;
+    private readonly ITenantContext _tenantContext;
     private readonly IValidator<RegistrarCapturaDto> _validador;
 
     public CapturaServico(
@@ -19,36 +21,46 @@ public class CapturaServico : ICapturaServico
         IItemRepositorio itemRepositorio,
         IMembroRepositorio membroRepositorio,
         IEquipeRepositorio equipeRepositorio,
+        ITenantContext tenantContext,
         IValidator<RegistrarCapturaDto> validador)
     {
         _repositorio = repositorio;
         _itemRepositorio = itemRepositorio;
         _membroRepositorio = membroRepositorio;
         _equipeRepositorio = equipeRepositorio;
+        _tenantContext = tenantContext;
         _validador = validador;
     }
 
     public async Task<CapturaDto?> ObterPorId(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id);
-        return entidade is null ? null : await ParaDtoComDetalhes(entidade);
+        if (entidade is null || entidade.TorneioId != _tenantContext.TorneioId)
+            return null;
+
+        return await ParaDtoComDetalhes(entidade);
     }
 
     public async Task<IEnumerable<CapturaDto>> ListarPorEquipe(Guid equipeId)
     {
-        var lista = await _repositorio.ListarPorEquipe(equipeId);
+        var lista = (await _repositorio.ListarPorTorneio(_tenantContext.TorneioId))
+            .Where(c => c.EquipeId == equipeId)
+            .OrderByDescending(c => c.DataHora);
         return await ParaDtoListaComDetalhes(lista);
     }
 
     public async Task<IEnumerable<CapturaDto>> ListarPorMembro(Guid membroId)
     {
-        var lista = await _repositorio.ListarPorMembro(membroId);
+        var lista = (await _repositorio.ListarPorTorneio(_tenantContext.TorneioId))
+            .Where(c => c.MembroId == membroId)
+            .OrderByDescending(c => c.DataHora);
         return await ParaDtoListaComDetalhes(lista);
     }
 
     public async Task<IEnumerable<CapturaDto>> ListarTodos()
     {
-        var lista = await _repositorio.ListarTodos();
+        var lista = (await _repositorio.ListarPorTorneio(_tenantContext.TorneioId))
+            .OrderByDescending(c => c.DataHora);
         return await ParaDtoListaComDetalhes(lista);
     }
 
@@ -68,14 +80,20 @@ public class CapturaServico : ICapturaServico
     public async Task Remover(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Captura '{id}' não encontrada.");
+            ?? throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+
         await _repositorio.Remover(entidade.Id);
     }
 
     public async Task Invalidar(Guid id, string motivo)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Captura '{id}' não encontrada.");
+            ?? throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+
         entidade.Invalidar(motivo);
         await _repositorio.Atualizar(entidade);
     }
@@ -83,7 +101,10 @@ public class CapturaServico : ICapturaServico
     public async Task Revalidar(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id)
-            ?? throw new KeyNotFoundException($"Captura '{id}' não encontrada.");
+            ?? throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+
         entidade.Revalidar();
         await _repositorio.Atualizar(entidade);
     }
@@ -107,6 +128,9 @@ public class CapturaServico : ICapturaServico
 
     private async Task<CapturaDto> ParaDtoComDetalhes(Captura c)
     {
+        if (c.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{c.Id}' nao encontrada.");
+
         var item = await _itemRepositorio.ObterPorId(c.ItemId);
         var membro = await _membroRepositorio.ObterPorId(c.MembroId);
         var equipe = await _equipeRepositorio.ObterPorId(c.EquipeId);
