@@ -22,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IItemServico, ItemServico>();
         services.AddScoped<ICapturaServico, CapturaServico>();
         services.AddScoped<ISorteioAppServico, SorteioAppServico>();
+        services.AddScoped<IGrupoAppServico, GrupoAppServico>();
+        services.AddScoped<ISorteioGrupoAppServico, SorteioGrupoAppServico>();
         services.AddScoped<IPremioServico, PremioServico>();
         services.AddScoped<IAutenticacaoServico, AutenticacaoServico>();
         services.AddScoped<IBannerServico, BannerServico>();

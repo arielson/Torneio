@@ -63,6 +63,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     final labelFiscalPlural = config?.labelSupervisorPlural ?? 'Fiscais';
     final labelCapturaPlural = config?.labelCapturaPlural ?? 'Capturas';
     final exibirSorteio = config?.modoSorteio != 'Nenhum';
+    final exibirGrupos  = config?.modoSorteio == 'GrupoEquipe';
 
     return Scaffold(
       appBar: AppBar(
@@ -124,6 +125,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     color: Colors.purple,
                     onTap: () => _abrirSecao('/admin/fiscais'),
                   ),
+                  if (exibirGrupos)
+                    _NavItem(
+                      icon: Icons.people_outline,
+                      label: 'Grupos',
+                      color: Colors.deepOrange,
+                      onTap: () => _abrirSecao('/admin/grupos'),
+                    ),
                 ],
               ),
               const SizedBox(height: 20),

@@ -57,14 +57,39 @@ public class SorteioAppServico : ISorteioAppServico
         };
     }
 
-    public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio()
+    public async Task<IEnumerable<SorteioEquipeDto>> RealizarSorteio(RealizarSorteioDto? filtro = null)
     {
-        var preCondicoes = await VerificarPreCondicoes();
-        if (!preCondicoes.Valido)
-            throw new InvalidOperationException(preCondicoes.MensagemErro!);
+        var torneio = await _torneioRepositorio.ObterPorId(_tenantContext.TorneioId)
+            ?? throw new KeyNotFoundException($"Torneio '{_tenantContext.TorneioId}' não encontrado.");
+
+        // Aplica filtros de seleção — null significa "todos"
+        var todasEquipes = (await _equipeRepositorio.ListarTodos()).ToList();
+        var todosMembros = (await _membroRepositorio.ListarTodos()).ToList();
+
+        var equipes = filtro?.EquipeIds is { Count: > 0 }
+            ? todasEquipes.Where(e => filtro.EquipeIds.Contains(e.Id)).ToList()
+            : todasEquipes;
+
+        var membros = filtro?.MembroIds is { Count: > 0 }
+            ? todosMembros.Where(m => filtro.MembroIds.Contains(m.Id)).ToList()
+            : todosMembros;
+
+        var totalVagas = equipes.Sum(e => e.QtdVagas);
+
+        if (equipes.Count < 2)
+            throw new InvalidOperationException(
+                $"São necessárias pelo menos 2 {torneio.LabelEquipePlural.ToLower()} para realizar o sorteio. Selecionadas: {equipes.Count}.");
+
+        if (membros.Count < totalVagas)
+            throw new InvalidOperationException(
+                $"Número de {torneio.LabelMembroPlural.ToLower()} insuficiente: {totalVagas} vaga{(totalVagas != 1 ? "s" : "")} disponível{(totalVagas != 1 ? "is" : "")}, {membros.Count} selecionado{(membros.Count != 1 ? "s" : "")}. Selecione mais {torneio.LabelMembroPlural.ToLower()} ou reduza as {torneio.LabelEquipePlural.ToLower()}.");
+
+        if (membros.Count > totalVagas)
+            throw new InvalidOperationException(
+                $"Número de {torneio.LabelMembroPlural.ToLower()} excede as vagas disponíveis: {totalVagas} vaga{(totalVagas != 1 ? "s" : "")}, {membros.Count} selecionado{(membros.Count != 1 ? "s" : "")}. {membros.Count - totalVagas} {torneio.LabelMembroPlural.ToLower()} ficariam de fora. Ajuste a seleção.");
 
         // Apenas calcula em memória — não salva no banco
-        var resultado = await _sorteioServico.RealizarSorteioAsync(_tenantContext.TorneioId);
+        var resultado = await _sorteioServico.RealizarSorteioAsync(_tenantContext.TorneioId, equipes, membros);
         return await ParaDtoLista(resultado);
     }
 

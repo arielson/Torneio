@@ -1,0 +1,92 @@
+@model IEnumerable<Torneio.Application.DTOs.Grupo.GrupoDto>
+@{
+    var torneio = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var labelEquipe  = torneio?.LabelEquipe  ?? "Equipe";
+    var labelMembro  = torneio?.LabelMembro  ?? "Membro";
+    ViewData["Title"] = "Grupos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Grupos</h4>
+    <a asp-action="Criar" asp-route-slug="@ViewBag.Torneio?.Slug" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Novo grupo
+    </a>
+</div>
+
+<p class="text-muted small">
+    Grupos são equipes pre-formadas para o sorteio de @labelEquipe.ToLower()s.
+    Cada grupo sorteia uma @labelEquipe.ToLower().
+</p>
+
+@if (TempData["Sucesso"] is string s)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @s <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Erro"] is string e)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @e <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Nenhum grupo cadastrado. <a asp-action="Criar" asp-route-slug="@ViewBag.Torneio?.Slug">Criar o primeiro grupo</a>.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+        @foreach (var grupo in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold mb-1">@grupo.Nome</h6>
+                        <p class="text-muted small mb-2">
+                            @grupo.Membros.Count @labelMembro.ToLower()@(grupo.Membros.Count != 1 ? "s" : "")
+                        </p>
+                        @if (grupo.Membros.Any())
+                        {
+                            <ul class="list-unstyled small mb-0">
+                                @foreach (var m in grupo.Membros.Take(5))
+                                {
+                                    <li><i class="bi bi-person me-1 text-muted"></i>@m.NomeMembro</li>
+                                }
+                                @if (grupo.Membros.Count > 5)
+                                {
+                                    <li class="text-muted">+ @(grupo.Membros.Count - 5) mais...</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">Sem @labelMembro.ToLower()s</span>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent d-flex gap-2">
+                        <a asp-action="Detalhes" asp-route-slug="@ViewBag.Torneio?.Slug" asp-route-id="@grupo.Id"
+                           class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="bi bi-eye me-1"></i>Detalhes
+                        </a>
+                        <a asp-action="Editar" asp-route-slug="@ViewBag.Torneio?.Slug" asp-route-id="@grupo.Id"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form asp-action="Remover" asp-route-slug="@ViewBag.Torneio?.Slug" asp-route-id="@grupo.Id"
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Remover o grupo @grupo.Nome?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

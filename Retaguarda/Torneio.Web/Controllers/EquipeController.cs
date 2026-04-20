@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Equipe;
+using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Enums;
 using Torneio.Infrastructure.Services;
@@ -15,18 +16,21 @@ public class EquipeController : TorneioBaseController
     private readonly IFiscalServico _fiscalServico;
     private readonly IMembroServico _membroServico;
     private readonly ITorneioServico _torneioServico;
+    private readonly ILogAuditoriaServico _log;
 
     public EquipeController(
         TenantContext tenantContext,
         IEquipeServico servico,
         IFiscalServico fiscalServico,
         IMembroServico membroServico,
-        ITorneioServico torneioServico) : base(tenantContext)
+        ITorneioServico torneioServico,
+        ILogAuditoriaServico log) : base(tenantContext)
     {
         _servico = servico;
         _fiscalServico = fiscalServico;
         _membroServico = membroServico;
         _torneioServico = torneioServico;
+        _log = log;
     }
 
     private async Task SetTorneioViewBag()
@@ -94,6 +98,13 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = fotoCapitaoUrl,
             });
             TempData["Sucesso"] = "Equipe criada com sucesso.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Equipes, Acao = "CriarEquipe",
+                Descricao = $"Equipe criada | Nome: {dto.Nome} | Capitão: {dto.Capitao} | Vagas: {dto.QtdVagas}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
@@ -164,6 +175,13 @@ public class EquipeController : TorneioBaseController
 
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Equipe atualizada.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Equipes, Acao = "EditarEquipe",
+                Descricao = $"Equipe editada | Nome: {dto.Nome} | Capitão: {dto.Capitao} | Vagas: {dto.QtdVagas}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
         catch (Exception ex)
@@ -179,8 +197,17 @@ public class EquipeController : TorneioBaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
+        var equipe = await _servico.ObterPorId(id);
         await _servico.Remover(id);
         TempData["Sucesso"] = "Equipe removida.";
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Equipes, Acao = "RemoverEquipe",
+            Descricao = $"Equipe removida | Nome: {equipe?.Nome ?? id.ToString()} | Capitão: {equipe?.Capitao}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
@@ -212,8 +239,17 @@ public class EquipeController : TorneioBaseController
 
         try
         {
+            var equipe = await _servico.ObterPorId(id);
+            var membro = await _membroServico.ObterPorId(membroId);
             await _servico.AdicionarMembro(id, membroId);
             TempData["Sucesso"] = "Membro adicionado.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio.NomeTorneio,
+                Categoria = CategoriaLog.Equipes, Acao = "AdicionarMembroEquipe",
+                Descricao = $"Membro adicionado à equipe | Equipe: {equipe?.Nome} | Membro: {membro?.Nome}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
         }
         catch (Exception ex)
         {
@@ -231,8 +267,17 @@ public class EquipeController : TorneioBaseController
         if (string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
             return RedirectToAction(nameof(Index), new { slug = Slug });
 
+        var equipe = await _servico.ObterPorId(id);
+        var membro = await _membroServico.ObterPorId(membroId);
         await _servico.RemoverMembro(id, membroId);
         TempData["Sucesso"] = "Membro removido da equipe.";
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio.NomeTorneio,
+            Categoria = CategoriaLog.Equipes, Acao = "RemoverMembroEquipe",
+            Descricao = $"Membro removido da equipe | Equipe: {equipe?.Nome} | Membro: {membro?.Nome}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
         return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }
 }

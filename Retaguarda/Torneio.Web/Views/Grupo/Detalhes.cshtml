@@ -1,0 +1,117 @@
+@model Torneio.Application.DTOs.Grupo.GrupoDto
+@using Torneio.Application.DTOs.Membro
+@{
+    var torneio = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var membrosDisponiveis = ViewBag.MembrosDisponiveis as List<MembroDto> ?? new();
+    ViewData["Title"] = Model.Nome;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>@Model.Nome</h4>
+    <div class="d-flex gap-2">
+        <a asp-action="Editar" asp-route-slug="@torneio?.Slug" asp-route-id="@Model.Id"
+           class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i>Renomear
+        </a>
+        <a asp-action="Index" asp-route-slug="@torneio?.Slug" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+</div>
+
+@if (TempData["Sucesso"] is string s)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @s <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Erro"] is string e)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @e <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Membros do grupo -->
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-person-lines-fill me-2 text-primary"></i>
+                @labelMembroPlural do grupo (@Model.Membros.Count)
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Membros.Any())
+                {
+                    <p class="text-muted small p-3 mb-0">Nenhum @labelMembro.ToLower() adicionado ainda.</p>
+                }
+                else
+                {
+                    <table class="table table-sm table-hover mb-0">
+                        <tbody>
+                            @foreach (var m in Model.Membros)
+                            {
+                                <tr>
+                                    <td class="ps-3">
+                                        <i class="bi bi-person me-2 text-muted"></i>@m.NomeMembro
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <form asp-action="RemoverMembro"
+                                              asp-route-slug="@torneio?.Slug"
+                                              asp-route-id="@Model.Id"
+                                              asp-route-grupoMembroId="@m.Id"
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Remover @m.NomeMembro do grupo?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Adicionar membro -->
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-person-plus me-2 text-success"></i>Adicionar @labelMembro.ToLower()
+            </div>
+            <div class="card-body">
+                @if (!membrosDisponiveis.Any())
+                {
+                    <p class="text-muted small mb-0">
+                        Todos os @labelMembroPlural.ToLower() já estão em grupos.
+                    </p>
+                }
+                else
+                {
+                    <form asp-action="AdicionarMembro" asp-route-slug="@torneio?.Slug" asp-route-id="@Model.Id"
+                          method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-2">
+                            <select name="membroId" class="form-select form-select-sm">
+                                <option value="">— selecione um @labelMembro.ToLower() —</option>
+                                @foreach (var m in membrosDisponiveis)
+                                {
+                                    <option value="@m.Id">@m.Nome</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-plus-lg me-1"></i>Adicionar
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

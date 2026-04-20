@@ -25,6 +25,7 @@ import 'features/admin/relatorios_membros_screen.dart';
 import 'features/admin/relatorios_screen.dart';
 import 'features/admin/relatorios_ganhadores_screen.dart';
 import 'features/admin/sorteio_screen.dart';
+import 'features/admin/grupos_screen.dart';
 import 'theme/app_theme.dart';
 
 class TorneioApp extends StatefulWidget {
@@ -94,6 +95,7 @@ class _TorneioAppState extends State<TorneioApp> {
           '/admin/fiscais': (_) => const FiscaisAdminScreen(),
           '/admin/capturas': (_) => const CapturasAdminScreen(),
           '/admin/sorteio': (_) => const SorteioAdminScreen(),
+          '/admin/grupos': (_) => const GruposAdminScreen(),
           '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
           '/admin/relatorios/equipes': (_) => const RelatoriosEquipesScreen(),
           '/admin/relatorios/membros': (_) => const RelatoriosMembrosScreen(),

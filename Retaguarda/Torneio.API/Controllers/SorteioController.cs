@@ -38,15 +38,16 @@ public class SorteioController : BaseController
 
     /// <summary>Calcula o sorteio em memória, sem salvar.</summary>
     [HttpPost]
-    public async Task<IActionResult> Realizar()
+    public async Task<IActionResult> Realizar([FromBody] RealizarSorteioDto? filtro = null)
     {
-        var resultado = await _servico.RealizarSorteio();
+        var resultado = await _servico.RealizarSorteio(filtro);
         var torneio = await _torneioServico.ObterPorId(GetTorneioIdClaim() ?? Guid.Empty);
+        var qtdEquipes = resultado.Select(r => r.EquipeId).Distinct().Count();
         await _log.Registrar(new RegistrarLogDto
         {
             TorneioId = GetTorneioIdClaim(), NomeTorneio = torneio?.NomeTorneio,
             Categoria = CategoriaLog.Sorteio, Acao = "SorteioCalculado",
-            Descricao = $"Sorteio calculado via app ({resultado.Count()} {(torneio?.LabelMembroPlural ?? "membros").ToLower()} distribuídos). Aguardando confirmação.",
+            Descricao = $"Sorteio calculado via app ({resultado.Count()} {(torneio?.LabelMembroPlural ?? "membros").ToLower()} distribuídos em {qtdEquipes} {(torneio?.LabelEquipePlural ?? "equipes").ToLower()}). Aguardando confirmação.",
             UsuarioNome = UsuarioNome, UsuarioPerfil = GetPerfil(), IpAddress = UsuarioIp,
         });
         return Ok(resultado);

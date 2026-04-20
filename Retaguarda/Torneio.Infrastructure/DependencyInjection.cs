@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantResolver, TenantResolver>();
         services.AddScoped<IFileStorage, FileStorage>();
         services.AddScoped<ISorteioServico, SorteioServico>();
+        services.AddScoped<ISorteioGrupoServico, SorteioGrupoServico>();
         services.AddScoped<IRelatorioServico, RelatorioServico>();
 
         // Repositórios
@@ -51,6 +52,8 @@ public static class DependencyInjection
         services.AddScoped<IItemRepositorio, ItemRepositorio>();
         services.AddScoped<ICapturaRepositorio, CapturaRepositorio>();
         services.AddScoped<ISorteioEquipeRepositorio, SorteioEquipeRepositorio>();
+        services.AddScoped<IGrupoRepositorio, GrupoRepositorio>();
+        services.AddScoped<ISorteioGrupoRepositorio, SorteioGrupoRepositorio>();
         services.AddScoped<IPremioRepositorio, PremioRepositorio>();
         services.AddScoped<IBannerRepositorio, BannerRepositorio>();
         services.AddScoped<ILogAuditoriaRepositorio, LogAuditoriaRepositorio>();

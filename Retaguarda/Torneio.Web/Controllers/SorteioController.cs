@@ -46,14 +46,19 @@ public class SorteioController : TorneioBaseController
         if (string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase))
             return RedirectToAction("Index", "TorneioAdmin", new { slug = Slug });
 
+        if (string.Equals(torneio.ModoSorteio, "GrupoEquipe", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Index", "SorteioGrupo", new { slug = Slug });
+
         ViewBag.Torneio = torneio;
         ViewBag.PreCondicoes = await _servico.VerificarPreCondicoes();
         ViewBag.IsDevelopment = _env.IsDevelopment();
 
-        var equipes = await _equipeServico.ListarTodos();
-        var membros = await _membroServico.ListarTodos();
+        var equipes = (await _equipeServico.ListarTodos()).OrderBy(e => e.Nome).ToList();
+        var membros = (await _membroServico.ListarTodos()).OrderBy(m => m.Nome).ToList();
         ViewBag.NomesEquipes = equipes.Select(e => e.Nome).ToList();
         ViewBag.NomesMembros = membros.Select(m => m.Nome).ToList();
+        ViewBag.Equipes = equipes;
+        ViewBag.Membros = membros;
 
         var resultado = await _servico.ObterResultado();
         return View(resultado);
@@ -61,7 +66,7 @@ public class SorteioController : TorneioBaseController
 
     [HttpPost("realizar-ajax")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RealizarAjax()
+    public async Task<IActionResult> RealizarAjax([FromBody] RealizarSorteioDto? filtro = null)
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return Json(new { ok = false, erro = "Torneio não encontrado." });
@@ -70,12 +75,13 @@ public class SorteioController : TorneioBaseController
         try
         {
             // Apenas calcula — não salva ainda. O save acontece em /confirmar-ajax.
-            var resultado = await _servico.RealizarSorteio();
+            var resultado = await _servico.RealizarSorteio(filtro);
+            var qtdEquipes = resultado.Select(r => r.EquipeId).Distinct().Count();
             await _log.Registrar(new RegistrarLogDto
             {
                 TorneioId = TenantContext.TorneioId, NomeTorneio = torneio.NomeTorneio,
                 Categoria = CategoriaLog.Sorteio, Acao = "SorteioCalculado",
-                Descricao = $"Sorteio calculado ({resultado.Count()} {torneio.LabelMembroPlural.ToLower()} distribuídos). Aguardando confirmação.",
+                Descricao = $"Sorteio calculado ({resultado.Count()} {torneio.LabelMembroPlural.ToLower()} distribuídos em {qtdEquipes} {torneio.LabelEquipePlural.ToLower()}). Aguardando confirmação.",
                 UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress,
             });
             return Json(new { ok = true, resultado = resultado.OrderBy(x => x.Posicao) });

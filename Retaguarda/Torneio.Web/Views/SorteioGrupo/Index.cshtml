@@ -1,0 +1,423 @@
+@model IEnumerable<Torneio.Application.DTOs.Sorteio.SorteioGrupoDto>
+@using Torneio.Application.DTOs.Grupo
+@using Torneio.Application.DTOs.Equipe
+@using Torneio.Application.DTOs.Sorteio
+@{
+    var torneio      = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var pre          = ViewBag.PreCondicoes as SorteioGrupoPreCondicoesDto;
+    var grupos       = ViewBag.Grupos  as List<GrupoDto>  ?? new();
+    var equipes      = ViewBag.Equipes as List<EquipeDto> ?? new();
+    var nomesGrupos  = ViewBag.NomesGrupos  as List<string> ?? new();
+    var nomesEquipes = ViewBag.NomesEquipes as List<string> ?? new();
+    var labelEquipe  = torneio?.LabelEquipe        ?? "Equipe";
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var isDev        = (bool)(ViewBag.IsDevelopment ?? false);
+    var temResultado = Model.Any();
+    ViewData["Title"] = "Sorteio de Grupos";
+}
+
+<style>
+    .slot-display { font-family: monospace; background:#1e1e2e; color:#cdd6f4; border-radius:8px; padding:16px 24px; min-height:80px; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+    .slot-group  { font-size:1.6rem; font-weight:700; color:#a6e3a1; }
+    .slot-arrow  { font-size:1.2rem; color:#89b4fa; margin:2px 0; }
+    .slot-equipe { font-size:1.4rem; font-weight:600; color:#fab387; }
+    .resultado-card { border-left:4px solid #a6e3a1; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-shuffle me-2"></i>Sorteio de Grupos</h4>
+    <a asp-controller="Grupo" asp-action="Index" asp-route-slug="@torneio?.Slug"
+       class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-people me-1"></i>Gerenciar grupos
+    </a>
+</div>
+
+@if (TempData["Sucesso"] is string s)
+{
+    <div class="alert alert-success alert-dismissible fade show">@s <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Erro"] is string e)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@e <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<!-- Pré-condições -->
+@if (pre is not null && !pre.Valido)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Pré-condições não atendidas:</strong> @pre.MensagemErro
+        <div class="mt-2">
+            <a asp-controller="Grupo" asp-action="Criar" asp-route-slug="@torneio?.Slug"
+               class="btn btn-sm btn-warning">
+                <i class="bi bi-plus me-1"></i>Criar grupo
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Resultado existente -->
+@if (temResultado)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>Sorteio realizado</h6>
+        <form asp-action="Limpar" asp-route-slug="@torneio?.Slug" method="post"
+              onsubmit="return confirm('Limpar o resultado do sorteio?')">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>Limpar e sortear novamente
+            </button>
+        </form>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var item in Model.OrderBy(r => r.Posicao))
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm resultado-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <span class="badge bg-secondary">#@item.Posicao</span>
+                        </div>
+                        <div class="fw-semibold">@item.NomeGrupo</div>
+                        <div class="text-muted small mb-1">
+                            <i class="bi bi-arrow-right me-1 text-success"></i>@item.NomeEquipe
+                        </div>
+                        @if (item.NomesMembros.Any())
+                        {
+                            <div class="small text-muted mt-1">
+                                @string.Join(", ", item.NomesMembros)
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <!-- Animação de sorteio -->
+    <div id="divAnimacao" class="d-none mb-4">
+        <div class="slot-display mx-auto" style="max-width:480px;">
+            <div class="slot-group" id="slotGrupo">—</div>
+            <div class="slot-arrow">▼</div>
+            <div class="slot-equipe" id="slotEquipe">—</div>
+        </div>
+        <p class="text-center text-muted small mt-2" id="slotLegenda">Sorteando...</p>
+    </div>
+
+    <!-- Preview do resultado calculado -->
+    <div id="divResultadoPreview" class="d-none mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Resultado proposto — confirme para salvar</h6>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm" onclick="confirmarSorteio()">
+                    <i class="bi bi-check-lg me-1"></i>Confirmar
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="abrirModalSelecao()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Sortear novamente
+                </button>
+            </div>
+        </div>
+        <div id="previewCards" class="row g-2"></div>
+    </div>
+
+    <!-- Botão principal -->
+    <div id="divBotaoSortear" class="text-center py-4">
+        @if (pre?.Valido == true)
+        {
+            <button class="btn btn-primary btn-lg px-5" onclick="abrirModalSelecao()">
+                <i class="bi bi-shuffle me-2"></i>Realizar Sorteio
+            </button>
+            @if (isDev)
+            {
+                <div class="mt-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="abrirModalSelecao()">
+                        <i class="bi bi-bug me-1"></i>Dev: abrir seleção
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">Resolva as pré-condições acima para habilitar o sorteio.</p>
+        }
+    </div>
+}
+
+<!-- Modal: Seleção de Grupos e Equipes -->
+<div class="modal fade" id="modalSelecionarParticipantes" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-check2-square me-2"></i>Selecionar participantes do sorteio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <!-- Grupos -->
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-people me-1 text-primary"></i>Grupos</h6>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="selecionarTodosGrupos(true)">Todos</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="selecionarTodosGrupos(false)">Nenhum</button>
+                            </div>
+                        </div>
+                        <div id="resumoGrupos" class="small text-muted mb-1"></div>
+                        <div class="border rounded overflow-auto" style="height:300px;">
+                            <ul class="list-group list-group-flush">
+                            @foreach (var g in grupos)
+                            {
+                                <li class="list-group-item list-group-item-action px-3 py-2">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input chk-grupo" type="checkbox"
+                                               value="@g.Id"
+                                               data-nome="@g.Nome"
+                                               data-membros="@g.Membros.Count"
+                                               id="grp_@g.Id" checked />
+                                        <label class="form-check-label w-100 user-select-none" for="grp_@g.Id"
+                                               style="cursor:pointer;">
+                                            <span class="fw-medium">@g.Nome</span>
+                                            <span class="text-muted small ms-1">
+                                                (@g.Membros.Count @(g.Membros.Count != 1 ? "membros" : "membro"))
+                                            </span>
+                                        </label>
+                                    </div>
+                                </li>
+                            }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Equipes / Embarcações -->
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-water me-1 text-info"></i>@labelEquipePlural</h6>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="selecionarTodasEquipes(true)">Todas</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="selecionarTodasEquipes(false)">Nenhuma</button>
+                            </div>
+                        </div>
+                        <div id="resumoEquipes" class="small text-muted mb-1"></div>
+                        <div class="border rounded overflow-auto" style="height:300px;">
+                            <ul class="list-group list-group-flush">
+                            @foreach (var eq in equipes)
+                            {
+                                <li class="list-group-item list-group-item-action px-3 py-2">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input chk-equipe" type="checkbox"
+                                               value="@eq.Id"
+                                               data-nome="@eq.Nome"
+                                               id="eq_@eq.Id" checked />
+                                        <label class="form-check-label w-100 user-select-none" for="eq_@eq.Id"
+                                               style="cursor:pointer;">
+                                            <span class="fw-medium">@eq.Nome</span>
+                                        </label>
+                                    </div>
+                                </li>
+                            }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="selValidacao" class="mt-3 small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnProsseguirSorteio" onclick="prosseguirSorteio()">
+                    <i class="bi bi-shuffle me-1"></i>Sortear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const LABEL_EQUIPE = '@labelEquipe';
+    const TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                  ?? document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('XSRF-TOKEN='))?.split('=')[1] ?? '';
+
+    let resultadoCalculado = [];
+
+    // ── Token helper ────────────────────────────────────────────
+    function getToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+    }
+
+    // ── Modal ────────────────────────────────────────────────────
+    window.abrirModalSelecao = function () {
+        atualizarValidacaoModal();
+        new bootstrap.Modal(document.getElementById('modalSelecionarParticipantes')).show();
+    };
+
+    function getSelecionados(cls) {
+        return [...document.querySelectorAll(`.${cls}:checked`)].map(c => c.value);
+    }
+
+    function atualizarValidacaoModal() {
+        const gruposSel  = getSelecionados('chk-grupo');
+        const equipesSel = getSelecionados('chk-equipe');
+        const btn        = document.getElementById('btnProsseguirSorteio');
+        const divVal     = document.getElementById('selValidacao');
+        const divResGr   = document.getElementById('resumoGrupos');
+        const divResEq   = document.getElementById('resumoEquipes');
+
+        divResGr.textContent = `${gruposSel.length} selecionado${gruposSel.length !== 1 ? 's' : ''}`;
+        divResEq.textContent = `${equipesSel.length} selecionada${equipesSel.length !== 1 ? 's' : ''}`;
+
+        let erros = [];
+        if (gruposSel.length < 2)
+            erros.push(`Selecione pelo menos 2 grupos.`);
+        if (equipesSel.length < 2)
+            erros.push(`Selecione pelo menos 2 ${LABEL_EQUIPE.toLowerCase()}s.`);
+        if (gruposSel.length > 0 && equipesSel.length > 0 && gruposSel.length !== equipesSel.length) {
+            const diff = gruposSel.length - equipesSel.length;
+            if (diff > 0)
+                erros.push(`${diff} grupo${diff !== 1 ? 's' : ''} a mais do que ${LABEL_EQUIPE.toLowerCase()}s. Remova grupos ou adicione ${LABEL_EQUIPE.toLowerCase()}s.`);
+            else
+                erros.push(`${-diff} ${LABEL_EQUIPE.toLowerCase()}${-diff !== 1 ? 's' : ''} a mais do que grupos. Remova ${LABEL_EQUIPE.toLowerCase()}s ou adicione grupos.`);
+        }
+
+        if (erros.length > 0) {
+            divVal.innerHTML = erros.map(e =>
+                `<div><span class="text-danger"><i class="bi bi-x-circle me-1"></i>${e}</span></div>`
+            ).join('');
+            btn.disabled = true;
+        } else {
+            divVal.innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i>${gruposSel.length} grupos · ${equipesSel.length} ${LABEL_EQUIPE.toLowerCase()}s — pronto para sortear.</span>`;
+            btn.disabled = false;
+        }
+    }
+
+    window.selecionarTodosGrupos = function (sel) {
+        document.querySelectorAll('.chk-grupo').forEach(c => c.checked = sel);
+        atualizarValidacaoModal();
+    };
+    window.selecionarTodasEquipes = function (sel) {
+        document.querySelectorAll('.chk-equipe').forEach(c => c.checked = sel);
+        atualizarValidacaoModal();
+    };
+
+    document.querySelectorAll('.chk-grupo, .chk-equipe')
+        .forEach(c => c.addEventListener('change', atualizarValidacaoModal));
+
+    // ── Prosseguir (fechar modal → sortear) ─────────────────────
+    window.prosseguirSorteio = function () {
+        const gruposSel  = [...document.querySelectorAll('.chk-grupo:checked')].map(c => c.value);
+        const equipesSel = [...document.querySelectorAll('.chk-equipe:checked')].map(c => c.value);
+        const nomesGrupos  = [...document.querySelectorAll('.chk-grupo:checked')].map(c => c.dataset.nome);
+        const nomesEquipes = [...document.querySelectorAll('.chk-equipe:checked')].map(c => c.dataset.nome);
+
+        bootstrap.Modal.getInstance(document.getElementById('modalSelecionarParticipantes')).hide();
+        realizarSorteio(gruposSel, equipesSel, nomesGrupos, nomesEquipes);
+    };
+
+    // ── Animação + chamada AJAX ──────────────────────────────────
+    async function realizarSorteio(grupoIds, equipeIds, nomesGrupos, nomesEquipes) {
+        document.getElementById('divBotaoSortear').classList.add('d-none');
+        document.getElementById('divResultadoPreview').classList.add('d-none');
+        document.getElementById('divAnimacao').classList.remove('d-none');
+
+        const pool = { grupos: nomesGrupos, equipes: nomesEquipes };
+        await animarSlot(pool);
+
+        const resp = await fetch('@Url.Action("RealizarAjax", "SorteioGrupo", new { slug = torneio?.Slug })', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getToken() },
+            body: JSON.stringify({ grupoIds, equipeIds })
+        });
+
+        const data = await resp.json();
+        document.getElementById('divAnimacao').classList.add('d-none');
+
+        if (!data.ok) {
+            mostrarErro(data.erro);
+            document.getElementById('divBotaoSortear').classList.remove('d-none');
+            return;
+        }
+
+        resultadoCalculado = data.resultado;
+        renderizarPreview(data.resultado);
+        document.getElementById('divResultadoPreview').classList.remove('d-none');
+    }
+
+    function animarSlot(pool) {
+        return new Promise(resolve => {
+            let frame = 0;
+            const total = 40;
+            const slotG = document.getElementById('slotGrupo');
+            const slotE = document.getElementById('slotEquipe');
+            const leg   = document.getElementById('slotLegenda');
+            const id = setInterval(() => {
+                slotG.textContent = pool.grupos[frame % pool.grupos.length];
+                slotE.textContent = pool.equipes[frame % pool.equipes.length];
+                frame++;
+                if (frame >= total) {
+                    clearInterval(id);
+                    leg.textContent = 'Calculando resultado...';
+                    resolve();
+                }
+            }, 70);
+        });
+    }
+
+    function renderizarPreview(resultado) {
+        const container = document.getElementById('previewCards');
+        container.innerHTML = resultado.map(r => `
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm resultado-card">
+                    <div class="card-body py-2 px-3">
+                        <span class="badge bg-secondary me-1">#${r.posicao}</span>
+                        <span class="fw-semibold">${r.nomeGrupo}</span>
+                        <div class="small text-muted">
+                            <i class="bi bi-arrow-right text-success me-1"></i>${r.nomeEquipe}
+                        </div>
+                        ${r.nomesMembros?.length ? `<div class="small text-muted mt-1">${r.nomesMembros.join(', ')}</div>` : ''}
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+
+    // ── Confirmar ────────────────────────────────────────────────
+    window.confirmarSorteio = async function () {
+        const payload = resultadoCalculado.map(r => ({
+            grupoId: r.grupoId,
+            nomeGrupo: r.nomeGrupo,
+            equipeId: r.equipeId,
+            nomeEquipe: r.nomeEquipe,
+            posicao: r.posicao
+        }));
+
+        const resp = await fetch('@Url.Action("ConfirmarAjax", "SorteioGrupo", new { slug = torneio?.Slug })', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getToken() },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        if (data.ok) {
+            location.reload();
+        } else {
+            mostrarErro(data.erro);
+        }
+    };
+
+    function mostrarErro(msg) {
+        const div = document.createElement('div');
+        div.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        div.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.querySelector('.container-fluid, .container, main')?.prepend(div)
+            ?? document.body.prepend(div);
+    }
+</script>
+}
+
+@Html.AntiForgeryToken()

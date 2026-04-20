@@ -1,6 +1,8 @@
 @model IEnumerable<SorteioEquipeDto>
 @using Torneio.Application.DTOs.Sorteio
 @using Torneio.Application.DTOs.Torneio
+@using Torneio.Application.DTOs.Equipe
+@using Torneio.Application.DTOs.Membro
 @{
     var slug              = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio           = ViewBag.Torneio as TorneioDto;
@@ -12,6 +14,8 @@
     var lista  = Model.ToList();
     var pre    = ViewBag.PreCondicoes as SorteioPreCondicoesDto;
     var isDev  = (bool)(ViewBag.IsDevelopment ?? false);
+    var equipesDisponiveis = (ViewBag.Equipes as IEnumerable<EquipeDto> ?? []).ToList();
+    var membrosDisponiveis = (ViewBag.Membros as IEnumerable<MembroDto> ?? []).ToList();
 
     // Agrupa por equipe para exibição
     var grupos = lista
@@ -146,6 +150,34 @@
     border-bottom: 1px solid rgba(0,0,0,.06);
 }
 .sorteio-boat-member:last-child { border-bottom: none; }
+
+/* ── Modal de seleção ─────────────────────────────────────────── */
+.sel-check-list {
+    height: 280px;
+    overflow-y: auto;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    padding: .25rem 0;
+}
+.sel-check-list .form-check {
+    padding: .3rem .75rem;
+    margin: 0;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.sel-check-list .form-check:last-child { border-bottom: none; }
+.sel-vagas-badge {
+    font-size: .75rem;
+    color: var(--bs-secondary-color);
+    margin-left: .4rem;
+}
+.chk-equipe, .chk-membro {
+    margin-left: 0 !important;
+    margin-right: 5px !important;;
+}
+#selValidacao {
+    font-size: .85rem;
+    min-height: 1.4rem;
+}
 </style>
 
 <!-- ── Animation overlay ──────────────────────────────────────── -->
@@ -191,7 +223,91 @@
     </div>
 </div>
 
-<!-- Hidden form: CSRF + URL do endpoint AJAX -->
+<!-- ── Modal de seleção de participantes ─────────────────────── -->
+<div class="modal fade" id="modalSelecionarParticipantes" tabindex="-1" aria-labelledby="modalSelecionarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSelecionarLabel">
+                    <i class="bi bi-people-fill me-2"></i>Selecionar participantes do sorteio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <!-- Coluna equipes -->
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-water me-1 text-primary"></i>@labelEquipePlural
+                            </span>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="selecionarTodasEquipes(true)">Todas</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="selecionarTodasEquipes(false)">Nenhuma</button>
+                            </div>
+                        </div>
+                        <div class="sel-check-list" id="listEquipes">
+                            @foreach (var eq in equipesDisponiveis)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input chk-equipe" type="checkbox"
+                                           id="eq_@eq.Id"
+                                           value="@eq.Id"
+                                           data-vagas="@eq.QtdVagas"
+                                           checked />
+                                    <label class="form-check-label" for="eq_@eq.Id">
+                                        @eq.Nome
+                                        <span class="sel-vagas-badge">(@eq.QtdVagas vaga@(eq.QtdVagas != 1 ? "s" : ""))</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <div class="mt-1 small text-muted" id="resumoEquipes"></div>
+                    </div>
+
+                    <!-- Coluna membros -->
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-person me-1 text-success"></i>@labelMembroPlural
+                            </span>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="selecionarTodosMembros(true)">Todos</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="selecionarTodosMembros(false)">Nenhum</button>
+                            </div>
+                        </div>
+                        <div class="sel-check-list" id="listMembros">
+                            @foreach (var mb in membrosDisponiveis)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input chk-membro" type="checkbox"
+                                           id="mb_@mb.Id"
+                                           value="@mb.Id"
+                                           checked />
+                                    <label class="form-check-label" for="mb_@mb.Id">@mb.Nome</label>
+                                </div>
+                            }
+                        </div>
+                        <div class="mt-1 small text-muted" id="resumoMembros"></div>
+                    </div>
+                </div>
+
+                <!-- Validação -->
+                <div class="mt-3 pt-3 border-top">
+                    <div id="selValidacao"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnProsseguirSorteio" onclick="prosseguirSorteio()">
+                    <i class="bi bi-shuffle me-1"></i>Sortear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden forms: CSRF + URLs dos endpoints AJAX -->
 <form id="frmSortearAjax"
       asp-controller="Sorteio" asp-action="RealizarAjax" asp-route-slug="@slug"
       method="post" style="display:none">
@@ -211,7 +327,7 @@
         @if (!lista.Any())
         {
             <button type="button" class="btn btn-success btn-sm"
-                    onclick="realizarSorteio()"
+                    onclick="abrirModalSelecao()"
                     @(pre is { Valido: false } ? "disabled" : "")>
                 <i class="bi bi-shuffle me-1"></i>Sortear
             </button>
@@ -272,11 +388,11 @@
                 <i class="bi bi-shuffle" style="font-size:2.5rem;opacity:.3"></i>
                 <p class="mt-2 mb-1">Nenhum sorteio realizado ainda.</p>
                 <p class="small mb-3">
-                    Serão sorteados <strong>@(pre?.TotalVagas ?? 0)</strong> @labelMembroPlural
+                    Serão sorteados até <strong>@(pre?.TotalVagas ?? 0)</strong> @labelMembroPlural
                     para <strong>@(pre?.QtdEquipes ?? 0)</strong> @labelEquipePlural.
                 </p>
                 <button type="button" class="btn btn-primary"
-                        onclick="realizarSorteio()"
+                        onclick="abrirModalSelecao()"
                         @(pre is { Valido: false } ? "disabled" : "")>
                     <i class="bi bi-shuffle me-1"></i>Realizar Sorteio
                 </button>
@@ -319,8 +435,9 @@ else
 <script>
 (function () {
     const LABEL_MEMBRO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labelMembro));
+    const LABEL_EQUIPE = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labelEquipe));
 
-    // ── Pools reais (embarcações e membros cadastrados) ────
+    // ── Pools para animação (nomes dos selecionados) ──────────────
     const POOL_EQUIPES_REAL = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
         (ViewBag.NomesEquipes as List<string>) ?? new List<string>()));
     const POOL_MEMBROS_REAL = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
@@ -356,13 +473,6 @@ else
         return a;
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // Agrupa lista plana [{equipeId, nomeEquipe, nomeMembro}] por equipeId
     function agruparPorEquipe(lista) {
         const map = new Map();
         for (const item of lista) {
@@ -374,6 +484,87 @@ else
         }
         return [...map.values()].sort((a, b) => a.nome.localeCompare(b.nome));
     }
+
+    // ── Modal de seleção ──────────────────────────────────
+    function getSelecionados(cls) {
+        return [...document.querySelectorAll(`.${cls}:checked`)].map(c => c.value);
+    }
+
+    function getTotalVagasSelecionadas() {
+        return [...document.querySelectorAll('.chk-equipe:checked')]
+            .reduce((s, c) => s + parseInt(c.dataset.vagas || '0', 10), 0);
+    }
+
+    function atualizarValidacaoModal() {
+        const equipesSel  = getSelecionados('chk-equipe');
+        const membrosSel  = getSelecionados('chk-membro');
+        const totalVagas  = getTotalVagasSelecionadas();
+        const btnProsseguir = document.getElementById('btnProsseguirSorteio');
+        const divVal        = document.getElementById('selValidacao');
+        const divResEq      = document.getElementById('resumoEquipes');
+        const divResMb      = document.getElementById('resumoMembros');
+
+        divResEq.textContent = `${equipesSel.length} selecionada${equipesSel.length !== 1 ? 's' : ''} · ${totalVagas} vaga${totalVagas !== 1 ? 's' : ''}`;
+        divResMb.textContent = `${membrosSel.length} selecionado${membrosSel.length !== 1 ? 's' : ''}`;
+
+        let erros = [];
+        if (equipesSel.length < 2)
+            erros.push(`Selecione pelo menos 2 ${LABEL_EQUIPE.toLowerCase()}s.`);
+        if (membrosSel.length < totalVagas)
+            erros.push(`${LABEL_MEMBRO}s insuficientes: ${totalVagas} vaga${totalVagas !== 1 ? 's' : ''}, ${membrosSel.length} selecionado${membrosSel.length !== 1 ? 's' : ''}. Faltam ${totalVagas - membrosSel.length}.`);
+        else if (membrosSel.length > totalVagas)
+            erros.push(`${membrosSel.length - totalVagas} ${LABEL_MEMBRO.toLowerCase()}${(membrosSel.length - totalVagas) !== 1 ? 's' : ''} ficariam de fora: ${totalVagas} vaga${totalVagas !== 1 ? 's' : ''}, ${membrosSel.length} selecionado${membrosSel.length !== 1 ? 's' : ''}. Remova ${membrosSel.length - totalVagas} ou selecione mais ${LABEL_EQUIPE.toLowerCase()}s.`);
+
+        if (erros.length > 0) {
+            divVal.innerHTML = erros.map(e => `<span class="text-danger"><i class="bi bi-x-circle me-1"></i>${e}</span>`).join('<br>');
+            btnProsseguir.disabled = true;
+        } else {
+            divVal.innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i>${equipesSel.length} ${LABEL_EQUIPE.toLowerCase()}s · ${totalVagas} vagas · ${membrosSel.length} ${LABEL_MEMBRO.toLowerCase()}s — pronto para sortear.</span>`;
+            btnProsseguir.disabled = false;
+        }
+    }
+
+    window.selecionarTodasEquipes = function (sel) {
+        document.querySelectorAll('.chk-equipe').forEach(c => c.checked = sel);
+        atualizarValidacaoModal();
+    };
+
+    window.selecionarTodosMembros = function (sel) {
+        document.querySelectorAll('.chk-membro').forEach(c => c.checked = sel);
+        atualizarValidacaoModal();
+    };
+
+    window.abrirModalSelecao = function () {
+        atualizarValidacaoModal();
+        new bootstrap.Modal(document.getElementById('modalSelecionarParticipantes')).show();
+    };
+
+    // Atualiza validação ao mudar qualquer checkbox
+    document.addEventListener('change', function (e) {
+        if (e.target.classList.contains('chk-equipe') || e.target.classList.contains('chk-membro'))
+            atualizarValidacaoModal();
+    });
+
+    // Inicia validação ao abrir o modal
+    document.getElementById('modalSelecionarParticipantes').addEventListener('show.bs.modal', atualizarValidacaoModal);
+
+    // ── Prosseguir (fecha modal + inicia sorteio) ─────────
+    window.prosseguirSorteio = function () {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalSelecionarParticipantes'));
+        if (modal) modal.hide();
+        const equipeIds = getSelecionados('chk-equipe');
+        const membroIds = getSelecionados('chk-membro');
+        // Obtém os nomes das equipes/membros selecionados para a animação
+        const nomesEquipes = equipeIds.map(id => {
+            const lbl = document.querySelector(`#eq_${id}`)?.closest('.form-check')?.querySelector('.form-check-label');
+            return lbl ? lbl.firstChild.textContent.trim() : id;
+        });
+        const nomesMembros = membroIds.map(id => {
+            const lbl = document.querySelector(`#mb_${id} + label`);
+            return lbl ? lbl.textContent.trim() : id;
+        });
+        realizarSorteio(equipeIds, membroIds, nomesEquipes, nomesMembros);
+    };
 
     // ── Spinning ──────────────────────────────────────────
     let spinInterval = null;
@@ -434,7 +625,6 @@ else
         const token = form.querySelector('[name="__RequestVerificationToken"]').value;
         const url   = form.action;
 
-        // Monta payload: equipeId, nomeEquipe, membroId, nomeMembro, posicao
         const payload = _ultimoResultado.map(i => ({
             equipeId:   i.equipeId   ?? i.EquipeId,
             nomeEquipe: i.nomeEquipe ?? i.NomeEquipe ?? '',
@@ -482,7 +672,6 @@ else
         const grupos = agruparPorEquipe(resultado);
 
         for (const grupo of grupos) {
-            // Constrói card do barco
             const card = document.createElement('div');
             card.className = 'sort-boat-card';
 
@@ -502,7 +691,6 @@ else
             card.appendChild(membList);
             grid.appendChild(card);
 
-            // Aguarda e anima
             await delay(420);
             card.classList.add('visible');
         }
@@ -512,19 +700,30 @@ else
     }
 
     // ── Sorteio real (AJAX) ───────────────────────────────
-    window.realizarSorteio = async function () {
+    window.realizarSorteio = async function (equipeIds, membroIds, poolEquipes, poolMembros) {
         abrirOverlay();
-        startSpinning(POOL_EQUIPES_REAL, POOL_MEMBROS_REAL);
+        const animPool = (poolEquipes && poolEquipes.length > 0) ? poolEquipes : POOL_EQUIPES_REAL;
+        const animPoolMb = (poolMembros && poolMembros.length > 0) ? poolMembros : POOL_MEMBROS_REAL;
+        startSpinning(animPool, animPoolMb);
 
         const form  = document.getElementById('frmSortearAjax');
         const token = form.querySelector('[name="__RequestVerificationToken"]').value;
         const url   = form.action;
 
+        // Monta body com os IDs selecionados (null = todos)
+        const body = {};
+        if (equipeIds && equipeIds.length > 0) body.equipeIds = equipeIds;
+        if (membroIds && membroIds.length > 0) body.membroIds = membroIds;
+
         try {
             const [resp] = await Promise.all([
                 fetch(url, {
                     method: 'POST',
-                    headers: { 'RequestVerificationToken': token }
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(body)
                 }).then(r => r.json()),
                 delay(3500)
             ]);
@@ -572,7 +771,6 @@ else
         await delay(3500);
         stopSpinning();
 
-        // Embaralha todos os 30 pescadores e distribui 5 para cada barco
         const pescadores = shuffle([...TODOS_PESCADORES]);
         const resultado  = [];
         let idx = 0;

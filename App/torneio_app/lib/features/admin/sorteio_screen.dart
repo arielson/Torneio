@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
+import '../../core/models/equipe.dart';
+import '../../core/models/grupo.dart';
+import '../../core/models/membro.dart';
 import '../../core/models/sorteio_equipe.dart';
+import '../../core/models/sorteio_grupo.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
@@ -94,6 +98,13 @@ class _PreCondicoes {
       );
 }
 
+// ── Resultado da seleção de participantes ─────────────────────
+class _SelecaoParticipantes {
+  final List<Equipe> equipes;
+  final List<Membro> membros;
+  const _SelecaoParticipantes({required this.equipes, required this.membros});
+}
+
 // ── Tela principal ────────────────────────────────────────────
 class SorteioAdminScreen extends StatefulWidget {
   const SorteioAdminScreen({super.key});
@@ -142,6 +153,32 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
     }
   }
 
+  // Abre o diálogo de seleção de participantes e retorna a seleção confirmada
+  Future<_SelecaoParticipantes?> _abrirSelecao({
+    List<Equipe>? mockEquipes,
+    List<Membro>? mockMembros,
+  }) async {
+    final authNullable = context.read<AuthProvider>().usuario;
+    if (authNullable?.slug == null || authNullable?.token == null) return null;
+    final auth = authNullable!;
+    final config = context.read<ConfigProvider>().config;
+
+    return showDialog<_SelecaoParticipantes>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _SelecionarParticipantesDialog(
+        slug: auth.slug!,
+        token: auth.token,
+        labelEquipe: config?.labelEquipe ?? 'Equipe',
+        labelEquipePlural: config?.labelEquipePlural ?? 'Equipes',
+        labelMembro: config?.labelMembro ?? 'Membro',
+        labelMembroPlural: config?.labelMembroPlural ?? 'Membros',
+        mockEquipes: mockEquipes,
+        mockMembros: mockMembros,
+      ),
+    );
+  }
+
   Future<void> _sortear() async {
     final pre = _preCondicoes;
     if (pre != null && !pre.valido) return;
@@ -149,10 +186,20 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
     if (auth?.slug == null || auth?.token == null) return;
     final config = context.read<ConfigProvider>().config;
 
+    // Abre o diálogo de seleção
+    if (!mounted) return;
+    final selecao = await _abrirSelecao();
+    if (selecao == null || !mounted) return; // cancelado
+
     setState(() => _processando = true);
 
+    final filtro = {
+      'equipeIds': selecao.equipes.map((e) => e.id).toList(),
+      'membroIds': selecao.membros.map((m) => m.id).toList(),
+    };
+
     final apiFuture = _api
-        .post(ApiConstants.sorteio(auth!.slug!), {}, token: auth.token)
+        .post(ApiConstants.sorteio(auth!.slug!), filtro, token: auth.token)
         .then<List<SorteioEquipe>>((data) {
           if (data is! List) return <SorteioEquipe>[];
           return data.map((e) => SorteioEquipe.fromJson(e as Map<String, dynamic>)).toList();
@@ -160,7 +207,6 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
 
     if (!mounted) return;
 
-    // Dialog retorna: null = erro; [] = cancelado; [..] = confirmado pelo usuário
     final resultado = await showDialog<List<SorteioEquipe>>(
       context: context,
       barrierDismissible: false,
@@ -169,13 +215,14 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
         chamadaApi: () => apiFuture,
         labelEquipe: config?.labelEquipe ?? 'Equipe',
         labelMembro: config?.labelMembro ?? 'Membro',
+        nomesEquipes: selecao.equipes.map((e) => e.nome).toList(),
+        nomesMembros: selecao.membros.map((m) => m.nome).toList(),
       ),
     );
 
     if (!mounted) return;
 
     if (resultado == null) {
-      // Erro na API durante a animação
       setState(() => _processando = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -186,7 +233,6 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
     }
 
     if (resultado.isEmpty) {
-      // Usuário cancelou
       setState(() => _processando = false);
       return;
     }
@@ -231,6 +277,32 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
 
   Future<void> _simular() async {
     final config = context.read<ConfigProvider>().config;
+
+    // Monta equipes e membros fictícios para a seleção na simulação
+    const uuid = Uuid();
+    final mockEquipes = _mockEquipesNomes
+        .map((nome) => Equipe(
+              id: uuid.v4(),
+              torneioId: 'mock',
+              nome: nome,
+              capitao: '',
+              fiscalId: 'mock',
+              qtdVagas: 5,
+              qtdMembros: 0,
+            ))
+        .toList();
+    final mockMembros = _todosPescadores
+        .map((nome) => Membro(id: uuid.v4(), nome: nome))
+        .toList();
+
+    // A simulação também passa pela seleção de participantes (com dados fictícios)
+    if (!mounted) return;
+    final selecao = await _abrirSelecao(
+      mockEquipes: mockEquipes,
+      mockMembros: mockMembros,
+    );
+    if (selecao == null || !mounted) return;
+
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -239,6 +311,12 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
         chamadaApi: () async => _gerarMockSorteio(),
         labelEquipe: config?.labelEquipe ?? 'Equipe',
         labelMembro: config?.labelMembro ?? 'Membro',
+        nomesEquipes: selecao.equipes.isNotEmpty
+            ? selecao.equipes.map((e) => e.nome).toList()
+            : const [..._mockEquipesNomes],
+        nomesMembros: selecao.membros.isNotEmpty
+            ? selecao.membros.map((m) => m.nome).toList()
+            : List<String>.from(_todosPescadores)..shuffle(),
         isSimulacao: true,
       ),
     );
@@ -297,6 +375,10 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
       );
     }
 
+    if (config?.modoSorteio == 'GrupoEquipe') {
+      return const _SorteioGrupoEquipeScreen();
+    }
+
     final labelEquipePlural = config?.labelEquipePlural ?? 'Equipes';
     final labelMembroPlural = config?.labelMembroPlural ?? 'Membros';
     final pre = _preCondicoes;
@@ -344,7 +426,6 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
                   : ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        // Alerta de pré-condições
                         if (pre != null && !pre.valido) ...[
                           _AlertaPreCondicoes(
                             pre: pre,
@@ -353,7 +434,6 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
                           ),
                           const SizedBox(height: 16),
                         ],
-                        // Estado vazio
                         if (_resultado.isEmpty)
                           _EstadoVazio(
                             podeSortear: podeSortear,
@@ -365,7 +445,6 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
                             onSortear: _sortear,
                           )
                         else ...[
-                          // Cabeçalho do resultado
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Text(
@@ -376,12 +455,447 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
                                   ?.copyWith(color: Colors.grey),
                             ),
                           ),
-                          // Grade de embarcações
                           ...grupos.map((g) => _CardEquipeSorteada(grupo: g)),
                         ],
                       ],
                     ),
             ),
+    );
+  }
+}
+
+// ── Diálogo de seleção de participantes ───────────────────────
+class _SelecionarParticipantesDialog extends StatefulWidget {
+  final String slug;
+  final String token;
+  final String labelEquipe;
+  final String labelEquipePlural;
+  final String labelMembro;
+  final String labelMembroPlural;
+  final List<Equipe>? mockEquipes;
+  final List<Membro>? mockMembros;
+
+  const _SelecionarParticipantesDialog({
+    required this.slug,
+    required this.token,
+    required this.labelEquipe,
+    required this.labelEquipePlural,
+    required this.labelMembro,
+    required this.labelMembroPlural,
+    this.mockEquipes,
+    this.mockMembros,
+  });
+
+  @override
+  State<_SelecionarParticipantesDialog> createState() =>
+      _SelecionarParticipantesDialogState();
+}
+
+class _SelecionarParticipantesDialogState
+    extends State<_SelecionarParticipantesDialog> {
+  final ApiService _api = ApiService();
+
+  bool _carregando = true;
+  String? _erro;
+  List<Equipe> _equipes = const [];
+  List<Membro> _membros = const [];
+  final Set<String> _equipesSel = {};
+  final Set<String> _membrosSel = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() { _carregando = true; _erro = null; });
+    try {
+      final List<Equipe> equipes;
+      final List<Membro> membros;
+
+      if (widget.mockEquipes != null && widget.mockMembros != null) {
+        // Modo simulação: usa dados fictícios sem chamar a API
+        equipes = List<Equipe>.from(widget.mockEquipes!)
+          ..sort((a, b) => a.nome.compareTo(b.nome));
+        membros = List<Membro>.from(widget.mockMembros!)
+          ..sort((a, b) => a.nome.compareTo(b.nome));
+      } else {
+        final results = await Future.wait([
+          _api.get(ApiConstants.equipes(widget.slug), token: widget.token),
+          _api.get(ApiConstants.membros(widget.slug), token: widget.token),
+        ]);
+
+        equipes = (results[0] as List)
+            .map((e) => Equipe.fromJson(e as Map<String, dynamic>))
+            .toList()
+          ..sort((a, b) => a.nome.compareTo(b.nome));
+
+        membros = (results[1] as List)
+            .map((m) => Membro.fromJson(m as Map<String, dynamic>))
+            .toList()
+          ..sort((a, b) => a.nome.compareTo(b.nome));
+      }
+
+      setState(() {
+        _equipes = equipes;
+        _membros = membros;
+        // Seleciona todos por padrão
+        _equipesSel
+          ..clear()
+          ..addAll(equipes.map((e) => e.id));
+        _membrosSel
+          ..clear()
+          ..addAll(membros.map((m) => m.id));
+      });
+    } catch (_) {
+      setState(() => _erro = 'Erro ao carregar participantes.');
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  int get _totalVagasSelecionadas => _equipes
+      .where((e) => _equipesSel.contains(e.id))
+      .fold(0, (s, e) => s + e.qtdVagas);
+
+  String? get _erroValidacao {
+    final qtdEq = _equipesSel.length;
+    final qtdMb = _membrosSel.length;
+    final vagas = _totalVagasSelecionadas;
+    if (qtdEq < 2) {
+      return 'Selecione pelo menos 2 ${widget.labelEquipePlural.toLowerCase()}.';
+    }
+    if (qtdMb < vagas) {
+      final faltam = vagas - qtdMb;
+      return '${widget.labelMembroPlural} insuficientes: $vagas vaga${vagas != 1 ? 's' : ''}, $qtdMb selecionado${qtdMb != 1 ? 's' : ''}. Faltam $faltam.';
+    }
+    if (qtdMb > vagas) {
+      final sobram = qtdMb - vagas;
+      return '$sobram ${widget.labelMembroPlural.toLowerCase()} ficariam de fora: $vagas vaga${vagas != 1 ? 's' : ''}, $qtdMb selecionado${qtdMb != 1 ? 's' : ''}. Remova $sobram ou selecione mais ${widget.labelEquipePlural.toLowerCase()}.';
+    }
+    return null;
+  }
+
+  void _toggleEquipe(String id) =>
+      setState(() => _equipesSel.contains(id) ? _equipesSel.remove(id) : _equipesSel.add(id));
+
+  void _toggleMembro(String id) =>
+      setState(() => _membrosSel.contains(id) ? _membrosSel.remove(id) : _membrosSel.add(id));
+
+  void _selecionarTodasEquipes(bool sel) => setState(() {
+        if (sel) {
+          _equipesSel.addAll(_equipes.map((e) => e.id));
+        } else {
+          _equipesSel.clear();
+        }
+      });
+
+  void _selecionarTodosMembros(bool sel) => setState(() {
+        if (sel) {
+          _membrosSel.addAll(_membros.map((m) => m.id));
+        } else {
+          _membrosSel.clear();
+        }
+      });
+
+  void _confirmar() {
+    final equipes = _equipes.where((e) => _equipesSel.contains(e.id)).toList();
+    final membros = _membros.where((m) => _membrosSel.contains(m.id)).toList();
+    Navigator.of(context).pop(_SelecaoParticipantes(equipes: equipes, membros: membros));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Cabeçalho
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 16, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.people_alt_outlined),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Selecionar participantes',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(null),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+
+            if (_carregando)
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: CircularProgressIndicator(),
+              )
+            else if (_erro != null)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(_erro!, style: const TextStyle(color: Colors.red)),
+              )
+            else
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Equipes ──────────────────────────────
+                      _SecaoSelecao(
+                        titulo: widget.labelEquipePlural,
+                        icone: Icons.water,
+                        cor: Theme.of(context).colorScheme.primary,
+                        labelSelTodos: 'Todas',
+                        labelDeselTodos: 'Nenhuma',
+                        onSelTodos: () => _selecionarTodasEquipes(true),
+                        onDeselTodos: () => _selecionarTodasEquipes(false),
+                        resumo: '${_equipesSel.length} selecionada${_equipesSel.length != 1 ? 's' : ''} · $_totalVagasSelecionadas vaga${_totalVagasSelecionadas != 1 ? 's' : ''}',
+                        itens: _equipes.map((e) {
+                          return _ItemSelecao(
+                            id: e.id,
+                            nome: e.nome,
+                            subtitulo: '${e.qtdVagas} vaga${e.qtdVagas != 1 ? 's' : ''}',
+                            selecionado: _equipesSel.contains(e.id),
+                            onToggle: () => _toggleEquipe(e.id),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Membros ──────────────────────────────
+                      _SecaoSelecao(
+                        titulo: widget.labelMembroPlural,
+                        icone: Icons.person,
+                        cor: Colors.teal,
+                        labelSelTodos: 'Todos',
+                        labelDeselTodos: 'Nenhum',
+                        onSelTodos: () => _selecionarTodosMembros(true),
+                        onDeselTodos: () => _selecionarTodosMembros(false),
+                        resumo: '${_membrosSel.length} selecionado${_membrosSel.length != 1 ? 's' : ''}',
+                        itens: _membros.map((m) {
+                          return _ItemSelecao(
+                            id: m.id,
+                            nome: m.nome,
+                            selecionado: _membrosSel.contains(m.id),
+                            onToggle: () => _toggleMembro(m.id),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Validação ────────────────────────────
+                      if (_erroValidacao != null)
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded,
+                                  color: Colors.orange.shade700, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _erroValidacao!,
+                                  style: TextStyle(
+                                      color: Colors.orange.shade900,
+                                      fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle_outline,
+                                  color: Colors.green.shade700, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${_equipesSel.length} ${widget.labelEquipePlural.toLowerCase()} · $_totalVagasSelecionadas vagas · ${_membrosSel.length} ${widget.labelMembroPlural.toLowerCase()} — pronto para sortear.',
+                                  style: TextStyle(
+                                      color: Colors.green.shade900,
+                                      fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ),
+
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(null),
+                    child: const Text('Cancelar'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: (_carregando || _erroValidacao != null) ? null : _confirmar,
+                    icon: const Icon(Icons.shuffle),
+                    label: const Text('Sortear'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Seção de seleção (equipes ou membros) ─────────────────────
+class _SecaoSelecao extends StatelessWidget {
+  final String titulo;
+  final IconData icone;
+  final Color cor;
+  final String labelSelTodos;
+  final String labelDeselTodos;
+  final VoidCallback onSelTodos;
+  final VoidCallback onDeselTodos;
+  final String resumo;
+  final List<_ItemSelecao> itens;
+
+  const _SecaoSelecao({
+    required this.titulo,
+    required this.icone,
+    required this.cor,
+    required this.labelSelTodos,
+    required this.labelDeselTodos,
+    required this.onSelTodos,
+    required this.onDeselTodos,
+    required this.resumo,
+    required this.itens,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icone, color: cor, size: 18),
+            const SizedBox(width: 6),
+            Text(titulo,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: cor)),
+            const Spacer(),
+            TextButton(
+              style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact),
+              onPressed: onSelTodos,
+              child: Text(labelSelTodos,
+                  style: const TextStyle(fontSize: 12)),
+            ),
+            Text('/', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+            TextButton(
+              style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact),
+              onPressed: onDeselTodos,
+              child: Text(labelDeselTodos,
+                  style: const TextStyle(fontSize: 12)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          constraints: const BoxConstraints(maxHeight: 180),
+          child: ListView(
+            shrinkWrap: true,
+            children: itens,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(resumo,
+            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      ],
+    );
+  }
+}
+
+class _ItemSelecao extends StatelessWidget {
+  final String id;
+  final String nome;
+  final String? subtitulo;
+  final bool selecionado;
+  final VoidCallback onToggle;
+
+  const _ItemSelecao({
+    required this.id,
+    required this.nome,
+    this.subtitulo,
+    required this.selecionado,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onToggle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            Checkbox(
+              value: selecionado,
+              onChanged: (_) => onToggle(),
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(nome, style: const TextStyle(fontSize: 13)),
+            ),
+            if (subtitulo != null)
+              Text(subtitulo!,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -400,7 +914,6 @@ class _CardEquipeSorteada extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Cabeçalho com nome da embarcação
           Container(
             color: primary,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -425,7 +938,6 @@ class _CardEquipeSorteada extends StatelessWidget {
               ],
             ),
           ),
-          // Lista de pescadores
           ...grupo.membros.asMap().entries.map((e) => Container(
                 decoration: BoxDecoration(
                   border: Border(
@@ -452,11 +964,15 @@ class _SorteioAnimacaoDialog extends StatefulWidget {
     required this.chamadaApi,
     required this.labelEquipe,
     required this.labelMembro,
+    required this.nomesEquipes,
+    required this.nomesMembros,
     this.isSimulacao = false,
   });
   final Future<List<SorteioEquipe>> Function() chamadaApi;
   final String labelEquipe;
   final String labelMembro;
+  final List<String> nomesEquipes;
+  final List<String> nomesMembros;
   final bool isSimulacao;
 
   @override
@@ -477,16 +993,19 @@ class _SorteioAnimacaoDialogState extends State<_SorteioAnimacaoDialog> {
   bool _mostrarBotaoFechar = false;
   String _erroMsg = '';
 
-  static const _poolEquipes = [
-    'Mar Bravo',      'Peixe Espada',  'Águia do Mar',   'Barco Veloz',
-    'Corredeira',     'Maré Alta',     'Vento Sul',       'Onda Brava',
-    'Estrela do Mar', 'Boto Cinza',    'Albatroz',        'Marlim Azul',
+  static const _poolEquipesFallback = [
+    'Mar Bravo', 'Peixe Espada', 'Águia do Mar', 'Barco Veloz',
+    'Corredeira', 'Maré Alta', 'Vento Sul', 'Onda Brava',
   ];
-  static const _poolMembros = [
-    'João Silva',   'Pedro Costa',    'Ana Lima',        'Carlos Melo',
-    'Maria Santos', 'Lucas Ferreira', 'Beatriz Neves',   'Rafael Torres',
-    'Priya Mendes', 'Sonia Cruz',     'Diego Rocha',     'Camila Duarte',
+  static const _poolMembrosFallback = [
+    'João Silva', 'Pedro Costa', 'Ana Lima', 'Carlos Melo',
+    'Maria Santos', 'Lucas Ferreira', 'Beatriz Neves', 'Rafael Torres',
   ];
+
+  List<String> get _poolEquipes =>
+      widget.nomesEquipes.isNotEmpty ? widget.nomesEquipes : _poolEquipesFallback;
+  List<String> get _poolMembros =>
+      widget.nomesMembros.isNotEmpty ? widget.nomesMembros : _poolMembrosFallback;
 
   @override
   void initState() {
@@ -551,7 +1070,6 @@ class _SorteioAnimacaoDialogState extends State<_SorteioAnimacaoDialog> {
   }
 
   void _confirmar() {
-    // Simulação: fecha sem salvar (retorna lista vazia = cancelado)
     if (widget.isSimulacao) {
       Navigator.of(context).pop(<SorteioEquipe>[]);
       return;
@@ -560,7 +1078,6 @@ class _SorteioAnimacaoDialogState extends State<_SorteioAnimacaoDialog> {
   }
 
   void _cancelar() {
-    // Fecha sem salvar
     Navigator.of(context).pop(<SorteioEquipe>[]);
   }
 
@@ -652,7 +1169,6 @@ class _SorteioAnimacaoDialogState extends State<_SorteioAnimacaoDialog> {
             },
           ),
         ),
-        // Botões confirmar / cancelar
         AnimatedOpacity(
           opacity: _mostrarBotaoFechar ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 400),
@@ -743,7 +1259,6 @@ class _RevealBoatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Cabeçalho da embarcação
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -776,7 +1291,6 @@ class _RevealBoatCard extends StatelessWidget {
               ],
             ),
           ),
-          // Lista de pescadores
           ...grupo.membros.asMap().entries.map((e) => Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 14, vertical: 8),
@@ -980,7 +1494,7 @@ class _EstadoVazio extends StatelessWidget {
         if (totalVagas > 0) ...[
           const SizedBox(height: 6),
           Text(
-            'Serão sorteados $totalVagas $labelMembroPlural para $qtdEquipes $labelEquipePlural.',
+            'Serão sorteados até $totalVagas $labelMembroPlural para $qtdEquipes $labelEquipePlural.',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.grey, fontSize: 13),
           ),
@@ -992,6 +1506,544 @@ class _EstadoVazio extends StatelessWidget {
           label: Text(processando ? 'Processando...' : 'Realizar Sorteio'),
         ),
       ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODO GRUPO-EQUIPE — Sorteio de equipes pre-formadas para embarcações
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _SorteioGrupoEquipeScreen extends StatefulWidget {
+  const _SorteioGrupoEquipeScreen();
+
+  @override
+  State<_SorteioGrupoEquipeScreen> createState() => _SorteioGrupoEquipeScreenState();
+}
+
+class _SorteioGrupoEquipeScreenState extends State<_SorteioGrupoEquipeScreen> {
+  final _api = ApiService();
+  bool _carregando = true;
+  bool _processando = false;
+  String? _erro;
+  List<SorteioGrupo> _resultado = const [];
+  _SorteioGrupoPreCondicoes? _pre;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null) return;
+    setState(() { _carregando = true; _erro = null; });
+    try {
+      final results = await Future.wait([
+        _api.get(ApiConstants.sorteioGrupo(auth!.slug!), token: auth.token),
+        _api.get(ApiConstants.sorteioGrupoPreCondicoes(auth.slug!), token: auth.token),
+      ]);
+      final lista = (results[0] as List<dynamic>)
+          .map((e) => SorteioGrupo.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final pre = _SorteioGrupoPreCondicoes.fromJson(results[1] as Map<String, dynamic>);
+      setState(() { _resultado = lista; _pre = pre; });
+    } on ApiException catch (e) {
+      setState(() => _erro = e.message);
+    } catch (_) {
+      setState(() => _erro = 'Erro ao carregar dados.');
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  Future<void> _sortear() async {
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null) return;
+    final config = context.read<ConfigProvider>().config;
+
+    if (!mounted) return;
+    final selecao = await showDialog<_SelecaoGrupoEquipe>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _SelecionarGruposEquipesDialog(
+        slug: auth!.slug!,
+        token: auth.token,
+        labelEquipe: config?.labelEquipe ?? 'Equipe',
+        labelEquipePlural: config?.labelEquipePlural ?? 'Equipes',
+      ),
+    );
+    if (selecao == null || !mounted) return;
+
+    setState(() => _processando = true);
+
+    try {
+      final filtro = {
+        'grupoIds': selecao.grupos.map((g) => g.id).toList(),
+        'equipeIds': selecao.equipes.map((e) => e.id).toList(),
+      };
+
+      final data = await _api.post(ApiConstants.sorteioGrupo(auth!.slug!), filtro, token: auth.token);
+      final resultado = (data as List<dynamic>)
+          .map((e) => SorteioGrupo.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      if (!mounted) return;
+
+      // Mostra diálogo de confirmação com preview
+      final confirmar = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => _SorteioGrupoPreviewDialog(
+          resultado: resultado,
+          labelEquipe: config?.labelEquipe ?? 'Equipe',
+        ),
+      );
+
+      if (confirmar != true || !mounted) {
+        setState(() => _processando = false);
+        return;
+      }
+
+      // Confirmar e salvar
+      final payload = resultado.map((r) => {
+        'grupoId': r.grupoId,
+        'nomeGrupo': r.nomeGrupo,
+        'equipeId': r.equipeId,
+        'nomeEquipe': r.nomeEquipe,
+        'posicao': r.posicao,
+      }).toList();
+
+      await _api.post(ApiConstants.sorteioGrupoConfirmar(auth.slug!), payload, token: auth.token);
+      if (!mounted) return;
+      setState(() { _resultado = resultado; _processando = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sorteio confirmado com sucesso.')),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _processando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _processando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao realizar sorteio.'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _limpar() async {
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null) return;
+    final conf = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Limpar sorteio'),
+        content: const Text('Deseja remover o resultado atual?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Limpar')),
+        ],
+      ),
+    );
+    if (conf != true) return;
+    setState(() => _processando = true);
+    try {
+      await _api.delete(ApiConstants.sorteioGrupo(auth!.slug!), token: auth.token);
+      if (!mounted) return;
+      setState(() => _resultado = const []);
+      await _carregar();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sorteio limpo.')));
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _processando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = context.watch<ConfigProvider>().config;
+    final labelEquipePlural = config?.labelEquipePlural ?? 'Equipes';
+    final pre = _pre;
+    final podeSortear = !_processando && (pre == null || pre.valido) && _resultado.isEmpty;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sorteio de Grupos'),
+        actions: [
+          if (kDebugMode && _resultado.isEmpty)
+            IconButton(
+              onPressed: _processando ? null : _sortear,
+              icon: const Icon(Icons.bug_report_outlined),
+              tooltip: 'Simular sorteio (DEV)',
+            ),
+          if (_resultado.isNotEmpty)
+            TextButton.icon(
+              onPressed: _processando ? null : _limpar,
+              icon: const Icon(Icons.delete_outline, color: Colors.white),
+              label: const Text('Limpar', style: TextStyle(color: Colors.white)),
+            ),
+          if (_resultado.isEmpty)
+            TextButton.icon(
+              onPressed: podeSortear ? _sortear : null,
+              icon: const Icon(Icons.shuffle, color: Colors.white),
+              label: const Text('Sortear', style: TextStyle(color: Colors.white)),
+            ),
+        ],
+      ),
+      body: _carregando
+          ? const Center(child: CircularProgressIndicator())
+          : _erro != null
+              ? Center(child: Text(_erro!, style: const TextStyle(color: Colors.red)))
+              : RefreshIndicator(
+                  onRefresh: _carregar,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Pré-condições
+                        if (pre != null && !pre.valido) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              border: Border.all(color: Colors.orange.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(pre.mensagemErro ?? '', style: TextStyle(color: Colors.orange.shade900))),
+                            ]),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Resultado
+                        if (_resultado.isNotEmpty) ...[
+                          Text('${_resultado.length} grupo${_resultado.length != 1 ? 's' : ''} sorteados',
+                              style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.green)),
+                          const SizedBox(height: 12),
+                          ..._resultado.map((r) => _SorteioGrupoCard(item: r, labelEquipe: config?.labelEquipe ?? 'Equipe')),
+                        ] else ...[
+                          // Estado vazio
+                          const SizedBox(height: 32),
+                          const Center(child: Icon(Icons.shuffle, size: 64, color: Colors.grey)),
+                          const SizedBox(height: 16),
+                          const Center(child: Text('Nenhum sorteio realizado ainda.', textAlign: TextAlign.center)),
+                          if (pre != null && pre.valido) ...[
+                            const SizedBox(height: 8),
+                            Center(child: Text(
+                              '${pre.qtdGrupos} grupos · ${pre.qtdEquipes} $labelEquipePlural',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            )),
+                          ],
+                          const SizedBox(height: 24),
+                          Center(child: FilledButton.icon(
+                            onPressed: podeSortear ? _sortear : null,
+                            icon: const Icon(Icons.shuffle),
+                            label: Text(_processando ? 'Processando...' : 'Realizar Sorteio'),
+                          )),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+    );
+  }
+}
+
+class _SorteioGrupoPreCondicoes {
+  final int qtdGrupos;
+  final int qtdEquipes;
+  final bool valido;
+  final String? mensagemErro;
+
+  const _SorteioGrupoPreCondicoes({required this.qtdGrupos, required this.qtdEquipes, required this.valido, this.mensagemErro});
+
+  factory _SorteioGrupoPreCondicoes.fromJson(Map<String, dynamic> json) => _SorteioGrupoPreCondicoes(
+    qtdGrupos: json['qtdGrupos'] as int? ?? 0,
+    qtdEquipes: json['qtdEquipes'] as int? ?? 0,
+    valido: json['valido'] as bool? ?? false,
+    mensagemErro: json['mensagemErro'] as String?,
+  );
+}
+
+class _SelecaoGrupoEquipe {
+  final List<Grupo> grupos;
+  final List<Equipe> equipes;
+  const _SelecaoGrupoEquipe({required this.grupos, required this.equipes});
+}
+
+// ── Card do resultado ─────────────────────────────────────────────────────
+
+class _SorteioGrupoCard extends StatelessWidget {
+  final SorteioGrupo item;
+  final String labelEquipe;
+  const _SorteioGrupoCard({required this.item, required this.labelEquipe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFA6E3A1), width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4)),
+                child: Text('#${item.posicao}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(item.nomeGrupo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15))),
+            ]),
+            const SizedBox(height: 4),
+            Row(children: [
+              const Icon(Icons.arrow_forward, size: 16, color: Colors.green),
+              const SizedBox(width: 4),
+              Text(item.nomeEquipe, style: TextStyle(color: Colors.orange.shade700, fontWeight: FontWeight.w600)),
+            ]),
+            if (item.nomesMembros.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(item.nomesMembros.join(', '), style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Diálogo de seleção de Grupos e Equipes ───────────────────────────────
+
+class _SelecionarGruposEquipesDialog extends StatefulWidget {
+  final String slug;
+  final String token;
+  final String labelEquipe;
+  final String labelEquipePlural;
+
+  const _SelecionarGruposEquipesDialog({
+    required this.slug,
+    required this.token,
+    required this.labelEquipe,
+    required this.labelEquipePlural,
+  });
+
+  @override
+  State<_SelecionarGruposEquipesDialog> createState() => _SelecionarGruposEquipesDialogState();
+}
+
+class _SelecionarGruposEquipesDialogState extends State<_SelecionarGruposEquipesDialog> {
+  final _api = ApiService();
+  List<Grupo> _grupos = [];
+  List<Equipe> _equipes = [];
+  final Set<String> _gruposSel = {};
+  final Set<String> _equipesSel = {};
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    try {
+      final results = await Future.wait([
+        _api.get(ApiConstants.grupos(widget.slug), token: widget.token),
+        _api.get(ApiConstants.equipes(widget.slug), token: widget.token),
+      ]);
+      final grupos = (results[0] as List<dynamic>).map((j) => Grupo.fromJson(j as Map<String, dynamic>)).toList()
+        ..sort((a, b) => a.nome.compareTo(b.nome));
+      final equipes = (results[1] as List<dynamic>).map((j) => Equipe.fromJson(j as Map<String, dynamic>)).toList()
+        ..sort((a, b) => a.nome.compareTo(b.nome));
+      setState(() {
+        _grupos = grupos;
+        _equipes = equipes;
+        _gruposSel.addAll(grupos.map((g) => g.id));
+        _equipesSel.addAll(equipes.map((e) => e.id));
+        _carregando = false;
+      });
+    } catch (_) {
+      setState(() => _carregando = false);
+    }
+  }
+
+  String? get _erroValidacao {
+    final qtdG = _gruposSel.length;
+    final qtdE = _equipesSel.length;
+    if (qtdG < 2) return 'Selecione pelo menos 2 grupos.';
+    if (qtdE < 2) return 'Selecione pelo menos 2 ${widget.labelEquipePlural.toLowerCase()}.';
+    if (qtdG != qtdE) {
+      final diff = qtdG - qtdE;
+      if (diff > 0) return '$diff grupo${diff != 1 ? 's' : ''} a mais do que ${widget.labelEquipePlural.toLowerCase()}s.';
+      return '${-diff} ${widget.labelEquipe.toLowerCase()}${-diff != 1 ? 's' : ''} a mais do que grupos.';
+    }
+    return null;
+  }
+
+  void _confirmar() {
+    final grupos = _grupos.where((g) => _gruposSel.contains(g.id)).toList();
+    final equipes = _equipes.where((e) => _equipesSel.contains(e.id)).toList();
+    Navigator.pop(context, _SelecaoGrupoEquipe(grupos: grupos, equipes: equipes));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final erro = _erroValidacao;
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Selecionar participantes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            if (_carregando)
+              const CircularProgressIndicator()
+            else
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 420),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Grupos
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        const Text('Grupos', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Spacer(),
+                        GestureDetector(onTap: () => setState(() => _gruposSel..addAll(_grupos.map((g) => g.id))), child: const Text('Todos', style: TextStyle(fontSize: 11, color: Colors.blue))),
+                        const Text(' · ', style: TextStyle(fontSize: 11)),
+                        GestureDetector(onTap: () => setState(() => _gruposSel.clear()), child: const Text('Nenhum', style: TextStyle(fontSize: 11, color: Colors.blue))),
+                      ]),
+                      const SizedBox(height: 4),
+                      Expanded(child: SingleChildScrollView(child: Column(children: _grupos.map((g) => CheckboxListTile(
+                        dense: true,
+                        title: Text(g.nome, style: const TextStyle(fontSize: 13)),
+                        subtitle: Text('${g.membros.length} membro${g.membros.length != 1 ? 's' : ''}', style: const TextStyle(fontSize: 11)),
+                        value: _gruposSel.contains(g.id),
+                        onChanged: (v) => setState(() => v! ? _gruposSel.add(g.id) : _gruposSel.remove(g.id)),
+                      )).toList()))),
+                    ])),
+                    const VerticalDivider(),
+                    // Equipes
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Text(widget.labelEquipePlural, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        const Spacer(),
+                        GestureDetector(onTap: () => setState(() => _equipesSel..addAll(_equipes.map((e) => e.id))), child: const Text('Todas', style: TextStyle(fontSize: 11, color: Colors.blue))),
+                        const Text(' · ', style: TextStyle(fontSize: 11)),
+                        GestureDetector(onTap: () => setState(() => _equipesSel.clear()), child: const Text('Nenhuma', style: TextStyle(fontSize: 11, color: Colors.blue))),
+                      ]),
+                      const SizedBox(height: 4),
+                      Expanded(child: SingleChildScrollView(child: Column(children: _equipes.map((e) => CheckboxListTile(
+                        dense: true,
+                        title: Text(e.nome, style: const TextStyle(fontSize: 13)),
+                        value: _equipesSel.contains(e.id),
+                        onChanged: (v) => setState(() => v! ? _equipesSel.add(e.id) : _equipesSel.remove(e.id)),
+                      )).toList()))),
+                    ])),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
+            if (!_carregando) ...[
+              if (erro != null)
+                Text(erro, style: const TextStyle(color: Colors.red, fontSize: 12), textAlign: TextAlign.center)
+              else
+                Text(
+                  '${_gruposSel.length} grupos · ${_equipesSel.length} ${widget.labelEquipePlural.toLowerCase()} — pronto.',
+                  style: const TextStyle(color: Colors.green, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              const SizedBox(height: 8),
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: erro == null ? _confirmar : null,
+                  icon: const Icon(Icons.shuffle, size: 16),
+                  label: const Text('Sortear'),
+                ),
+              ]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Diálogo de preview/confirmação do resultado ───────────────────────────
+
+class _SorteioGrupoPreviewDialog extends StatelessWidget {
+  final List<SorteioGrupo> resultado;
+  final String labelEquipe;
+
+  const _SorteioGrupoPreviewDialog({required this.resultado, required this.labelEquipe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Resultado do sorteio', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            const Text('Confirme para salvar.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 350),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: resultado.map((r) => ListTile(
+                    dense: true,
+                    leading: CircleAvatar(radius: 14, child: Text('${r.posicao}', style: const TextStyle(fontSize: 11))),
+                    title: Text(r.nomeGrupo, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Row(children: [
+                      const Icon(Icons.arrow_forward, size: 14, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Text(r.nomeEquipe, style: TextStyle(color: Colors.orange.shade700)),
+                    ]),
+                  )).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Sortear novamente'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(context, true),
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Confirmar'),
+              ),
+            ]),
+          ],
+        ),
+      ),
     );
   }
 }

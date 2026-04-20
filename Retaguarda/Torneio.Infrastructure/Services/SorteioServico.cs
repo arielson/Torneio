@@ -20,19 +20,21 @@ public class SorteioServico : ISorteioServico
         _sorteioRepositorio = sorteioRepositorio;
     }
 
-    public async Task<IEnumerable<SorteioEquipe>> RealizarSorteioAsync(Guid torneioId)
+    public Task<IEnumerable<SorteioEquipe>> RealizarSorteioAsync(
+        Guid torneioId,
+        IEnumerable<Equipe> equipes,
+        IEnumerable<Membro> membros)
     {
-        var equipes  = (await _equipeRepositorio.ListarTodos()).ToList();
-        var membros  = (await _membroRepositorio.ListarTodos()).ToList();
-        var resultado = new List<SorteioEquipe>();
-        var random   = new Random();
+        var listaEquipes = equipes.ToList();
+        var resultado    = new List<SorteioEquipe>();
+        var random       = new Random();
 
         var membrosEmbaralhados = membros.OrderBy(_ => random.Next()).ToList();
 
-        // Posição global crescente (1, 2, 3... por todos os membros sorteados)
+        // Posição global crescente (1, 2, 3… por todos os membros sorteados)
         int posicaoGlobal = 1;
         int idx = 0;
-        foreach (var equipe in equipes)
+        foreach (var equipe in listaEquipes)
         {
             for (int v = 0; v < equipe.QtdVagas && idx < membrosEmbaralhados.Count; v++)
             {
@@ -41,7 +43,7 @@ public class SorteioServico : ISorteioServico
             }
         }
 
-        return resultado;
+        return Task.FromResult<IEnumerable<SorteioEquipe>>(resultado);
     }
 
     public async Task SalvarSorteioAsync(IEnumerable<SorteioEquipe> resultado) =>
