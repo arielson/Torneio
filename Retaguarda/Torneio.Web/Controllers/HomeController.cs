@@ -126,5 +126,11 @@ public class HomeController : Controller
     }
 
     [HttpGet("/acesso-negado")]
-    public IActionResult AcessoNegado() => View();
+    public IActionResult AcessoNegado(string? motivo, string? slugSolicitado, string? slugAtual)
+    {
+        ViewBag.Motivo = motivo;
+        ViewBag.SlugSolicitado = slugSolicitado;
+        ViewBag.SlugAtual = slugAtual;
+        return View();
+    }
 }

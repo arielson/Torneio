@@ -37,7 +37,12 @@ public class TenantMiddleware
                     var torneioIdClaim = context.User.FindFirst("torneio_id")?.Value;
                     if (torneioIdClaim is null || !Guid.TryParse(torneioIdClaim, out var claimTorneioId) || claimTorneioId != torneio.Id)
                     {
-                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        var slugAtual = context.User.FindFirst("slug")?.Value;
+                        var destino = $"/acesso-negado?motivo=torneio-diferente&slugSolicitado={Uri.EscapeDataString(slug)}";
+                        if (!string.IsNullOrWhiteSpace(slugAtual))
+                            destino += $"&slugAtual={Uri.EscapeDataString(slugAtual)}";
+
+                        context.Response.Redirect(destino);
                         return;
                     }
                 }

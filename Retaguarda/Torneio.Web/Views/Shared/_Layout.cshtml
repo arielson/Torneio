@@ -33,6 +33,7 @@
     var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
     var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
     var applicationName = Configuration["Branding:ApplicationName"] ?? "Torneio";
+    var usarLayoutAdmin = isAdmin && (isAdminGeral || !string.IsNullOrEmpty(effectiveSlug));
 
     bool IsActive(string path) =>
         (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
@@ -57,7 +58,7 @@
         @await RenderSectionAsync("Scripts", required: false)
     </body>
 }
-else if (isAdmin)
+else if (usarLayoutAdmin)
 {
     <body class="admin-layout">
         <div id="layout-wrapper">

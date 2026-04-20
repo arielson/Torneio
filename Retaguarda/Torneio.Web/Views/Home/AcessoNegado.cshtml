@@ -1,9 +1,56 @@
 @{
     ViewData["Title"] = "Acesso Negado";
+    var motivo = ViewBag.Motivo as string;
+    var slugSolicitado = ViewBag.SlugSolicitado as string;
+    var slugAtual = ViewBag.SlugAtual as string;
+    var acessoOutroTorneio = string.Equals(motivo, "torneio-diferente", StringComparison.OrdinalIgnoreCase);
 }
 
-<div class="text-center mt-5">
-    <h2>Acesso Negado</h2>
-    <p class="text-muted">Você não tem permissão para acessar esta página.</p>
-    <a href="/" class="btn btn-primary">Voltar ao início</a>
+<div class="container py-5">
+    <div class="content-card mx-auto" style="max-width: 720px;">
+        <div class="card-body-pad text-center">
+            <div class="mb-3">
+                <i class="bi bi-shield-lock" style="font-size: 3rem; color: #dc3545;"></i>
+            </div>
+
+            <h2 class="mb-3">Acesso Negado</h2>
+
+            @if (acessoOutroTorneio)
+            {
+                <p class="text-muted mb-3">
+                    Seu usuario de administrador esta vinculado a outro torneio e nao pode acessar esta edicao.
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(slugSolicitado))
+                {
+                    <p class="mb-2">
+                        Torneio solicitado: <code>@slugSolicitado</code>
+                    </p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(slugAtual))
+                {
+                    <p class="mb-4">
+                        Seu acesso atual e para o torneio: <code>@slugAtual</code>
+                    </p>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-4">
+                    Voce nao tem permissao para acessar esta pagina.
+                </p>
+            }
+
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                @if (!string.IsNullOrWhiteSpace(slugAtual))
+                {
+                    <a href="/@slugAtual/admin" class="btn btn-primary">
+                        Ir para meu torneio
+                    </a>
+                }
+                <a href="/" class="btn btn-outline-secondary">Voltar ao inicio</a>
+            </div>
+        </div>
+    </div>
 </div>
