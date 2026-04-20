@@ -48,4 +48,28 @@ public class LogsController : Controller
 
         return View(itens);
     }
+
+    [HttpPost("limpar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LimparTodos()
+    {
+        var usuarioNome = User.Identity?.Name ?? "—";
+        var usuarioPerfil = User.FindFirst("perfil")?.Value ?? "AdminGeral";
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var quantidadeRemovida = await _logServico.LimparTodos();
+
+        await _logServico.Registrar(new RegistrarLogDto
+        {
+            Categoria = CategoriaLog.Usuarios,
+            Acao = "LimparLogsAuditoria",
+            Descricao = $"Limpeza total dos logs de auditoria executada. Quantidade removida: {quantidadeRemovida}. Data/Hora local do servidor: {DateTime.Now:dd/MM/yyyy HH:mm:ss}.",
+            UsuarioNome = usuarioNome,
+            UsuarioPerfil = usuarioPerfil,
+            IpAddress = ipAddress
+        });
+
+        TempData["Sucesso"] = "Logs de auditoria limpos com sucesso.";
+        return RedirectToAction(nameof(Index));
+    }
 }

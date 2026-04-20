@@ -5,6 +5,7 @@ namespace Torneio.Domain.Interfaces.Repositories;
 public interface ILogAuditoriaRepositorio
 {
     Task Adicionar(LogAuditoria log);
+    Task<int> LimparTodos();
     Task<(IEnumerable<LogAuditoria> Itens, int Total)> Listar(
         Guid? torneioId,
         string? categoria,

@@ -16,7 +16,6 @@ public class LogAuditoriaServico : ILogAuditoriaServico
     {
         try
         {
-            // Prefixa a descrição com o nome do usuário para que fique legível mesmo sem ver a coluna separada
             var nome = string.IsNullOrWhiteSpace(dto.UsuarioNome) || dto.UsuarioNome == "—"
                 ? null : dto.UsuarioNome;
             var descricao = nome is not null
@@ -37,9 +36,11 @@ public class LogAuditoriaServico : ILogAuditoriaServico
         }
         catch
         {
-            // Logging nunca deve quebrar a operação principal
+            // Logging nunca deve quebrar a operacao principal
         }
     }
+
+    public Task<int> LimparTodos() => _repositorio.LimparTodos();
 
     public async Task<(IEnumerable<LogAuditoriaDto> Itens, int Total)> Listar(
         Guid? torneioId = null,
@@ -59,15 +60,15 @@ public class LogAuditoriaServico : ILogAuditoriaServico
 
     private static LogAuditoriaDto ParaDto(LogAuditoria l) => new()
     {
-        Id            = l.Id,
-        TorneioId     = l.TorneioId,
-        NomeTorneio   = l.NomeTorneio,
-        Categoria     = l.Categoria,
-        Acao          = l.Acao,
-        Descricao     = l.Descricao,
-        UsuarioNome   = l.UsuarioNome,
+        Id = l.Id,
+        TorneioId = l.TorneioId,
+        NomeTorneio = l.NomeTorneio,
+        Categoria = l.Categoria,
+        Acao = l.Acao,
+        Descricao = l.Descricao,
+        UsuarioNome = l.UsuarioNome,
         UsuarioPerfil = l.UsuarioPerfil,
-        IpAddress     = l.IpAddress,
-        DataHora      = l.DataHora
+        IpAddress = l.IpAddress,
+        DataHora = l.DataHora
     };
 }

@@ -18,6 +18,17 @@ public class LogAuditoriaRepositorio : ILogAuditoriaRepositorio
         await _context.SaveChangesAsync();
     }
 
+    public async Task<int> LimparTodos()
+    {
+        var logs = await _context.Logs.ToListAsync();
+        var total = logs.Count;
+        if (total == 0) return 0;
+
+        _context.Logs.RemoveRange(logs);
+        await _context.SaveChangesAsync();
+        return total;
+    }
+
     public async Task<(IEnumerable<LogAuditoria> Itens, int Total)> Listar(
         Guid? torneioId,
         string? categoria,
