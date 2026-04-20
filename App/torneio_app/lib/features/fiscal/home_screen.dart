@@ -1,10 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/flavor_config.dart';
 import '../../core/models/equipe.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
+import '../../widgets/expandable_network_image.dart';
 import '../../widgets/sync_badge.dart';
 
 class HomeFiscalScreen extends StatefulWidget {
@@ -281,7 +282,10 @@ class _EquipeCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                _FotoLista(url: equipe.fotoUrl, icon: Icons.directions_boat),
+                ExpandableAvatar(
+                  imageUrl: AppConfig.resolverUrl(equipe.fotoUrl),
+                  fallbackIcon: Icons.directions_boat,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -303,66 +307,6 @@ class _EquipeCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _FotoLista extends StatelessWidget {
-  final String? url;
-  final IconData icon;
-
-  const _FotoLista({required this.url, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    if (url == null || url!.isEmpty) {
-      return CircleAvatar(radius: 24, child: Icon(icon));
-    }
-
-    return GestureDetector(
-      onTap: () => _abrirImagem(context, url!),
-      child: CircleAvatar(
-        radius: 24,
-        backgroundColor: Colors.grey.shade200,
-        child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: url!,
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-            errorWidget: (context, imageUrl, error) => Icon(icon, size: 22),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _abrirImagem(BuildContext context, String imageUrl) {
-    return showDialog<void>(
-      context: context,
-      builder:
-          (_) => Dialog.fullscreen(
-            child: Scaffold(
-              appBar: AppBar(title: const Text('Visualizar imagem')),
-              backgroundColor: Colors.black,
-              body: InteractiveViewer(
-                minScale: 0.8,
-                maxScale: 4,
-                child: Center(
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.contain,
-                    errorWidget:
-                        (context, failedUrl, error) => const Icon(
-                          Icons.broken_image_outlined,
-                          color: Colors.white70,
-                          size: 56,
-                        ),
-                  ),
-                ),
-              ),
-            ),
-          ),
     );
   }
 }

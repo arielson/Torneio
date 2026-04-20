@@ -6,6 +6,7 @@ import '../../core/models/membro.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/expandable_network_image.dart';
 import 'membro_form_screen.dart';
 
 class MembrosAdminScreen extends StatefulWidget {
@@ -169,18 +170,11 @@ class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
                             final fotoUrl = AppConfig.resolverUrl(membro.fotoUrl);
                             return Card(
                               child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: fotoUrl != null
-                                      ? NetworkImage(fotoUrl)
-                                      : null,
-                                  child: fotoUrl == null
-                                      ? const Icon(Icons.person)
-                                      : null,
+                                leading: ExpandableAvatar(
+                                  imageUrl: fotoUrl,
+                                  fallbackIcon: Icons.person,
                                 ),
                                 title: Text(membro.nome),
-                                subtitle: fotoUrl != null
-                                    ? Text(fotoUrl)
-                                    : null,
                                 trailing: Wrap(
                                   spacing: 8,
                                   children: [

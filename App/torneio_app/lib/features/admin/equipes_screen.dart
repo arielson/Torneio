@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
+import '../../core/flavor_config.dart';
 import '../../core/models/equipe.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/expandable_network_image.dart';
 import 'equipe_form_screen.dart';
 import 'reorganizacao_emergencial_screen.dart';
 
@@ -201,18 +203,39 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
                               const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final equipe = _equipes[index];
+                            final fotoEquipeUrl = AppConfig.resolverUrl(equipe.fotoUrl);
+                            final fotoCapitaoUrl = AppConfig.resolverUrl(
+                              equipe.fotoCapitaoUrl,
+                            );
+
                             return Card(
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      equipe.nome,
-                                      style: Theme.of(context).textTheme.titleMedium,
+                                    Row(
+                                      children: [
+                                        ExpandableAvatar(
+                                          imageUrl: fotoEquipeUrl,
+                                          fallbackIcon: Icons.directions_boat,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        ExpandableAvatar(
+                                          imageUrl: fotoCapitaoUrl,
+                                          fallbackIcon: Icons.person,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            equipe.nome,
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 6),
-                                    Text('Capitão: ${equipe.capitao}'),
+                                    const SizedBox(height: 10),
+                                    Text('Capitao: ${equipe.capitao}'),
                                     if (exibirVagas) Text('Vagas: ${equipe.qtdVagas}'),
                                     if (exibirMembros)
                                       Text(

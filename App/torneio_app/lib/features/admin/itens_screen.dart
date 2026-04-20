@@ -6,6 +6,7 @@ import '../../core/models/item.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/expandable_network_image.dart';
 import 'item_form_screen.dart';
 
 class ItensAdminScreen extends StatefulWidget {
@@ -158,12 +159,9 @@ class _ItensAdminScreenState extends State<ItensAdminScreen> {
 
                             return Card(
                               child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage:
-                                      fotoUrl != null ? NetworkImage(fotoUrl) : null,
-                                  child: fotoUrl == null
-                                      ? const Icon(Icons.set_meal_outlined)
-                                      : null,
+                                leading: ExpandableAvatar(
+                                  imageUrl: fotoUrl,
+                                  fallbackIcon: Icons.set_meal_outlined,
                                 ),
                                 title: Text(item.nome),
                                 subtitle: Text(

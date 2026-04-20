@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/flavor_config.dart';
 import '../../core/models/captura.dart';
 import '../../core/models/equipe.dart';
 import '../../core/models/item.dart';
@@ -10,6 +10,7 @@ import '../../core/models/membro.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
+import '../../widgets/expandable_network_image.dart';
 
 class RegistrarCapturaScreen extends StatefulWidget {
   const RegistrarCapturaScreen({super.key});
@@ -581,90 +582,11 @@ class _SelectionAvatar extends StatelessWidget {
   const _SelectionAvatar({this.url});
 
   @override
-  Widget build(BuildContext context) {
-    if (url == null || url!.isEmpty) {
-      return const CircleAvatar(
-        radius: 20,
-        child: Icon(Icons.image_outlined, size: 18),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () => _abrirImagem(context, url!),
-      child: CircleAvatar(
-        radius: 20,
-        backgroundColor: Colors.grey.shade200,
-        child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: url!,
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-            errorWidget:
-                (context, imageUrl, error) =>
-                    const Icon(Icons.image_not_supported, size: 18),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _abrirImagem(BuildContext context, String imageUrl) {
-    return showDialog<void>(
-      context: context,
-      builder:
-          (_) => Dialog.fullscreen(
-            child: Scaffold(
-              appBar: AppBar(title: const Text('Visualizar imagem')),
-              backgroundColor: Colors.black,
-              body: Stack(
-                children: [
-                  Positioned.fill(
-                    child: InteractiveViewer(
-                      minScale: 0.8,
-                      maxScale: 4,
-                      child: Center(
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.contain,
-                          errorWidget:
-                              (context, failedUrl, error) => const Center(
-                                child: Icon(
-                                  Icons.broken_image_outlined,
-                                  color: Colors.white70,
-                                  size: 56,
-                                ),
-                              ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Text(
-                          'Pinça para ampliar',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
+  Widget build(BuildContext context) => ExpandableAvatar(
+    imageUrl: AppConfig.resolverUrl(url),
+    fallbackIcon: Icons.image_outlined,
+    radius: 20,
+  );
 }
 
 class _FotoOrigemBadge extends StatelessWidget {

@@ -6,6 +6,7 @@ import '../../core/models/fiscal.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/expandable_network_image.dart';
 import 'fiscal_form_screen.dart';
 
 class FiscaisAdminScreen extends StatefulWidget {
@@ -147,10 +148,9 @@ class _FiscaisAdminScreenState extends State<FiscaisAdminScreen> {
                             final fotoUrl = AppConfig.resolverUrl(fiscal.fotoUrl);
                             return Card(
                               child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage:
-                                      fotoUrl != null ? NetworkImage(fotoUrl) : null,
-                                  child: fotoUrl == null ? const Icon(Icons.badge) : null,
+                                leading: ExpandableAvatar(
+                                  imageUrl: fotoUrl,
+                                  fallbackIcon: Icons.badge,
                                 ),
                                 title: Text(fiscal.nome),
                                 subtitle: Text(fiscal.usuario),

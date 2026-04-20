@@ -7,6 +7,7 @@ import '../../core/models/equipe.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/expandable_network_image.dart';
 
 class CapturasAdminScreen extends StatefulWidget {
   const CapturasAdminScreen({super.key});
@@ -140,35 +141,6 @@ class _CapturasAdminScreenState extends State<CapturasAdminScreen> {
     }
   }
 
-  void _verFoto(String url) {
-    if (url.isEmpty) return;
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                url,
-                fit: BoxFit.contain,
-                errorBuilder: (context, e, st) => const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Icon(Icons.broken_image, size: 64, color: Colors.grey),
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fechar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
@@ -234,7 +206,6 @@ class _CapturasAdminScreenState extends State<CapturasAdminScreen> {
                                   medida: medida,
                                   usarFator: usarFator,
                                   onRemover: () => _remover(_capturas[i]),
-                                  onVerFoto: () => _verFoto(_capturas[i].fotoUrl ?? ''),
                                 ),
                               ),
                             ),
@@ -405,14 +376,12 @@ class _CapturaCard extends StatelessWidget {
   final String medida;
   final bool usarFator;
   final VoidCallback onRemover;
-  final VoidCallback onVerFoto;
 
   const _CapturaCard({
     required this.captura,
     required this.medida,
     required this.usarFator,
     required this.onRemover,
-    required this.onVerFoto,
   });
 
   @override
@@ -426,21 +395,11 @@ class _CapturaCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Foto
-            GestureDetector(
-              onTap: temFoto ? onVerFoto : null,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                child: SizedBox(
-                  width: 72,
-                  child: temFoto
-                      ? Image.network(
-                          captura.fotoUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, e, st) => _FotoPlaceholder(),
-                        )
-                      : _FotoPlaceholder(),
-                ),
-              ),
+            ExpandableRectImage(
+              imageUrl: captura.fotoUrl,
+              fallbackIcon: Icons.photo_camera_outlined,
+              width: 72,
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
             ),
 
             // Conteúdo
@@ -502,7 +461,7 @@ class _CapturaCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.photo_outlined, size: 20),
                     tooltip: 'Ver foto',
-                    onPressed: onVerFoto,
+                    onPressed: () => showExpandedImage(context, captura.fotoUrl!),
                   ),
                 IconButton(
                   icon: Icon(Icons.delete_outline,
@@ -515,16 +474,6 @@ class _CapturaCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _FotoPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey.shade100,
-      child: const Icon(Icons.photo_camera_outlined, color: Colors.grey, size: 28),
     );
   }
 }
