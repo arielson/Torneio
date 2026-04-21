@@ -16,14 +16,34 @@ $flutterPath = Resolve-FlutterPath
 $adbPath = Resolve-AdbPath
 $emulatorSerial = Resolve-EmulatorSerial
 $apkPath = Join-Path $appRoot "build\app\outputs\flutter-apk\app-debug.apk"
+$deviceAbi = (& $adbPath -s $emulatorSerial shell getprop ro.product.cpu.abi).Trim()
+
+function Resolve-FlutterTargetPlatform {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Abi
+    )
+
+    switch -Regex ($Abi) {
+        '^x86_64$' { return 'android-x64' }
+        '^arm64-v8a$' { return 'android-arm64' }
+        '^armeabi-v7a$' { return 'android-arm' }
+        default { return 'android-arm64' }
+    }
+}
+
+$targetPlatform = Resolve-FlutterTargetPlatform -Abi $deviceAbi
+$packageName = "com.example.torneio_app"
 
 Write-VideoSection "Preparando app Android para automacao"
+Write-VideoInfo "ABI detectada no emulador: $deviceAbi"
+Write-VideoInfo "Target platform do Flutter: $targetPlatform"
 
 if ($BuildApk -or -not (Test-Path -LiteralPath $apkPath)) {
     Write-VideoInfo "Gerando APK debug via Flutter."
     Push-Location $appRoot
     try {
-        & $flutterPath build apk --debug
+        & $flutterPath build apk --debug --target-platform $targetPlatform
     }
     finally {
         Pop-Location
@@ -32,5 +52,6 @@ if ($BuildApk -or -not (Test-Path -LiteralPath $apkPath)) {
 
 Assert-PathExists -LiteralPath $apkPath -Description "APK debug do app"
 Write-VideoInfo "Instalando APK no emulador $emulatorSerial."
-& $adbPath -s $emulatorSerial install -r $apkPath | Out-Null
+& $adbPath -s $emulatorSerial uninstall $packageName | Out-Null
+& $adbPath -s $emulatorSerial install $apkPath | Out-Null
 Write-VideoInfo "APK instalado com sucesso."

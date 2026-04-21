@@ -16,19 +16,10 @@
     "orientation": "portrait"
   },
   "recording": {
-    "maxSeconds": 240
+    "maxSeconds": 300
   },
   "authProfiles": {
-    "amigos_fiscal": {
-      "slug": "{slug_amigos}",
-      "tournamentName": "Amigos da Pesca 2026",
-      "profile": "Fiscal",
-      "fiscalLabel": "Fiscal",
-      "expectedHomeText": "Perfil:",
-      "username": "preencher-fiscal-amigos",
-      "password": "preencher-senha-fiscal-amigos"
-    },
-    "rei_admin": {
+    "rei_admin_home": {
       "slug": "{slug_rei}",
       "tournamentName": "Rei dos Mares 2026",
       "profile": "Admin",
@@ -37,16 +28,79 @@
       "username": "preencher-admin-rei",
       "password": "preencher-senha-admin-rei"
     },
-    "amigos_admin": {
-      "slug": "{slug_amigos}",
-      "tournamentName": "Amigos da Pesca 2026",
+    "rei_admin_fiscais": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
       "profile": "Admin",
       "fiscalLabel": "Fiscal",
       "expectedHomeText": "Administrador do torneio",
-      "username": "preencher-admin-amigos",
-      "password": "preencher-senha-admin-amigos"
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
     },
-    "bts_admin": {
+    "rei_admin_embarcacoes": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_pescadores": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_peixes": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_capturas": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_sorteio": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_relatorios": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "rei_admin_reorganizacao": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    },
+    "bts_admin_home": {
       "slug": "{slug_bts}",
       "tournamentName": "Torneio BTS Sport Fishing 2026",
       "profile": "Admin",
@@ -54,6 +108,33 @@
       "expectedHomeText": "Administrador do torneio",
       "username": "preencher-admin-bts",
       "password": "preencher-senha-admin-bts"
+    },
+    "amigos_fiscal_home": {
+      "slug": "{slug_amigos}",
+      "tournamentName": "Amigos da Pesca 2026",
+      "profile": "Fiscal",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Perfil:",
+      "username": "preencher-fiscal-amigos",
+      "password": "preencher-senha-fiscal-amigos"
+    },
+    "amigos_fiscal_registrar": {
+      "slug": "{slug_amigos}",
+      "tournamentName": "Amigos da Pesca 2026",
+      "profile": "Fiscal",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Perfil:",
+      "username": "preencher-fiscal-amigos",
+      "password": "preencher-senha-fiscal-amigos"
+    },
+    "amigos_fiscal_sync": {
+      "slug": "{slug_amigos}",
+      "tournamentName": "Amigos da Pesca 2026",
+      "profile": "Fiscal",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Perfil:",
+      "username": "preencher-fiscal-amigos",
+      "password": "preencher-senha-fiscal-amigos"
     }
   },
   "voice": {
@@ -62,111 +143,224 @@
   },
   "scenes": [
     {
-      "title": "Selecao do torneio sem sorteio",
-      "tournament": "Torneio BTS Sport Fishing 2026",
-      "authProfile": "bts_admin",
+      "title": "Lista inicial de torneios",
+      "tournament": "Lista de torneios",
       "screen": "lista-de-torneios",
-      "slug": "{slug_bts}",
-      "waitForText": "Torneio BTS Sport Fishing 2026",
-      "action": "Abrir o torneio BTS e evidenciar que nao ha menu de sorteio.",
-      "expected": "O app mostra o torneio e nao exibe acesso ao sorteio quando o modo e Nenhum.",
-      "narration": "No torneio BTS Sport Fishing 2026, o app respeita o modo de sorteio nenhum e nao exibe o menu de sorteio.",
+      "waitForText": "Torneios",
+      "action": "Abrir o app e apresentar a tela inicial com a lista de torneios disponiveis.",
+      "expected": "O app inicia pela listagem de torneios e permite ao usuario escolher o evento que deseja acessar.",
+      "narration": "Ao abrir o aplicativo, a experiencia comeca pela lista de torneios disponiveis, permitindo ao usuario escolher qual evento deseja acessar.",
       "durationSeconds": 8
     },
     {
-      "title": "Login do fiscal",
-      "tournament": "Amigos da Pesca 2026",
-      "authProfile": "amigos_fiscal",
-      "screen": "login",
-      "slug": "{slug_amigos}",
-      "waitForText": "Amigos da Pesca 2026",
-      "action": "Entrar como fiscal no torneio Amigos da Pesca 2026.",
-      "expected": "O fiscal acessa o app e recebe os dados necessarios para operar offline.",
-      "narration": "Ao entrar como fiscal, o aplicativo carrega os dados principais para permitir o registro de capturas mesmo em cenarios com pouca conectividade.",
-      "durationSeconds": 9
-    },
-    {
-      "title": "Registro de captura",
-      "tournament": "Amigos da Pesca 2026",
-      "authProfile": "amigos_fiscal",
-      "screen": "registrar-captura",
-      "tapText": "Capturar",
-      "waitForText": "Registrar Captura",
-      "action": "Selecionar embarcacao, pescador e peixe com pesquisa, anexar foto e registrar a captura.",
-      "expected": "A captura e registrada com imagem e vinculacoes corretas.",
-      "narration": "O fiscal pesquisa a embarcacao, o pescador e o peixe, anexa a imagem e conclui o registro da captura.",
-      "durationSeconds": 12
-    },
-    {
-      "title": "Sincronizacao manual",
-      "tournament": "Amigos da Pesca 2026",
-      "authProfile": "amigos_fiscal",
-      "screen": "sincronizacao",
-      "tapText": "Sincronizar",
-      "waitForText": "Sincronizar agora",
-      "action": "Mostrar uma captura pendente e acionar o botao de sincronizar agora.",
-      "expected": "A tela indica que a sincronizacao manual foi disparada pelo usuario.",
-      "narration": "Quando a opcao e sincronizar depois, o envio ocorre somente pela tela de sincronizacao, com acao explicita do fiscal.",
-      "durationSeconds": 10
-    },
-    {
-      "title": "Administrador altera status",
+      "title": "Acesso ao painel do torneio",
       "tournament": "Rei dos Mares 2026",
-      "authProfile": "rei_admin",
-      "screen": "home-admin",
-      "slug": "{slug_rei}",
-      "waitForText": "Administrador do torneio",
-      "action": "Entrar como administrador do torneio e alterar o status do torneio.",
-      "expected": "O app reflete a mudanca de status conforme as regras do torneio.",
-      "narration": "No perfil de administrador do torneio, o aplicativo permite atualizar o status conforme o momento operacional do evento.",
-      "durationSeconds": 9
+      "authProfile": "rei_admin_home",
+      "screen": "dashboard-admin",
+      "action": "Entrar no app como administrador do torneio e apresentar o painel inicial.",
+      "expected": "O app exibe a home administrativa com status, cadastros, operacoes e atalho de reorganizacao emergencial.",
+      "narration": "No app, o administrador do torneio acessa um painel central com status, cadastros, operacoes e o atalho de reorganizacao emergencial.",
+      "durationSeconds": 8
     },
     {
-      "title": "CRUD de embarcacoes",
+      "title": "Status do torneio",
       "tournament": "Rei dos Mares 2026",
-      "authProfile": "rei_admin",
-      "screen": "embarcacoes",
-      "tapText": "Embarcacoes",
-      "waitForText": "Embarcacoes",
-      "action": "Cadastrar ou editar uma embarcacao com foto da embarcacao e foto do capitao.",
-      "expected": "A embarcacao e salva com as imagens no padrao visual adotado no app.",
-      "narration": "O cadastro de embarcacoes inclui fotos da embarcacao e do capitao, mantendo o mesmo padrao visual usado nas demais entidades.",
-      "durationSeconds": 12
+      "authProfile": "rei_admin_home",
+      "screen": "status-admin",
+      "actions": [
+        { "type": "waitText", "text": "Status:" },
+        { "type": "sleep", "ms": 1500 }
+      ],
+      "action": "Destacar o bloco de status e as acoes administrativas do torneio.",
+      "expected": "O app deixa visiveis o status atual do torneio e os botoes operacionais disponiveis.",
+      "narration": "Assim como na retaguarda web, o app permite ao administrador acompanhar o status do torneio e acessar as acoes operacionais disponiveis.",
+      "durationSeconds": 7
+    },
+    {
+      "title": "Cadastro de fiscais",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_fiscais",
+      "screen": "fiscais-criar",
+      "actions": [
+        { "type": "tapPercent", "x": 85.3, "y": 36.5 },
+        { "type": "waitText", "text": "Fiscais" },
+        { "type": "tapPercent", "x": 78.0, "y": 93.0 },
+        { "type": "waitText", "text": "Novo Fiscal" }
+      ],
+      "action": "Abrir a lista de fiscais e o formulario de novo cadastro.",
+      "expected": "O formulario de fiscal fica visivel no app com os dados de acesso e operacao.",
+      "narration": "No cadastro de fiscais, o app abre a listagem e o formulario de criacao com os campos necessarios para acesso e operacao do torneio.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Cadastro de embarcacoes",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_embarcacoes",
+      "screen": "embarcacoes-criar",
+      "actions": [
+        { "type": "tapPercent", "x": 14.8, "y": 36.5 },
+        { "type": "waitText", "text": "Embarca" },
+        { "type": "tapPercent", "x": 78.0, "y": 93.0 },
+        { "type": "waitText", "text": "Nova Embarca" }
+      ],
+      "action": "Abrir a lista de embarcacoes e o formulario de criacao.",
+      "expected": "O cadastro mostra o fluxo administrativo de embarcacoes com imagens e dados operacionais.",
+      "narration": "No cadastro de embarcacoes, o app apresenta a listagem e o formulario de criacao com os dados operacionais e as imagens da embarcacao e do capitao.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Cadastro de pescadores",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_pescadores",
+      "screen": "pescadores-criar",
+      "actions": [
+        { "type": "tapPercent", "x": 38.3, "y": 36.5 },
+        { "type": "waitText", "text": "Pescadores" },
+        { "type": "tapPercent", "x": 78.0, "y": 93.0 },
+        { "type": "waitText", "text": "Novo Pescador" }
+      ],
+      "action": "Abrir a lista de pescadores e o formulario de novo cadastro.",
+      "expected": "O app exibe o fluxo de cadastro de pescadores com o mesmo padrao visual das demais entidades.",
+      "narration": "O cadastro de pescadores segue o mesmo padrao do restante da plataforma, com listagem e formulario de criacao diretamente no app.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Cadastro de peixes",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_peixes",
+      "screen": "peixes-criar",
+      "actions": [
+        { "type": "tapPercent", "x": 61.8, "y": 36.5 },
+        { "type": "waitText", "text": "Peixes" },
+        { "type": "tapPercent", "x": 78.0, "y": 93.0 },
+        { "type": "waitText", "text": "Novo Peixe" }
+      ],
+      "action": "Abrir a lista de peixes e o formulario de criacao.",
+      "expected": "O app mostra o cadastro de peixes com os campos de validacao e a selecao de imagem.",
+      "narration": "No cadastro de peixes, o administrador acessa a listagem e o formulario de criacao com os campos de validacao e a imagem do item.",
+      "durationSeconds": 8
     },
     {
       "title": "Reorganizacao emergencial",
       "tournament": "Rei dos Mares 2026",
-      "authProfile": "rei_admin",
+      "authProfile": "rei_admin_reorganizacao",
       "screen": "reorganizacao-emergencial",
-      "tapText": "Abrir Reorganizacao Emergencial",
-      "waitForText": "Reorganizacao Emergencial",
-      "action": "Abrir a tela, confirmar a operacao e registrar o ajuste manual.",
-      "expected": "A reorganizacao fica registrada como medida excepcional e auditavel.",
-      "narration": "Em caso de emergencia, o administrador pode reorganizar pescadores manualmente, com confirmacao explicita e registro em log.",
-      "durationSeconds": 10
+      "actions": [
+        { "type": "tapPercent", "x": 50.0, "y": 65.8 },
+        { "type": "waitText", "text": "Reorganizacao Emergencial" }
+      ],
+      "action": "Abrir a rotina de reorganizacao emergencial pelo app.",
+      "expected": "A tela evidencia o uso excepcional, a confirmacao administrativa e o registro auditavel.",
+      "narration": "A reorganizacao emergencial tambem esta disponivel no app, com alerta de uso excepcional, confirmacao administrativa e rastreabilidade.",
+      "durationSeconds": 9
+    },
+    {
+      "title": "Capturas na administracao",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_capturas",
+      "screen": "capturas-admin",
+      "actions": [
+        { "type": "tapPercent", "x": 14.8, "y": 54.4 },
+        { "type": "waitText", "text": "Capturas" }
+      ],
+      "action": "Abrir a tela administrativa de capturas.",
+      "expected": "O app apresenta as capturas registradas e a gestao administrativa dessa lista.",
+      "narration": "Na administracao de capturas, o app concentra a consulta dos registros enviados e a gestao administrativa dessas ocorrencias.",
+      "durationSeconds": 8
     },
     {
       "title": "Sorteio em torneio habilitado",
-      "tournament": "Amigos da Pesca 2026",
-      "authProfile": "amigos_admin",
-      "screen": "sorteio",
-      "slug": "{slug_amigos}",
-      "waitForText": "Administrador do torneio",
-      "action": "Executar o sorteio em um torneio configurado com esse modo.",
-      "expected": "O sorteio e realizado e o resultado fica refletido nas embarcacoes.",
-      "narration": "Nos torneios com modo de sorteio ativo, o administrador consegue executar o sorteio diretamente no aplicativo.",
-      "durationSeconds": 10
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_sorteio",
+      "screen": "sorteio-admin",
+      "actions": [
+        { "type": "tapPercent", "x": 38.3, "y": 54.4 },
+        { "type": "waitText", "text": "Sorteio" }
+      ],
+      "action": "Abrir o modulo de sorteio em um torneio habilitado para esse fluxo.",
+      "expected": "O app mostra a tela administrativa de sorteio e sua operacao dedicada.",
+      "narration": "Nos torneios com sorteio habilitado, o administrador acessa a tela de sorteio diretamente pelo app.",
+      "durationSeconds": 8
     },
     {
-      "title": "Relatorios no app",
+      "title": "Ausencia de sorteio em torneio sem esse modo",
+      "tournament": "Torneio BTS Sport Fishing 2026",
+      "authProfile": "bts_admin_home",
+      "screen": "home-admin-bts",
+      "actions": [
+        { "type": "waitText", "text": "Administrador do torneio" }
+      ],
+      "action": "Exibir um torneio sem sorteio para evidenciar a ausencia do modulo na home.",
+      "expected": "A home administrativa nao apresenta o acesso ao sorteio quando o modo do torneio e Nenhum.",
+      "narration": "No torneio BTS Sport Fishing 2026, o modulo de sorteio nao aparece na home administrativa, porque esse torneio usa o modo nenhum.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Relatorios do torneio",
       "tournament": "Rei dos Mares 2026",
-      "authProfile": "rei_admin",
+      "authProfile": "rei_admin_relatorios",
       "screen": "relatorios",
-      "tapText": "Relatorios",
-      "waitForText": "Relatorios",
-      "action": "Abrir os relatorios existentes e destacar os ganhadores.",
-      "expected": "O app apresenta os relatorios alinhados com a retaguarda web.",
-      "narration": "Os relatorios do app acompanham a retaguarda e incluem visoes por embarcacao e por ganhadores.",
+      "actions": [
+        { "type": "tapPercent", "x": 61.8, "y": 54.4 },
+        { "type": "waitText", "text": "Relat" }
+      ],
+      "action": "Abrir a area de relatorios do torneio.",
+      "expected": "O app apresenta as entradas por embarcacao, por pescador e os ganhadores.",
+      "narration": "A area de relatorios do app acompanha a retaguarda web e concentra as opcoes por embarcacao, por pescador e por ganhadores.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Acesso do fiscal",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_fiscal_home",
+      "screen": "home-fiscal",
+      "actions": [
+        { "type": "waitText", "text": "Perfil:" }
+      ],
+      "action": "Entrar no app como fiscal e apresentar a home operacional.",
+      "expected": "O fiscal visualiza as acoes principais para registrar captura, consultar registros e sincronizar.",
+      "narration": "No perfil de fiscal, o aplicativo centraliza as acoes principais para registrar captura, consultar registros e executar a sincronizacao manual quando necessario.",
+      "durationSeconds": 8
+    },
+    {
+      "title": "Registro de captura",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_fiscal_registrar",
+      "screen": "registrar-captura",
+      "actions": [
+        { "type": "tapPercent", "x": 18.5, "y": 28.8 },
+        { "type": "waitText", "text": "Registrar Captura" }
+      ],
+      "action": "Abrir a tela de registro de captura pelo fiscal.",
+      "expected": "O app deixa pronta a tela para selecionar embarcacao, pescador, peixe e foto da captura.",
+      "narration": "Ao abrir o registro de captura, o fiscal encontra a tela preparada para selecionar embarcacao, pescador, peixe e a imagem da captura.",
+      "durationSeconds": 9
+    },
+    {
+      "title": "Sincronizacao manual do fiscal",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_fiscal_sync",
+      "screen": "sincronizacao-fiscal",
+      "actions": [
+        { "type": "tapPercent", "x": 81.4, "y": 28.8 },
+        { "type": "waitText", "text": "Sincronizacao" }
+      ],
+      "action": "Abrir a tela de sincronizacao manual do fiscal.",
+      "expected": "O app apresenta o fluxo especifico de sincronizacao manual das capturas pendentes.",
+      "narration": "Quando o torneio utiliza sincronizacao manual, o envio das capturas pendentes fica concentrado na tela de sincronizacao do fiscal.",
+      "durationSeconds": 9
+    },
+    {
+      "title": "Encerramento",
+      "tournament": "Amigos da Pesca 2026",
+      "authProfile": "amigos_fiscal_home",
+      "screen": "encerramento",
+      "actions": [
+        { "type": "waitText", "text": "Perfil:" }
+      ],
+      "action": "Encerrar a demonstracao do app com a home do fiscal visivel.",
+      "expected": "O video termina em uma tela limpa e coerente com o fluxo operacional apresentado.",
+      "narration": "Obrigado por acompanhar esta demonstracao do aplicativo. Se precisar, podemos aprofundar qualquer modulo em uma proxima apresentacao.",
       "durationSeconds": 8
     }
   ]

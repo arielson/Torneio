@@ -26,6 +26,9 @@ if ([string]::IsNullOrWhiteSpace($ManifestPath)) {
 
 $output = Initialize-VideoOutput -Target "app"
 $manifest = Get-JsonFile -LiteralPath $ManifestPath
+$androidSdkRoot = Resolve-AndroidSdkRoot
+$env:ANDROID_HOME = $androidSdkRoot
+$env:ANDROID_SDK_ROOT = $androidSdkRoot
 
 Write-VideoSection "Pipeline de video - App Android"
 Assert-AppVideoTools
@@ -38,6 +41,7 @@ $scriptOutputPath = Join-Path $output.TargetRoot "roteiro-app.md"
 $subtitleOutputPath = Join-Path $output.SubtitleRoot "app-demo.srt"
 $voiceOutputPath = Join-Path $output.AudioRoot "app-demo-narration.wav"
 $voiceMetadataPath = Join-Path $output.AudioRoot "app-demo-narration.json"
+$sceneTimingMetadataPath = Join-Path $output.TargetRoot "app-scene-timings.json"
 $rawVideoOutputPath = Join-Path $output.TargetRoot "raw\app-demo.mp4"
 $sceneOutputRoot = Join-Path $output.TargetRoot "screens"
 $finalVideoOutputPath = Join-Path $output.TargetRoot "app-demo-final.mp4"
@@ -66,7 +70,7 @@ if ($StartAppium) {
 $env:VIDEO_ADB_PATH = Resolve-AdbPath
 $env:VIDEO_ADB_SERIAL = Resolve-EmulatorSerial
 Write-VideoSection "Gravando fluxo Android com Appium"
-& node (Join-Path $PSScriptRoot "record-app.mjs") --manifest $ManifestPath --outputDir $sceneOutputRoot --rawVideo $rawVideoOutputPath --port $AppiumPort
+& node (Join-Path $PSScriptRoot "record-app.mjs") --manifest $ManifestPath --outputDir $sceneOutputRoot --rawVideo $rawVideoOutputPath --timingMetadata $sceneTimingMetadataPath --voiceMetadata $voiceMetadataPath --port $AppiumPort
 & (Join-Path $paths.MediaRoot "compose-video.ps1") `
     -Target "app" `
     -RawVideoPath $rawVideoOutputPath `
@@ -74,5 +78,6 @@ Write-VideoSection "Gravando fluxo Android com Appium"
     -NarrationPath $voiceOutputPath `
     -ScreenshotDir $sceneOutputRoot `
     -VoiceMetadataPath $voiceMetadataPath `
+    -SceneTimingMetadataPath $sceneTimingMetadataPath `
     -OutputPath $finalVideoOutputPath
 Write-VideoInfo "Manifesto carregado: $($manifest.title)"

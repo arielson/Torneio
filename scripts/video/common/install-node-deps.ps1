@@ -16,7 +16,10 @@ function Install-VideoNodeDependencies {
 
     $paths = Get-VideoPaths
     $packageJsonPath = Join-Path $paths.ScriptsRoot "package.json"
+    $appiumHome = Join-Path $paths.ScriptsRoot "node_modules\.cache\appium"
     Assert-PathExists -LiteralPath $packageJsonPath -Description "package.json do pipeline de video"
+    Ensure-Directory -LiteralPath $appiumHome
+    $env:APPIUM_HOME = $appiumHome
 
     Write-VideoSection "Instalando dependencias Node do pipeline"
     & npm install --prefix $paths.ScriptsRoot
