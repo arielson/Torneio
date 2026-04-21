@@ -154,6 +154,37 @@ public class CapturaController : TorneioBaseController
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
+    [HttpPost("{id:guid}/alterar-tamanho")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AlterarTamanho(Guid id, decimal tamanhoMedida)
+    {
+        try
+        {
+            var capturaAntes = await _capturaServico.ObterPorId(id);
+            await _capturaServico.AlterarTamanho(id, tamanhoMedida);
+            var capturaDepois = await _capturaServico.ObterPorId(id);
+            TempData["Sucesso"] = "Tamanho da captura atualizado.";
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Capturas,
+                Acao = "AlterarTamanhoCapturaRetaguarda",
+                Descricao = $"Tamanho da captura alterado | Item: {capturaAntes?.NomeItem} | Pescador: {capturaAntes?.NomeMembro} | Equipe: {capturaAntes?.NomeEquipe} | Medida anterior: {capturaAntes?.TamanhoMedida} | Nova medida: {capturaDepois?.TamanhoMedida ?? tamanhoMedida}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
     [HttpPost("{id:guid}/remover")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)

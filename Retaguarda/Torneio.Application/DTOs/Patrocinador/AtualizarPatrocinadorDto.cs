@@ -11,4 +11,6 @@ public class AtualizarPatrocinadorDto
     public string? Instagram { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
+    public bool ExibirNaTelaInicial { get; init; } = true;
+    public bool ExibirNosRelatorios { get; init; } = true;
 }

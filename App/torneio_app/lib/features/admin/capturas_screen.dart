@@ -141,6 +141,81 @@ class _CapturasAdminScreenState extends State<CapturasAdminScreen> {
     }
   }
 
+  Future<void> _alterarTamanho(Captura captura) async {
+    final config = context.read<ConfigProvider>().config;
+    final auth = context.read<AuthProvider>().usuario;
+    if (auth?.slug == null || auth?.token == null) return;
+
+    final controller = TextEditingController(
+      text: captura.tamanhoMedida == captura.tamanhoMedida.truncateToDouble()
+          ? captura.tamanhoMedida.toInt().toString()
+          : captura.tamanhoMedida.toStringAsFixed(2),
+    );
+
+    final novoValor = await showDialog<double>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Alterar medida'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${captura.nomeItem} - ${captura.nomeMembro}'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: 'Nova medida (${config?.medidaCaptura ?? ''})'.trim(),
+                helperText: 'Informe um valor maior que zero.',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final valor = double.tryParse(controller.text.trim().replaceAll(',', '.'));
+              if (valor == null || valor <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Informe uma medida valida maior que zero.')),
+                );
+                return;
+              }
+              Navigator.pop(context, valor);
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+
+    if (novoValor == null || !mounted) return;
+
+    try {
+      await _api.put(
+        '${ApiConstants.capturas(auth!.slug!)}/${captura.id}/tamanho',
+        {'tamanhoMedida': novoValor},
+        token: auth.token,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Medida atualizada com sucesso.')),
+      );
+      await _carregarCapturas();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
@@ -205,6 +280,7 @@ class _CapturasAdminScreenState extends State<CapturasAdminScreen> {
                                   captura: _capturas[i],
                                   medida: medida,
                                   usarFator: usarFator,
+                                  onAlterarTamanho: () => _alterarTamanho(_capturas[i]),
                                   onRemover: () => _remover(_capturas[i]),
                                 ),
                               ),
@@ -375,12 +451,14 @@ class _CapturaCard extends StatelessWidget {
   final Captura captura;
   final String medida;
   final bool usarFator;
+  final VoidCallback onAlterarTamanho;
   final VoidCallback onRemover;
 
   const _CapturaCard({
     required this.captura,
     required this.medida,
     required this.usarFator,
+    required this.onAlterarTamanho,
     required this.onRemover,
   });
 
@@ -463,6 +541,11 @@ class _CapturaCard extends StatelessWidget {
                     tooltip: 'Ver foto',
                     onPressed: () => showExpandedImage(context, captura.fotoUrl!),
                   ),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  tooltip: 'Alterar medida',
+                  onPressed: onAlterarTamanho,
+                ),
                 IconButton(
                   icon: Icon(Icons.delete_outline,
                       size: 20, color: Colors.red.shade400),

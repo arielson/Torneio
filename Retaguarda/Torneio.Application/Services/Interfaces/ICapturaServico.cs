@@ -13,4 +13,5 @@ public interface ICapturaServico
     Task<int> SincronizarLote(IEnumerable<RegistrarCapturaDto> capturas);
     Task Invalidar(Guid id, string motivo);
     Task Revalidar(Guid id);
+    Task AlterarTamanho(Guid id, decimal tamanhoMedida);
 }

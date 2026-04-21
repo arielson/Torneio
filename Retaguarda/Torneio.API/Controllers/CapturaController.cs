@@ -66,6 +66,42 @@ public class CapturaController : BaseController
     }
 
     [Authorize(Policy = "AdminTorneio")]
+    [HttpPut("{id:guid}/tamanho")]
+    public async Task<IActionResult> AlterarTamanho(Guid id, [FromBody] AlterarTamanhoCapturaDto dto)
+    {
+        var capturaAntes = await _servico.ObterPorId(id);
+        if (capturaAntes is null)
+            return NotFound(new { erro = "Captura nao encontrada." });
+
+        try
+        {
+            await _servico.AlterarTamanho(id, dto.TamanhoMedida);
+            var capturaDepois = await _servico.ObterPorId(id);
+            var torneio = capturaAntes.TorneioId != Guid.Empty
+                ? await _torneioServico.ObterPorId(capturaAntes.TorneioId)
+                : null;
+
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = capturaAntes.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Capturas,
+                Acao = "AlterarTamanhoCapturaApp",
+                Descricao = $"Tamanho da captura alterado pelo app | Item: {capturaAntes.NomeItem} | Pescador: {capturaAntes.NomeMembro} | Equipe: {capturaAntes.NomeEquipe} | Medida anterior: {capturaAntes.TamanhoMedida} | Nova medida: {capturaDepois?.TamanhoMedida ?? dto.TamanhoMedida}",
+                UsuarioNome = User.Identity?.Name ?? "-",
+                UsuarioPerfil = GetPerfil(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+            });
+
+            return Ok(capturaDepois);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "AdminTorneio")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id)
     {

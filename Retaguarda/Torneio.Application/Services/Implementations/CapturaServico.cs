@@ -109,6 +109,17 @@ public class CapturaServico : ICapturaServico
         await _repositorio.Atualizar(entidade);
     }
 
+    public async Task AlterarTamanho(Guid id, decimal tamanhoMedida)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+
+        entidade.AlterarTamanho(tamanhoMedida);
+        await _repositorio.Atualizar(entidade);
+    }
+
     public async Task<int> SincronizarLote(IEnumerable<RegistrarCapturaDto> capturas)
     {
         var count = 0;

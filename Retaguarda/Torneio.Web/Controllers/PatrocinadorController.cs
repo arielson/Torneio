@@ -64,7 +64,9 @@ public class PatrocinadorController : TorneioBaseController
                 FotoUrl = fotoUrl!,
                 Instagram = dto.Instagram,
                 Site = dto.Site,
-                Zap = dto.Zap
+                Zap = dto.Zap,
+                ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
+                ExibirNosRelatorios = dto.ExibirNosRelatorios
             });
 
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
@@ -104,6 +106,9 @@ public class PatrocinadorController : TorneioBaseController
             Instagram = patrocinador.Instagram,
             Site = patrocinador.Site,
             Zap = patrocinador.Zap
+            ,
+            ExibirNaTelaInicial = patrocinador.ExibirNaTelaInicial,
+            ExibirNosRelatorios = patrocinador.ExibirNosRelatorios
         });
     }
 
@@ -129,7 +134,9 @@ public class PatrocinadorController : TorneioBaseController
                 FotoUrl = fotoUrl,
                 Instagram = dto.Instagram,
                 Site = dto.Site,
-                Zap = dto.Zap
+                Zap = dto.Zap,
+                ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
+                ExibirNosRelatorios = dto.ExibirNosRelatorios
             });
 
             TempData["Sucesso"] = "Patrocinador atualizado.";

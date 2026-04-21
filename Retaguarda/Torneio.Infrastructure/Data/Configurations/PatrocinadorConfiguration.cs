@@ -15,6 +15,8 @@ public class PatrocinadorConfiguration : IEntityTypeConfiguration<Patrocinador>
         builder.Property(e => e.Instagram).HasMaxLength(200);
         builder.Property(e => e.Site).HasMaxLength(300);
         builder.Property(e => e.Zap).HasMaxLength(50);
+        builder.Property(e => e.ExibirNaTelaInicial).IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.ExibirNosRelatorios).IsRequired().HasDefaultValue(true);
 
         builder.HasOne<TorneioEntity>()
             .WithMany()

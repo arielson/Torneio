@@ -50,7 +50,9 @@ public class PatrocinadorServico : IPatrocinadorServico
             dto.FotoUrl,
             Limpar(dto.Instagram),
             Limpar(dto.Site),
-            Limpar(dto.Zap));
+            Limpar(dto.Zap),
+            dto.ExibirNaTelaInicial,
+            dto.ExibirNosRelatorios);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -71,7 +73,9 @@ public class PatrocinadorServico : IPatrocinadorServico
             Limpar(dto.FotoUrl),
             Limpar(dto.Instagram),
             Limpar(dto.Site),
-            Limpar(dto.Zap));
+            Limpar(dto.Zap),
+            dto.ExibirNaTelaInicial,
+            dto.ExibirNosRelatorios);
 
         await _repositorio.Atualizar(entidade);
     }
@@ -97,7 +101,9 @@ public class PatrocinadorServico : IPatrocinadorServico
         FotoUrl = e.FotoUrl,
         Instagram = e.Instagram,
         Site = e.Site,
-        Zap = e.Zap
+        Zap = e.Zap,
+        ExibirNaTelaInicial = e.ExibirNaTelaInicial,
+        ExibirNosRelatorios = e.ExibirNosRelatorios
     };
 
     private static string? Limpar(string? valor) =>

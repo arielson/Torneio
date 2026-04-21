@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
+import '../../core/models/patrocinador.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../widgets/patrocinadores_section.dart';
 
 class HomeAdminScreen extends StatefulWidget {
   const HomeAdminScreen({super.key});
@@ -14,6 +16,7 @@ class HomeAdminScreen extends StatefulWidget {
 
 class _HomeAdminScreenState extends State<HomeAdminScreen> {
   late final ApiService _api;
+  List<Patrocinador> _patrocinadores = const [];
 
   @override
   void didChangeDependencies() {
@@ -31,6 +34,29 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     final auth = context.read<AuthProvider>();
     final config = context.read<ConfigProvider>().config;
     if (auth.usuario == null || config == null) return;
+
+    try {
+      final data = await _api.get(
+        ApiConstants.patrocinadores(config.slug),
+        token: auth.usuario!.token,
+      );
+
+      if (!mounted) return;
+
+      final lista = data is List
+          ? data
+              .map((e) => Patrocinador.fromJson(e as Map<String, dynamic>))
+              .where((p) => p.exibirNaTelaInicial)
+              .toList()
+          : <Patrocinador>[];
+
+      setState(() {
+        _patrocinadores = lista..sort((a, b) => a.nome.compareTo(b.nome));
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _patrocinadores = const []);
+    }
   }
 
   Future<void> _logout() async {
@@ -193,6 +219,8 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                       ),
                 ),
               ],
+              const SizedBox(height: 20),
+              PatrocinadoresSection(patrocinadores: _patrocinadores),
               const SizedBox(height: 20),
               Text('Cadastros', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),

@@ -42,6 +42,14 @@
             <input asp-for="Zap" class="form-control" />
             <span asp-validation-for="Zap" class="text-danger small"></span>
         </div>
+        <div class="form-check mb-2">
+            <input asp-for="ExibirNaTelaInicial" class="form-check-input" />
+            <label asp-for="ExibirNaTelaInicial" class="form-check-label">Exibir na tela inicial do torneio</label>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="ExibirNosRelatorios" class="form-check-input" />
+            <label asp-for="ExibirNosRelatorios" class="form-check-label">Exibir ao final dos relatórios</label>
+        </div>
 
         <div class="form-section-title">Imagem</div>
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", "Imagem do patrocinador" } })' />

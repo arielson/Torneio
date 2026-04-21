@@ -165,6 +165,15 @@ else
                                     }
                                     else
                                     {
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                title="Alterar medida"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalAlterarTamanho"
+                                                data-id="@c.Id"
+                                                data-nome="@c.NomeMembro â€” @c.NomeItem"
+                                                data-medida="@c.TamanhoMedida.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-warning"
                                                 title="Invalidar"
                                                 data-bs-toggle="modal"
@@ -229,6 +238,35 @@ else
     </div>
 </div>
 
+<div class="modal fade" id="modalAlterarTamanho" tabindex="-1" aria-labelledby="modalAlterarTamanhoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formAlterarTamanho" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAlterarTamanhoLabel">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>Alterar medida da @labelCaptura
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3" id="modalAlterarTamanhoNome"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Nova medida (@medida) <span class="text-danger">*</span></label>
+                        <input name="tamanhoMedida" type="number" step="0.01" min="0.01" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2 me-1"></i>Salvar medida
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Tooltips
@@ -237,6 +275,19 @@ else
         });
 
         // Modal de invalidar — injeta action correta
+        const modalAlterarTamanho = document.getElementById('modalAlterarTamanho');
+        if (modalAlterarTamanho) {
+            modalAlterarTamanho.addEventListener('show.bs.modal', e => {
+                const btn = e.relatedTarget;
+                const id  = btn.dataset.id;
+                const nome = btn.dataset.nome;
+                const medidaAtual = btn.dataset.medida;
+                document.getElementById('formAlterarTamanho').action = `/@(slug)/capturas/${id}/alterar-tamanho`;
+                document.getElementById('modalAlterarTamanhoNome').textContent = nome;
+                modalAlterarTamanho.querySelector('input[name="tamanhoMedida"]').value = medidaAtual;
+            });
+        }
+
         const modalInvalidar = document.getElementById('modalInvalidar');
         if (modalInvalidar) {
             modalInvalidar.addEventListener('show.bs.modal', e => {

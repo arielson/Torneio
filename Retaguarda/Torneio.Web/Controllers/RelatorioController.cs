@@ -150,4 +150,29 @@ public class RelatorioController : TorneioBaseController
         ViewBag.Torneio = torneio;
         return View(vm);
     }
+
+    [HttpGet("maiores-capturas")]
+    public async Task<IActionResult> MaioresCapturas()
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+
+        ViewBag.Torneio = torneio;
+        return View(new MaioresCapturasFiltroViewModel());
+    }
+
+    [HttpGet("maiores-capturas/download")]
+    public async Task<IActionResult> DownloadMaioresCapturas([FromQuery] int quantidade = 1)
+    {
+        try
+        {
+            var bytes = await _relatorioServico.GerarRelatorioMaioresCapturas(quantidade);
+            return File(bytes, "application/pdf", $"maiores_capturas_{quantidade}.pdf");
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Erro"] = ex.Message;
+            return RedirectToAction(nameof(MaioresCapturas), new { slug = Slug });
+        }
+    }
 }

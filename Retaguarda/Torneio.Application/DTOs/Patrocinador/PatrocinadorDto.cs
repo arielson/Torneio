@@ -9,4 +9,6 @@ public class PatrocinadorDto
     public string? Instagram { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
+    public bool ExibirNaTelaInicial { get; init; }
+    public bool ExibirNosRelatorios { get; init; }
 }

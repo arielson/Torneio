@@ -9,6 +9,8 @@ public class Patrocinador
     public string? Instagram { get; private set; }
     public string? Site { get; private set; }
     public string? Zap { get; private set; }
+    public bool ExibirNaTelaInicial { get; private set; }
+    public bool ExibirNosRelatorios { get; private set; }
 
     private Patrocinador() { }
 
@@ -18,7 +20,9 @@ public class Patrocinador
         string fotoUrl,
         string? instagram,
         string? site,
-        string? zap)
+        string? zap,
+        bool exibirNaTelaInicial,
+        bool exibirNosRelatorios)
     {
         return new Patrocinador
         {
@@ -28,7 +32,9 @@ public class Patrocinador
             FotoUrl = fotoUrl,
             Instagram = instagram,
             Site = site,
-            Zap = zap
+            Zap = zap,
+            ExibirNaTelaInicial = exibirNaTelaInicial,
+            ExibirNosRelatorios = exibirNosRelatorios
         };
     }
 
@@ -37,7 +43,9 @@ public class Patrocinador
         string? fotoUrl,
         string? instagram,
         string? site,
-        string? zap)
+        string? zap,
+        bool exibirNaTelaInicial,
+        bool exibirNosRelatorios)
     {
         Nome = nome;
         if (!string.IsNullOrWhiteSpace(fotoUrl))
@@ -48,5 +56,7 @@ public class Patrocinador
         Instagram = instagram;
         Site = site;
         Zap = zap;
+        ExibirNaTelaInicial = exibirNaTelaInicial;
+        ExibirNosRelatorios = exibirNosRelatorios;
     }
 }

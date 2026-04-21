@@ -65,6 +65,14 @@ public class Captura
         MotivoInvalidacao = null;
     }
 
+    public void AlterarTamanho(decimal tamanhoMedida)
+    {
+        if (tamanhoMedida <= 0)
+            throw new InvalidOperationException("O tamanho da captura deve ser maior que zero.");
+
+        TamanhoMedida = tamanhoMedida;
+    }
+
     public Pontuacao CalcularPontuacao()
     {
         if (Item is null)

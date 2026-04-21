@@ -79,6 +79,21 @@ public class RelatorioController : BaseController
         });
     }
 
+    [Authorize(Policy = "AdminTorneio")]
+    [HttpGet("maiores-capturas")]
+    public async Task<IActionResult> MaioresCapturas([FromQuery] int quantidade = 1)
+    {
+        try
+        {
+            var bytes = await _servico.GerarRelatorioMaioresCapturas(quantidade);
+            return File(bytes, "application/pdf", $"maiores_capturas_{quantidade}.pdf");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
     /// <summary>
     /// GET /api/{slug}/relatorios/equipe/{equipeId}?analitico=false
     /// </summary>

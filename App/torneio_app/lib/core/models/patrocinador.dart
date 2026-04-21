@@ -7,6 +7,8 @@ class Patrocinador {
   final String? instagram;
   final String? site;
   final String? zap;
+  final bool exibirNaTelaInicial;
+  final bool exibirNosRelatorios;
 
   const Patrocinador({
     required this.id,
@@ -15,6 +17,8 @@ class Patrocinador {
     this.instagram,
     this.site,
     this.zap,
+    this.exibirNaTelaInicial = true,
+    this.exibirNosRelatorios = true,
   });
 
   factory Patrocinador.fromJson(Map<String, dynamic> json) => Patrocinador(
@@ -24,5 +28,7 @@ class Patrocinador {
     instagram: json['instagram'] as String?,
     site: json['site'] as String?,
     zap: json['zap'] as String?,
+    exibirNaTelaInicial: json['exibirNaTelaInicial'] as bool? ?? true,
+    exibirNosRelatorios: json['exibirNosRelatorios'] as bool? ?? true,
   );
 }

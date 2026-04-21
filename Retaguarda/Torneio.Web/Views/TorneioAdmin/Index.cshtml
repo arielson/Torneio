@@ -1,6 +1,11 @@
 @model TorneioDto
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var storageBase = ViewBag.StorageBaseUrl as string ?? "";
+    var patrocinadores = ((IEnumerable<Torneio.Application.DTOs.Patrocinador.PatrocinadorDto>?)ViewBag.Patrocinadores ?? Enumerable.Empty<Torneio.Application.DTOs.Patrocinador.PatrocinadorDto>())
+        .Where(p => p.ExibirNaTelaInicial)
+        .OrderBy(p => p.Nome)
+        .ToList();
     ViewData["Title"] = Model.NomeTorneio;
 
     var badgeClass = Model.Status switch
@@ -12,6 +17,36 @@
     var exibirSorteio = !string.Equals(Model.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
 }
 
+@functions {
+    private static bool TemValor(string? valor) => !string.IsNullOrWhiteSpace(valor);
+
+    private static string NormalizarSite(string valor)
+    {
+        var url = valor.Trim();
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            ? url
+            : $"https://{url}";
+    }
+
+    private static string NormalizarInstagram(string valor)
+    {
+        var handle = valor.Trim()
+            .Replace("https://instagram.com/", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("https://www.instagram.com/", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("@", "");
+        var slash = handle.IndexOf('/');
+        if (slash >= 0)
+            handle = handle[..slash];
+        return $"https://instagram.com/{handle}";
+    }
+
+    private static string NormalizarZap(string valor)
+    {
+        var digitos = new string(valor.Where(char.IsDigit).ToArray());
+        return $"https://wa.me/{digitos}";
+    }
+}
+
 <div class="page-header">
     <div class="page-header-left">
         <h1>@Model.NomeTorneio</h1>
@@ -21,6 +56,60 @@
         <a href="/@slug/admin/clonar" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-copy me-1"></i>Clonar
         </a>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-megaphone me-2"></i>Patrocinadores</h5>
+    </div>
+    <div class="card-body-pad">
+        @if (!patrocinadores.Any())
+        {
+            <div class="text-muted small">Nenhum patrocinador cadastrado.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var patrocinador in patrocinadores)
+                {
+                    var fotoUrl = patrocinador.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? patrocinador.FotoUrl
+                        : $"{storageBase}/{patrocinador.FotoUrl.TrimStart('/')}";
+
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        <div class="border rounded-3 p-3 h-100 bg-white d-flex flex-column gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="@fotoUrl"
+                                     alt="@patrocinador.Nome"
+                                     style="width:56px;height:56px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;" />
+                                <div class="fw-semibold">@patrocinador.Nome</div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if (TemValor(patrocinador.Site))
+                                {
+                                    <a href="@NormalizarSite(patrocinador.Site!)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-globe me-1"></i>Site
+                                    </a>
+                                }
+                                @if (TemValor(patrocinador.Instagram))
+                                {
+                                    <a href="@NormalizarInstagram(patrocinador.Instagram!)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-instagram me-1"></i>Instagram
+                                    </a>
+                                }
+                                @if (TemValor(patrocinador.Zap))
+                                {
+                                    <a href="@NormalizarZap(patrocinador.Zap!)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-whatsapp me-1"></i>Zap
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </div>
 

@@ -50,7 +50,9 @@ public class PatrocinadorController : BaseController
             FotoUrl = fotoUrl ?? string.Empty,
             Instagram = dto.Instagram,
             Site = dto.Site,
-            Zap = dto.Zap
+            Zap = dto.Zap,
+            ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
+            ExibirNosRelatorios = dto.ExibirNosRelatorios
         });
 
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
@@ -74,7 +76,9 @@ public class PatrocinadorController : BaseController
             FotoUrl = fotoUrl,
             Instagram = dto.Instagram,
             Site = dto.Site,
-            Zap = dto.Zap
+            Zap = dto.Zap,
+            ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
+            ExibirNosRelatorios = dto.ExibirNosRelatorios
         });
 
         return NoContent();
@@ -108,6 +112,8 @@ public class CriarPatrocinadorFormDto
     public string? Instagram { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
+    public bool ExibirNaTelaInicial { get; init; } = true;
+    public bool ExibirNosRelatorios { get; init; } = true;
 }
 
 public class AtualizarPatrocinadorFormDto
@@ -119,4 +125,6 @@ public class AtualizarPatrocinadorFormDto
     public string? Instagram { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
+    public bool ExibirNaTelaInicial { get; init; } = true;
+    public bool ExibirNosRelatorios { get; init; } = true;
 }

@@ -27,6 +27,8 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
   final _instagramController = TextEditingController();
   final _siteController = TextEditingController();
   final _zapController = TextEditingController();
+  bool _exibirNaTelaInicial = true;
+  bool _exibirNosRelatorios = true;
 
   bool _salvando = false;
   String? _fotoPath;
@@ -42,6 +44,8 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
       _instagramController.text = patrocinador.instagram ?? '';
       _siteController.text = patrocinador.site ?? '';
       _zapController.text = patrocinador.zap ?? '';
+      _exibirNaTelaInicial = patrocinador.exibirNaTelaInicial;
+      _exibirNosRelatorios = patrocinador.exibirNosRelatorios;
     }
   }
 
@@ -109,6 +113,8 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
       'instagram': _instagramController.text.trim(),
       'site': _siteController.text.trim(),
       'zap': _zapController.text.trim(),
+      'exibirNaTelaInicial': _exibirNaTelaInicial,
+      'exibirNosRelatorios': _exibirNosRelatorios,
     };
 
     try {
@@ -183,6 +189,19 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
                 labelText: 'Zap (opcional)',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              value: _exibirNaTelaInicial,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Exibir na tela inicial do torneio'),
+              onChanged: (value) => setState(() => _exibirNaTelaInicial = value),
+            ),
+            SwitchListTile(
+              value: _exibirNosRelatorios,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Exibir ao final dos relatórios'),
+              onChanged: (value) => setState(() => _exibirNosRelatorios = value),
             ),
             const SizedBox(height: 16),
             AdminPhotoPicker(
