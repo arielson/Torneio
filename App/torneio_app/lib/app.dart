@@ -19,6 +19,7 @@ import 'features/admin/capturas_screen.dart';
 import 'features/admin/equipes_screen.dart';
 import 'features/admin/fiscais_screen.dart';
 import 'features/admin/itens_screen.dart';
+import 'features/admin/patrocinadores_screen.dart';
 import 'features/admin/membros_screen.dart';
 import 'features/admin/relatorios_equipes_screen.dart';
 import 'features/admin/relatorios_membros_screen.dart';
@@ -94,6 +95,7 @@ class _TorneioAppState extends State<TorneioApp> {
                 '/admin/equipes': (_) => const EquipesAdminScreen(),
                 '/admin/membros': (_) => const MembrosAdminScreen(),
                 '/admin/itens': (_) => const ItensAdminScreen(),
+                '/admin/patrocinadores': (_) => const PatrocinadoresAdminScreen(),
                 '/admin/fiscais': (_) => const FiscaisAdminScreen(),
                 '/admin/capturas': (_) => const CapturasAdminScreen(),
                 '/admin/reorganizacao-emergencial':

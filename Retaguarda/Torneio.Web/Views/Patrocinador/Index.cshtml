@@ -1,0 +1,72 @@
+@model IEnumerable<PatrocinadorDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Patrocinadores";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Patrocinadores</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/patrocinadores/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Novo patrocinador
+        </a>
+    </div>
+</div>
+<a href="/@slug/admin" class="back-link">
+    <i class="bi bi-arrow-left"></i> Painel
+</a>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-megaphone me-2"></i>Patrocinadores cadastrados</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">
+            Nenhum patrocinador cadastrado. <a href="/@slug/patrocinadores/criar">Criar o primeiro</a>.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Instagram</th>
+                        <th>Site</th>
+                        <th>Zap</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var patrocinador in lista)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@patrocinador.Nome</td>
+                            <td>@(string.IsNullOrWhiteSpace(patrocinador.Instagram) ? "-" : patrocinador.Instagram)</td>
+                            <td>@(string.IsNullOrWhiteSpace(patrocinador.Site) ? "-" : patrocinador.Site)</td>
+                            <td>@(string.IsNullOrWhiteSpace(patrocinador.Zap) ? "-" : patrocinador.Zap)</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/patrocinadores/@patrocinador.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-controller="Patrocinador" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@patrocinador.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @patrocinador.Nome?')" title="Remover">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

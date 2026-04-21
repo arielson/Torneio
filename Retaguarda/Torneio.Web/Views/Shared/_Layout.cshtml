@@ -110,6 +110,11 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-collection"></i> @(torneioNav?.LabelItemPlural ?? "Itens")
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/patrocinadores") ? "active" : "")" href="/@effectiveSlug/patrocinadores">
+                                <i class="bi bi-megaphone"></i> Patrocinadores
+                            </a>
+                        </li>
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Operações</li>
                         <li>

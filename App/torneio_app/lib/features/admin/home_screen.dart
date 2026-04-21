@@ -217,6 +217,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     onTap: () => _abrirSecao('/admin/itens'),
                   ),
                   _NavItem(
+                    icon: Icons.campaign,
+                    label: 'Patrocinadores',
+                    color: Colors.blue,
+                    onTap: () => _abrirSecao('/admin/patrocinadores'),
+                  ),
+                  _NavItem(
                     icon: Icons.badge,
                     label: labelFiscalPlural,
                     color: Colors.purple,

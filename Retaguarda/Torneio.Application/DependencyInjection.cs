@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IEquipeServico, EquipeServico>();
         services.AddScoped<IMembroServico, MembroServico>();
         services.AddScoped<IItemServico, ItemServico>();
+        services.AddScoped<IPatrocinadorServico, PatrocinadorServico>();
         services.AddScoped<ICapturaServico, CapturaServico>();
         services.AddScoped<ISorteioAppServico, SorteioAppServico>();
         services.AddScoped<IGrupoAppServico, GrupoAppServico>();

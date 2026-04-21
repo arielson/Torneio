@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IEquipeRepositorio, EquipeRepositorio>();
         services.AddScoped<IMembroRepositorio, MembroRepositorio>();
         services.AddScoped<IItemRepositorio, ItemRepositorio>();
+        services.AddScoped<IPatrocinadorRepositorio, PatrocinadorRepositorio>();
         services.AddScoped<ICapturaRepositorio, CapturaRepositorio>();
         services.AddScoped<ISorteioEquipeRepositorio, SorteioEquipeRepositorio>();
         services.AddScoped<IGrupoRepositorio, GrupoRepositorio>();
