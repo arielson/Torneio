@@ -1,4 +1,4 @@
-Set-StrictMode -Version Latest
+﻿Set-StrictMode -Version Latest
 
 function Write-VideoSection {
     param(
@@ -38,7 +38,7 @@ function Assert-PathExists {
     )
 
     if (-not (Test-Path -LiteralPath $LiteralPath)) {
-        throw "$Description nao encontrado: $LiteralPath"
+        throw "$Description não encontrado: $LiteralPath"
     }
 }
 
@@ -60,5 +60,23 @@ function Get-JsonFile {
     )
 
     Assert-PathExists -LiteralPath $LiteralPath -Description "Arquivo JSON"
-    return Get-Content -LiteralPath $LiteralPath -Raw | ConvertFrom-Json
+    $content = [System.IO.File]::ReadAllText($LiteralPath, [System.Text.Encoding]::UTF8)
+    return $content | ConvertFrom-Json
+}
+
+function Get-Utf8NoBomEncoding {
+    return [System.Text.UTF8Encoding]::new($false)
+}
+
+function Set-TextFileUtf8 {
+    param(
+        [Parameter(Mandatory)]
+        [string]$LiteralPath,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Content
+    )
+
+    [System.IO.File]::WriteAllText($LiteralPath, $Content, (Get-Utf8NoBomEncoding))
 }

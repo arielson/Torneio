@@ -14,6 +14,8 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
 
+const bool kVideoDemoSorteio = bool.fromEnvironment('VIDEO_DEMO_SORTEIO', defaultValue: false);
+
 // ── Agrupamento por embarcação ────────────────────────────────
 class _GrupoEquipe {
   final String equipeId;
@@ -391,11 +393,11 @@ class _SorteioAdminScreenState extends State<SorteioAdminScreen> {
       appBar: AppBar(
         title: const Text('Sorteio'),
         actions: [
-          if (kDebugMode)
+          if (kDebugMode || kVideoDemoSorteio)
             IconButton(
               onPressed: _processando ? null : _simular,
               icon: const Icon(Icons.bug_report_outlined),
-              tooltip: 'Simular sorteio (DEV)',
+              tooltip: 'Simular sorteio (demo)',
             ),
           if (_resultado.isEmpty)
             TextButton.icon(

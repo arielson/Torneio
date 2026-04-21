@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ManifestPath,
 
@@ -61,5 +61,5 @@ foreach ($scene in $manifest.scenes) {
 }
 
 Ensure-Directory -LiteralPath (Split-Path -Parent $OutputPath)
-Set-Content -LiteralPath $OutputPath -Value $lines -Encoding UTF8
+Set-TextFileUtf8 -LiteralPath $OutputPath -Content (($lines -join [Environment]::NewLine) + [Environment]::NewLine)
 Write-VideoInfo "Legenda SRT gerada em: $OutputPath"

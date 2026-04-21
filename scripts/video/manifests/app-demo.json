@@ -147,9 +147,9 @@
       "tournament": "Lista de torneios",
       "screen": "lista-de-torneios",
       "waitForText": "Torneios",
-      "action": "Abrir o app e apresentar a tela inicial com a lista de torneios disponiveis.",
-      "expected": "O app inicia pela listagem de torneios e permite ao usuario escolher o evento que deseja acessar.",
-      "narration": "Ao abrir o aplicativo, a experiencia comeca pela lista de torneios disponiveis, permitindo ao usuario escolher qual evento deseja acessar.",
+      "action": "Abrir o app e apresentar a tela inicial com a lista de torneios disponíveis.",
+      "expected": "O app inicia pela listagem de torneios e permite ao usuário escolher o evento que deseja acessar.",
+      "narration": "Ao abrir o aplicativo, a experiência começa pela lista de torneios disponíveis, permitindo ao usuário escolher qual evento deseja acessar.",
       "durationSeconds": 8
     },
     {
@@ -158,8 +158,8 @@
       "authProfile": "rei_admin_home",
       "screen": "dashboard-admin",
       "action": "Entrar no app como administrador do torneio e apresentar o painel inicial.",
-      "expected": "O app exibe a home administrativa com status, cadastros, operacoes e atalho de reorganizacao emergencial.",
-      "narration": "No app, o administrador do torneio acessa um painel central com status, cadastros, operacoes e o atalho de reorganizacao emergencial.",
+      "expected": "O app exibe a home administrativa com status, cadastros, operações e atalho de reorganização emergencial.",
+      "narration": "No app, o administrador do torneio acessa um painel central com status, cadastros, operações e o atalho de reorganização emergencial.",
       "durationSeconds": 8
     },
     {
@@ -171,9 +171,9 @@
         { "type": "waitText", "text": "Status:" },
         { "type": "sleep", "ms": 1500 }
       ],
-      "action": "Destacar o bloco de status e as acoes administrativas do torneio.",
-      "expected": "O app deixa visiveis o status atual do torneio e os botoes operacionais disponiveis.",
-      "narration": "Assim como na retaguarda web, o app permite ao administrador acompanhar o status do torneio e acessar as acoes operacionais disponiveis.",
+      "action": "Destacar o bloco de status e as ações administrativas do torneio.",
+      "expected": "O app deixa visíveis o status atual do torneio e os botões operacionais disponíveis.",
+      "narration": "Assim como na retaguarda web, o app permite ao administrador acompanhar o status do torneio e acessar as ações operacionais disponíveis.",
       "durationSeconds": 7
     },
     {
@@ -187,13 +187,13 @@
         { "type": "tapPercent", "x": 78.0, "y": 93.0 },
         { "type": "waitText", "text": "Novo Fiscal" }
       ],
-      "action": "Abrir a lista de fiscais e o formulario de novo cadastro.",
-      "expected": "O formulario de fiscal fica visivel no app com os dados de acesso e operacao.",
-      "narration": "No cadastro de fiscais, o app abre a listagem e o formulario de criacao com os campos necessarios para acesso e operacao do torneio.",
+      "action": "Abrir a lista de fiscais e o formulário de novo cadastro.",
+      "expected": "O formulário de fiscal fica visível no app com os dados de acesso e operação.",
+      "narration": "No cadastro de fiscais, o app abre a listagem e o formulário de criação com os campos necessários para acesso e operação do torneio.",
       "durationSeconds": 8
     },
     {
-      "title": "Cadastro de embarcacoes",
+      "title": "Cadastro de embarcações",
       "tournament": "Rei dos Mares 2026",
       "authProfile": "rei_admin_embarcacoes",
       "screen": "embarcacoes-criar",
@@ -203,9 +203,9 @@
         { "type": "tapPercent", "x": 78.0, "y": 93.0 },
         { "type": "waitText", "text": "Nova Embarca" }
       ],
-      "action": "Abrir a lista de embarcacoes e o formulario de criacao.",
-      "expected": "O cadastro mostra o fluxo administrativo de embarcacoes com imagens e dados operacionais.",
-      "narration": "No cadastro de embarcacoes, o app apresenta a listagem e o formulario de criacao com os dados operacionais e as imagens da embarcacao e do capitao.",
+      "action": "Abrir a lista de embarcações e o formulário de criação.",
+      "expected": "O cadastro mostra o fluxo administrativo de embarcações com imagens e dados operacionais.",
+      "narration": "No cadastro de embarcações, o app apresenta a listagem e o formulário de criação com os dados operacionais e as imagens da embarcação e do capitão.",
       "durationSeconds": 8
     },
     {
@@ -219,9 +219,9 @@
         { "type": "tapPercent", "x": 78.0, "y": 93.0 },
         { "type": "waitText", "text": "Novo Pescador" }
       ],
-      "action": "Abrir a lista de pescadores e o formulario de novo cadastro.",
-      "expected": "O app exibe o fluxo de cadastro de pescadores com o mesmo padrao visual das demais entidades.",
-      "narration": "O cadastro de pescadores segue o mesmo padrao do restante da plataforma, com listagem e formulario de criacao diretamente no app.",
+      "action": "Abrir a lista de pescadores e o formulário de novo cadastro.",
+      "expected": "O app exibe o fluxo de cadastro de pescadores com o mesmo padrão visual das demais entidades.",
+      "narration": "O cadastro de pescadores segue o mesmo padrão do restante da plataforma, com listagem e formulário de criação diretamente no app.",
       "durationSeconds": 8
     },
     {
@@ -235,13 +235,13 @@
         { "type": "tapPercent", "x": 78.0, "y": 93.0 },
         { "type": "waitText", "text": "Novo Peixe" }
       ],
-      "action": "Abrir a lista de peixes e o formulario de criacao.",
-      "expected": "O app mostra o cadastro de peixes com os campos de validacao e a selecao de imagem.",
-      "narration": "No cadastro de peixes, o administrador acessa a listagem e o formulario de criacao com os campos de validacao e a imagem do item.",
+      "action": "Abrir a lista de peixes e o formulário de criação.",
+      "expected": "O app mostra o cadastro de peixes com os campos de validação e a seleção de imagem.",
+      "narration": "No cadastro de peixes, o administrador acessa a listagem e o formulário de criação com os campos de validação e a imagem do item.",
       "durationSeconds": 8
     },
     {
-      "title": "Reorganizacao emergencial",
+      "title": "Reorganização emergencial",
       "tournament": "Rei dos Mares 2026",
       "authProfile": "rei_admin_reorganizacao",
       "screen": "reorganizacao-emergencial",
@@ -249,13 +249,13 @@
         { "type": "tapPercent", "x": 50.0, "y": 65.8 },
         { "type": "waitText", "text": "Reorganizacao Emergencial" }
       ],
-      "action": "Abrir a rotina de reorganizacao emergencial pelo app.",
-      "expected": "A tela evidencia o uso excepcional, a confirmacao administrativa e o registro auditavel.",
-      "narration": "A reorganizacao emergencial tambem esta disponivel no app, com alerta de uso excepcional, confirmacao administrativa e rastreabilidade.",
+      "action": "Abrir a rotina de reorganização emergencial pelo app.",
+      "expected": "A tela evidencia o uso excepcional, a confirmação administrativa e o registro auditável.",
+      "narration": "A reorganização emergencial também está disponível no app, com alerta de uso excepcional, confirmação administrativa e rastreabilidade.",
       "durationSeconds": 9
     },
     {
-      "title": "Capturas na administracao",
+      "title": "Capturas na administração",
       "tournament": "Rei dos Mares 2026",
       "authProfile": "rei_admin_capturas",
       "screen": "capturas-admin",
@@ -264,8 +264,8 @@
         { "type": "waitText", "text": "Capturas" }
       ],
       "action": "Abrir a tela administrativa de capturas.",
-      "expected": "O app apresenta as capturas registradas e a gestao administrativa dessa lista.",
-      "narration": "Na administracao de capturas, o app concentra a consulta dos registros enviados e a gestao administrativa dessas ocorrencias.",
+      "expected": "O app apresenta as capturas registradas e a gestão administrativa dessa lista.",
+      "narration": "Na administração de capturas, o app concentra a consulta dos registros enviados e a gestão administrativa dessas ocorrências.",
       "durationSeconds": 8
     },
     {
@@ -275,28 +275,35 @@
       "screen": "sorteio-admin",
       "actions": [
         { "type": "tapPercent", "x": 38.3, "y": 54.4 },
-        { "type": "waitText", "text": "Sorteio" }
+        { "type": "waitText", "text": "Sorteio" },
+        { "type": "tapPercent", "x": 70.5, "y": 6.2 },
+        { "type": "waitText", "text": "Selecionar participantes" },
+        { "type": "tapText", "text": "Todas" },
+        { "type": "tapText", "text": "Todos" },
+        { "type": "tapText", "text": "Sortear" },
+        { "type": "waitText", "text": "Resultado do Sorteio" },
+        { "type": "sleep", "ms": 2500 }
       ],
-      "action": "Abrir o modulo de sorteio em um torneio habilitado para esse fluxo.",
-      "expected": "O app mostra a tela administrativa de sorteio e sua operacao dedicada.",
-      "narration": "Nos torneios com sorteio habilitado, o administrador acessa a tela de sorteio diretamente pelo app.",
-      "durationSeconds": 8
+      "action": "Abrir o módulo de sorteio e, apenas para a demonstração em vídeo, executar a simulação visual do fluxo no app.",
+      "expected": "O app evidencia o fluxo visual do sorteio, da seleção de participantes até a apresentação do resultado.",
+      "narration": "Nos torneios com sorteio habilitado, esta gravação apresenta uma simulação visual apenas para demonstrar ao cliente como o fluxo de sorteio é exibido no aplicativo, da seleção ao resultado.",
+      "durationSeconds": 12
     },
     {
-      "title": "Ausencia de sorteio em torneio sem esse modo",
+      "title": "Ausência de sorteio em torneio sem esse modo",
       "tournament": "Torneio BTS Sport Fishing 2026",
       "authProfile": "bts_admin_home",
       "screen": "home-admin-bts",
       "actions": [
         { "type": "waitText", "text": "Administrador do torneio" }
       ],
-      "action": "Exibir um torneio sem sorteio para evidenciar a ausencia do modulo na home.",
-      "expected": "A home administrativa nao apresenta o acesso ao sorteio quando o modo do torneio e Nenhum.",
-      "narration": "No torneio BTS Sport Fishing 2026, o modulo de sorteio nao aparece na home administrativa, porque esse torneio usa o modo nenhum.",
+      "action": "Exibir um torneio sem sorteio para evidenciar a ausência do módulo na home.",
+      "expected": "A home administrativa não apresenta o acesso ao sorteio quando o modo do torneio é Nenhum.",
+      "narration": "No torneio BTS Sport Fishing 2026, o módulo de sorteio não aparece na home administrativa, porque esse torneio usa o modo nenhum.",
       "durationSeconds": 8
     },
     {
-      "title": "Relatorios do torneio",
+      "title": "Relatórios do torneio",
       "tournament": "Rei dos Mares 2026",
       "authProfile": "rei_admin_relatorios",
       "screen": "relatorios",
@@ -304,9 +311,9 @@
         { "type": "tapPercent", "x": 61.8, "y": 54.4 },
         { "type": "waitText", "text": "Relat" }
       ],
-      "action": "Abrir a area de relatorios do torneio.",
-      "expected": "O app apresenta as entradas por embarcacao, por pescador e os ganhadores.",
-      "narration": "A area de relatorios do app acompanha a retaguarda web e concentra as opcoes por embarcacao, por pescador e por ganhadores.",
+      "action": "Abrir a área de relatórios do torneio.",
+      "expected": "O app apresenta as entradas por embarcação, por pescador e os ganhadores.",
+      "narration": "A área de relatórios do app acompanha a retaguarda web e concentra as opções por embarcação, por pescador e por ganhadores.",
       "durationSeconds": 8
     },
     {
@@ -318,8 +325,8 @@
         { "type": "waitText", "text": "Perfil:" }
       ],
       "action": "Entrar no app como fiscal e apresentar a home operacional.",
-      "expected": "O fiscal visualiza as acoes principais para registrar captura, consultar registros e sincronizar.",
-      "narration": "No perfil de fiscal, o aplicativo centraliza as acoes principais para registrar captura, consultar registros e executar a sincronizacao manual quando necessario.",
+      "expected": "O fiscal visualiza as ações principais para registrar captura, consultar registros e sincronizar.",
+      "narration": "No perfil de fiscal, o aplicativo centraliza as ações principais para registrar captura, consultar registros e executar a sincronização manual quando necessário.",
       "durationSeconds": 8
     },
     {
@@ -332,12 +339,12 @@
         { "type": "waitText", "text": "Registrar Captura" }
       ],
       "action": "Abrir a tela de registro de captura pelo fiscal.",
-      "expected": "O app deixa pronta a tela para selecionar embarcacao, pescador, peixe e foto da captura.",
-      "narration": "Ao abrir o registro de captura, o fiscal encontra a tela preparada para selecionar embarcacao, pescador, peixe e a imagem da captura.",
+      "expected": "O app deixa pronta a tela para selecionar embarcação, pescador, peixe e foto da captura.",
+      "narration": "Ao abrir o registro de captura, o fiscal encontra a tela preparada para selecionar embarcação, pescador, peixe e a imagem da captura.",
       "durationSeconds": 9
     },
     {
-      "title": "Sincronizacao manual do fiscal",
+      "title": "Sincronização manual do fiscal",
       "tournament": "Amigos da Pesca 2026",
       "authProfile": "amigos_fiscal_sync",
       "screen": "sincronizacao-fiscal",
@@ -345,9 +352,9 @@
         { "type": "tapPercent", "x": 81.4, "y": 28.8 },
         { "type": "waitText", "text": "Sincronizacao" }
       ],
-      "action": "Abrir a tela de sincronizacao manual do fiscal.",
-      "expected": "O app apresenta o fluxo especifico de sincronizacao manual das capturas pendentes.",
-      "narration": "Quando o torneio utiliza sincronizacao manual, o envio das capturas pendentes fica concentrado na tela de sincronizacao do fiscal.",
+      "action": "Abrir a tela de sincronização manual do fiscal.",
+      "expected": "O app apresenta o fluxo específico de sincronização manual das capturas pendentes.",
+      "narration": "Quando o torneio utiliza sincronização manual, o envio das capturas pendentes fica concentrado na tela de sincronização do fiscal.",
       "durationSeconds": 9
     },
     {
@@ -358,9 +365,9 @@
       "actions": [
         { "type": "waitText", "text": "Perfil:" }
       ],
-      "action": "Encerrar a demonstracao do app com a home do fiscal visivel.",
-      "expected": "O video termina em uma tela limpa e coerente com o fluxo operacional apresentado.",
-      "narration": "Obrigado por acompanhar esta demonstracao do aplicativo. Se precisar, podemos aprofundar qualquer modulo em uma proxima apresentacao.",
+      "action": "Encerrar a demonstração do app com a home do fiscal visível.",
+      "expected": "O vídeo termina em uma tela limpa e coerente com o fluxo operacional apresentado.",
+      "narration": "Obrigado por acompanhar esta demonstração do aplicativo. Se precisar, podemos aprofundar qualquer módulo em uma próxima apresentação.",
       "durationSeconds": 8
     }
   ]

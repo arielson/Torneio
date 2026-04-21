@@ -1,0 +1,46 @@
+{
+  "title": "Demo App - Sorteio Only",
+  "target": "app",
+  "profile": "admin-do-torneio",
+  "device": {
+    "name": "Android Emulator"
+  },
+  "app": {
+    "packageName": "com.example.torneio_app",
+    "activityName": ".MainActivity"
+  },
+  "recording": {
+    "maxSeconds": 120
+  },
+  "authProfiles": {
+    "rei_admin_sorteio": {
+      "slug": "{slug_rei}",
+      "tournamentName": "Rei dos Mares 2026",
+      "profile": "Admin",
+      "fiscalLabel": "Fiscal",
+      "expectedHomeText": "Administrador do torneio",
+      "username": "preencher-admin-rei",
+      "password": "preencher-senha-admin-rei"
+    }
+  },
+  "scenes": [
+    {
+      "title": "Sorteio em torneio habilitado",
+      "tournament": "Rei dos Mares 2026",
+      "authProfile": "rei_admin_sorteio",
+      "screen": "sorteio-admin",
+      "actions": [
+        { "type": "tapPercent", "x": 38.3, "y": 54.4 },
+        { "type": "waitText", "text": "Sorteio" },
+        { "type": "tapPercent", "x": 70.5, "y": 6.2 },
+        { "type": "waitText", "text": "Selecionar participantes" },
+        { "type": "tapText", "text": "Todas" },
+        { "type": "tapText", "text": "Todos" },
+        { "type": "tapText", "text": "Sortear" },
+        { "type": "waitText", "text": "Resultado do Sorteio" },
+        { "type": "sleep", "ms": 2500 }
+      ],
+      "durationSeconds": 18
+    }
+  ]
+}

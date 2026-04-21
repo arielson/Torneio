@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ManifestPath,
 
@@ -32,14 +32,14 @@ foreach ($scene in $manifest.scenes) {
     $lines.Add("")
     $lines.Add("- torneio: $($scene.tournament)")
     $lines.Add("- tela: $($scene.screen)")
-    $lines.Add("- duracao estimada: $($scene.durationSeconds)s")
-    $lines.Add("- acao: $($scene.action)")
+    $lines.Add("- duração estimada: $($scene.durationSeconds)s")
+    $lines.Add("- ação: $($scene.action)")
     $lines.Add("- resultado esperado: $($scene.expected)")
-    $lines.Add("- narracao: $($scene.narration)")
+    $lines.Add("- narração: $($scene.narration)")
     $lines.Add("")
     $sceneIndex++
 }
 
 Ensure-Directory -LiteralPath (Split-Path -Parent $OutputPath)
-Set-Content -LiteralPath $OutputPath -Value $lines -Encoding UTF8
+Set-TextFileUtf8 -LiteralPath $OutputPath -Content (($lines -join [Environment]::NewLine) + [Environment]::NewLine)
 Write-VideoInfo "Roteiro Markdown gerado em: $OutputPath"

@@ -43,7 +43,7 @@ if ($BuildApk -or -not (Test-Path -LiteralPath $apkPath)) {
     Write-VideoInfo "Gerando APK debug via Flutter."
     Push-Location $appRoot
     try {
-        & $flutterPath build apk --debug --target-platform $targetPlatform
+        & $flutterPath build apk --debug --target-platform $targetPlatform --dart-define=VIDEO_DEMO_SORTEIO=true
     }
     finally {
         Pop-Location

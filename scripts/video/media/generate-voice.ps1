@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ManifestPath,
 
@@ -47,7 +47,7 @@ if (-not $selectedVoice) {
 }
 
 if (-not $selectedVoice) {
-    throw "Nenhuma voz instalada compativel com pt-BR foi encontrada no Windows."
+    throw "Nenhuma voz instalada compatível com pt-BR foi encontrada no Windows."
 }
 
 $synth.SelectVoice($selectedVoice.Name)
@@ -84,6 +84,7 @@ $metadata = [pscustomobject]@{
     Scenes = $sceneMetadata
 }
 
-$metadata | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $MetadataPath -Encoding UTF8
-Write-VideoInfo "Narracao WAV gerada em: $OutputPath"
-Write-VideoInfo "Metadados da narracao gerados em: $MetadataPath"
+$metadataJson = $metadata | ConvertTo-Json -Depth 10
+Set-TextFileUtf8 -LiteralPath $MetadataPath -Content ($metadataJson + [Environment]::NewLine)
+Write-VideoInfo "Narração WAV gerada em: $OutputPath"
+Write-VideoInfo "Metadados da narração gerados em: $MetadataPath"
