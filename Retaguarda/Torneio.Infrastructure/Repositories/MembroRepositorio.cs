@@ -9,7 +9,7 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
 {
     public MembroRepositorio(TorneioDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<Membro>> ListarTodos() =>
+    public override async Task<IEnumerable<Membro>> ListarTodos() =>
         await _dbSet.ToListAsync();
 
     public async Task<IEnumerable<Membro>> ListarPorTorneio(Guid torneioId) =>

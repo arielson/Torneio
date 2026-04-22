@@ -26,7 +26,7 @@ public class CapturaRepositorio : RepositorioBase<Captura>, ICapturaRepositorio
             .Where(c => c.TorneioId == torneioId && c.PendenteSync)
             .ToListAsync();
 
-    public async Task<IEnumerable<Captura>> ListarTodos() =>
+    public override async Task<IEnumerable<Captura>> ListarTodos() =>
         await _dbSet
             .OrderByDescending(c => c.DataHora)
             .ToListAsync();

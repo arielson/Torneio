@@ -323,7 +323,9 @@ public class RelatorioServico : IRelatorioServico
     {
         foreach (var c in capturas.OrderBy(x => x.DataHora))
         {
-            var fotoPath = ResolverCaminhoFoto(c.FotoUrl);
+            var fotoPath = string.IsNullOrWhiteSpace(c.FotoUrl)
+                ? null
+                : ResolverCaminhoFoto(c.FotoUrl);
             col.Item().PaddingTop(8).Row(row =>
             {
                 row.AutoItem().Width(140).Column(inner =>

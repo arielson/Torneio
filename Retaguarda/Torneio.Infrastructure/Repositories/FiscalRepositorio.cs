@@ -14,7 +14,7 @@ public class FiscalRepositorio : RepositorioBase<Fiscal>, IFiscalRepositorio
             .Include(f => f.Equipes)
             .FirstOrDefaultAsync(f => f.Usuario == usuario && f.TorneioId == torneioId);
 
-    public async Task<IEnumerable<Fiscal>> ListarTodos() =>
+    public override async Task<IEnumerable<Fiscal>> ListarTodos() =>
         await _dbSet
             .Include(f => f.Equipes)
             .ToListAsync();

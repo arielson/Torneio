@@ -59,6 +59,12 @@ public class TorneioDbContext : DbContext
         modelBuilder.Entity<Fiscal>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
+        modelBuilder.Entity<FiscalEquipe>()
+            .HasQueryFilter(e =>
+                _tenantContext.EhAdminGeral ||
+                (e.Fiscal.TorneioId == _tenantContext.TorneioId &&
+                 e.Equipe.TorneioId == _tenantContext.TorneioId));
+
         modelBuilder.Entity<Equipe>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
@@ -100,6 +106,12 @@ public class TorneioDbContext : DbContext
 
         modelBuilder.Entity<Grupo>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<GrupoMembro>()
+            .HasQueryFilter(e =>
+                _tenantContext.EhAdminGeral ||
+                (e.Membro != null &&
+                 e.Membro.TorneioId == _tenantContext.TorneioId));
 
         modelBuilder.Entity<SorteioGrupo>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);

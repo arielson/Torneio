@@ -9,7 +9,7 @@ public class EquipeRepositorio : RepositorioBase<Equipe>, IEquipeRepositorio
 {
     public EquipeRepositorio(TorneioDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<Equipe>> ListarTodos() =>
+    public override async Task<IEnumerable<Equipe>> ListarTodos() =>
         await _dbSet
             .Include(e => e.Membros)
             .Include(e => e.Fiscais)
