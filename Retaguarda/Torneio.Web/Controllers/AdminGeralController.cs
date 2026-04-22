@@ -356,15 +356,68 @@ public class AdminGeralController : Controller
     public async Task<IActionResult> RemoverAdmin(Guid id)
     {
         var admin = await _adminGeralServico.ObterPorId(id);
-        await _adminGeralServico.Remover(id);
-        TempData["Sucesso"] = "Admin removido.";
-        await _log.Registrar(new RegistrarLogDto
+        try
         {
-            Categoria = CategoriaLog.Usuarios, Acao = "RemoverAdminGeral",
-            Descricao = $"Admin Geral removido: {admin?.Nome ?? id.ToString()}",
-            UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
-        });
+            await _adminGeralServico.Remover(id);
+            TempData["Sucesso"] = "Admin removido.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                Categoria = CategoriaLog.Usuarios, Acao = "RemoverAdminGeral",
+                Descricao = $"Admin Geral removido: {admin?.Nome ?? id.ToString()}",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
         return RedirectToAction(nameof(Admins));
+    }
+
+    [HttpGet("admins/{id:guid}/senha")]
+    public async Task<IActionResult> AlterarSenhaAdmin(Guid id)
+    {
+        var admin = await _adminGeralServico.ObterPorId(id);
+        if (admin is null) return NotFound();
+
+        ViewBag.Admin = admin;
+        return View(new AtualizarSenhaDto());
+    }
+
+    [HttpPost("admins/{id:guid}/senha")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AlterarSenhaAdmin(Guid id, AtualizarSenhaDto dto)
+    {
+        var admin = await _adminGeralServico.ObterPorId(id);
+        if (admin is null) return NotFound();
+
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Admin = admin;
+            return View(dto);
+        }
+
+        try
+        {
+            await _adminGeralServico.AtualizarSenha(id, dto);
+            TempData["Sucesso"] = "Senha alterada.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                Categoria = CategoriaLog.Usuarios,
+                Acao = "AlterarSenhaAdminGeral",
+                Descricao = $"Senha alterada para o Admin Geral: {admin.Nome} ({admin.Usuario})",
+                UsuarioNome = AdminNome,
+                UsuarioPerfil = AdminPerfil,
+                IpAddress = AdminIp
+            });
+            return RedirectToAction(nameof(Admins));
+        }
+        catch (Exception ex)
+        {
+            ViewBag.Admin = admin;
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(dto);
+        }
     }
 
     // ── AdminsTorneio por torneio ────────────────────────────────────────────

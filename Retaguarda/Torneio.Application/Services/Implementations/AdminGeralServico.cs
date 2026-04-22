@@ -65,6 +65,13 @@ public class AdminGeralServico : IAdminGeralServico
     {
         var entidade = await _repositorio.ObterPorId(id)
             ?? throw new KeyNotFoundException($"AdminGeral '{id}' não encontrado.");
+        var admins = (await _repositorio.ListarTodos()).ToList();
+        if (admins.Count <= 1)
+            throw new InvalidOperationException("Deve existir ao menos um Admin Geral ativo no sistema.");
+
+        if (string.Equals(entidade.Usuario, "admin", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("O primeiro Admin Geral do sistema nao pode ser excluido.");
+
         await _repositorio.Remover(entidade.Id);
     }
 

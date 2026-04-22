@@ -44,13 +44,21 @@
                             <td class="fw-semibold">@a.Nome</td>
                             <td><code class="text-muted small">@a.Usuario</code></td>
                             <td class="text-end">
-                                <form asp-action="RemoverAdmin" asp-route-id="@a.Id" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Remover @a.Nome?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                    <a asp-action="AlterarSenhaAdmin" asp-route-id="@a.Id" class="btn btn-sm btn-outline-secondary" title="Alterar senha">
+                                        <i class="bi bi-key"></i>
+                                    </a>
+                                    @if (!string.Equals(a.Usuario, "admin", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <form asp-action="RemoverAdmin" asp-route-id="@a.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Remover @a.Nome?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
