@@ -1,0 +1,139 @@
+@model TorneioDto
+@{
+    ViewData["Title"] = $"Recuperar senha do {Model.LabelMembro}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Recuperar senha do @Model.LabelMembro</h1>
+        <p class="text-muted mb-0">@Model.NomeTorneio</p>
+    </div>
+</div>
+<a href="/@Model.Slug" class="back-link">
+    <i class="bi bi-arrow-left"></i> Voltar ao torneio
+</a>
+
+<div class="form-card">
+    <div id="erroBox" class="alert alert-danger d-none"></div>
+    <div id="sucessoBox" class="alert alert-success d-none"></div>
+
+    <div class="form-section-title">Solicitar código</div>
+    <div class="mb-3">
+        <label for="usuario" class="form-label">Usuário</label>
+        <input id="usuario" class="form-control" maxlength="100" />
+    </div>
+    <div class="mb-3">
+        <label for="celular" class="form-label">Celular</label>
+        <input id="celular" class="form-control" maxlength="15" inputmode="numeric" />
+    </div>
+    <button type="button" id="solicitarBtn" class="btn btn-primary">Enviar código por SMS</button>
+
+    <div id="confirmacaoBox" class="mt-4 d-none">
+        <div class="form-section-title">Confirmar nova senha</div>
+        <p class="text-muted mb-3">
+            Digite o código enviado para <strong id="celularMascarado"></strong>.
+        </p>
+        <div class="mb-3">
+            <label for="codigo" class="form-label">Código</label>
+            <input id="codigo" class="form-control" maxlength="10" inputmode="numeric" />
+        </div>
+        <div class="mb-3">
+            <label for="novaSenha" class="form-label">Nova senha</label>
+            <input id="novaSenha" class="form-control" type="password" maxlength="100" />
+        </div>
+        <button type="button" id="confirmarBtn" class="btn btn-success">Redefinir senha</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const erroBox = document.getElementById('erroBox');
+            const sucessoBox = document.getElementById('sucessoBox');
+            const confirmacaoBox = document.getElementById('confirmacaoBox');
+            const celularInput = document.getElementById('celular');
+            const celularMascarado = document.getElementById('celularMascarado');
+            const usuarioInput = document.getElementById('usuario');
+            const codigoInput = document.getElementById('codigo');
+            const novaSenhaInput = document.getElementById('novaSenha');
+
+            const limparMensagens = () => {
+                erroBox?.classList.add('d-none');
+                sucessoBox?.classList.add('d-none');
+                if (erroBox) erroBox.textContent = '';
+                if (sucessoBox) sucessoBox.textContent = '';
+            };
+
+            const mostrarErro = (mensagem) => {
+                limparMensagens();
+                if (!erroBox) return;
+                erroBox.textContent = mensagem;
+                erroBox.classList.remove('d-none');
+            };
+
+            const mostrarSucesso = (mensagem) => {
+                limparMensagens();
+                if (!sucessoBox) return;
+                sucessoBox.textContent = mensagem;
+                sucessoBox.classList.remove('d-none');
+            };
+
+            const formatarCelular = (valor) => {
+                const digitos = (valor || '').replace(/\D/g, '').slice(0, 11);
+                if (!digitos) return '';
+                if (digitos.length <= 2) return `(${digitos}`;
+                if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+                return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+            };
+
+            celularInput.value = formatarCelular(celularInput.value);
+            celularInput.addEventListener('input', function () {
+                this.value = formatarCelular(this.value);
+            });
+
+            document.getElementById('solicitarBtn')?.addEventListener('click', async () => {
+                limparMensagens();
+                try {
+                    const response = await fetch('/@Model.Slug/pescador/recuperar-senha/solicitar-codigo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            usuario: usuarioInput?.value?.trim(),
+                            celular: celularInput?.value?.trim()
+                        })
+                    });
+                    const body = await response.json();
+                    if (!response.ok) throw new Error(body.erro || 'Nao foi possivel enviar o codigo.');
+                    if (celularMascarado) celularMascarado.textContent = body.celularMascarado;
+                    confirmacaoBox?.classList.remove('d-none');
+                    mostrarSucesso(body.mensagem || 'Codigo enviado por SMS.');
+                } catch (error) {
+                    mostrarErro(error.message || 'Nao foi possivel enviar o codigo.');
+                }
+            });
+
+            document.getElementById('confirmarBtn')?.addEventListener('click', async () => {
+                limparMensagens();
+                try {
+                    const response = await fetch('/@Model.Slug/pescador/recuperar-senha/confirmar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            usuario: usuarioInput?.value?.trim(),
+                            celular: celularInput?.value?.trim(),
+                            codigo: codigoInput?.value?.trim(),
+                            novaSenha: novaSenhaInput?.value ?? ''
+                        })
+                    });
+                    const body = await response.json();
+                    if (!response.ok) throw new Error(body.erro || 'Nao foi possivel redefinir a senha.');
+                    mostrarSucesso(body.mensagem || 'Senha redefinida com sucesso.');
+                    if (codigoInput) codigoInput.value = '';
+                    if (novaSenhaInput) novaSenhaInput.value = '';
+                } catch (error) {
+                    mostrarErro(error.message || 'Nao foi possivel redefinir a senha.');
+                }
+            });
+        })();
+    </script>
+}
