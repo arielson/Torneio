@@ -1,0 +1,87 @@
+@model IEnumerable<Torneio.Application.DTOs.Financeiro.ProdutoExtraTorneioDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Produtos extras";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Produtos extras</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/financeiro/extras/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Novo extra
+        </a>
+    </div>
+</div>
+<a href="/@slug/financeiro" class="back-link">
+    <i class="bi bi-arrow-left"></i> Financeiro
+</a>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-bag me-2"></i>Produtos extras e vendas</h5>
+    </div>
+    <div class="card-body-pad border-bottom">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="alert alert-info mb-0 flex-grow-1">
+                Cadastre o produto extra e depois use <strong>Registrar venda</strong> para escolher o produto, informar a quantidade e gerar a cobranca do pescador.
+            </div>
+            <a href="/@slug/financeiro/extras/vendas" class="btn btn-outline-primary">
+                <i class="bi bi-cart-plus me-1"></i>Registrar venda
+            </a>
+        </div>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhum produto extra cadastrado.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Valor</th>
+                        <th>Vendas</th>
+                        <th>Status</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in lista)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.Nome</div>
+                                @if (!string.IsNullOrWhiteSpace(item.Descricao))
+                                {
+                                    <div class="small text-muted">@item.Descricao</div>
+                                }
+                            </td>
+                            <td>R$ @item.Valor.ToString("N2")</td>
+                            <td>@item.QuantidadeAderidos</td>
+                            <td>
+                                <span class="badge @(item.Ativo ? "text-bg-success" : "text-bg-secondary")">
+                                    @(item.Ativo ? "Ativo" : "Inativo")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="/@slug/financeiro/extras/vendas?produtoId=@item.Id" class="btn btn-sm btn-outline-primary">Vendas</a>
+                                    <a href="/@slug/financeiro/extras/@item.Id/editar" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                    <form asp-action="RemoverExtra" asp-route-slug="@slug" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover este produto extra?')">Remover</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

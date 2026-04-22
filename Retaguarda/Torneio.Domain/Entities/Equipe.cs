@@ -1,3 +1,5 @@
+using Torneio.Domain.Enums;
+
 namespace Torneio.Domain.Entities;
 
 public class Equipe
@@ -9,6 +11,8 @@ public class Equipe
     public string Capitao { get; private set; } = null!;
     public string? FotoCapitaoUrl { get; private set; }
     public int QtdVagas { get; private set; }
+    public decimal Custo { get; private set; }
+    public StatusEmbarcacaoFinanceira StatusFinanceiro { get; private set; }
 
     private readonly List<Membro> _membros = new();
     private readonly List<FiscalEquipe> _fiscais = new();
@@ -24,7 +28,9 @@ public class Equipe
         string capitao,
         int qtdVagas,
         string? fotoUrl = null,
-        string? fotoCapitaoUrl = null)
+        string? fotoCapitaoUrl = null,
+        decimal custo = 0,
+        StatusEmbarcacaoFinanceira statusFinanceiro = StatusEmbarcacaoFinanceira.Pendente)
     {
         return new Equipe
         {
@@ -34,7 +40,9 @@ public class Equipe
             Capitao = capitao,
             QtdVagas = qtdVagas,
             FotoUrl = fotoUrl,
-            FotoCapitaoUrl = fotoCapitaoUrl
+            FotoCapitaoUrl = fotoCapitaoUrl,
+            Custo = custo,
+            StatusFinanceiro = statusFinanceiro
         };
     }
 
@@ -55,12 +63,21 @@ public class Equipe
         _membros.Remove(membro);
     }
 
-    public void Atualizar(string nome, string capitao, int qtdVagas, string? fotoUrl = null, string? fotoCapitaoUrl = null)
+    public void Atualizar(
+        string nome,
+        string capitao,
+        int qtdVagas,
+        string? fotoUrl = null,
+        string? fotoCapitaoUrl = null,
+        decimal? custo = null,
+        StatusEmbarcacaoFinanceira? statusFinanceiro = null)
     {
         Nome = nome;
         Capitao = capitao;
         QtdVagas = qtdVagas;
         if (fotoUrl != null) FotoUrl = fotoUrl;
         if (fotoCapitaoUrl != null) FotoCapitaoUrl = fotoCapitaoUrl;
+        if (custo.HasValue) Custo = custo.Value;
+        if (statusFinanceiro.HasValue) StatusFinanceiro = statusFinanceiro.Value;
     }
 }

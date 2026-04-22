@@ -1,0 +1,211 @@
+@model IEnumerable<Torneio.Application.DTOs.Financeiro.ParcelaTorneioDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Cobranças";
+    var membros = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>?)ViewBag.Membros ?? Enumerable.Empty<Torneio.Application.DTOs.Membro.MembroDto>()).OrderBy(x => x.Nome).ToList();
+    var membroId = ViewBag.MembroId as Guid?;
+    var inadimplentes = (bool?)ViewBag.Inadimplentes == true;
+    var naoPagas = (bool?)ViewBag.NaoPagas == true;
+    var tipo = ViewBag.Tipo?.ToString();
+    var lista = Model.ToList();
+    var gerarTodos = new Torneio.Application.DTOs.Financeiro.GerenciarParcelasDto();
+    string TipoLabel(string? tipoParcela) => tipoParcela switch
+    {
+        "Mensalidade" => "Parcela",
+        "TaxaInscricao" => "Inscrição",
+        "ProdutoExtra" => "Produto extra",
+        _ => tipoParcela ?? "-"
+    };
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Cobranças</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/financeiro" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-graph-up me-1"></i>Visão geral
+        </a>
+    </div>
+</div>
+<a href="/@slug/financeiro" class="back-link">
+    <i class="bi bi-arrow-left"></i> Financeiro
+</a>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-arrow-repeat me-2"></i>Geracao geral</h5>
+            </div>
+            <div class="card-body-pad">
+                <p class="text-muted small mb-3">Use esta opção quando quiser refazer as parcelas de todos os pescadores conforme a configuração atual.</p>
+                <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-primary">Regenerar parcelas</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-person-plus me-2"></i>Somente novos</h5>
+            </div>
+            <div class="card-body-pad">
+                <p class="text-muted small mb-3">Gera parcelas apenas para pescadores que ainda não possuem cobranças base geradas.</p>
+                <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="SomenteNovos" value="true" />
+                    <button type="submit" class="btn btn-outline-success">Gerar para novos</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-people me-2"></i>Pescadores selecionados</h5>
+            </div>
+            <div class="card-body-pad">
+                <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
+                    @Html.AntiForgeryToken()
+                    <label class="form-label">Escolha os pescadores</label>
+                    <select name="MembroIds" class="form-select" multiple size="6">
+                        @foreach (var membro in membros)
+                        {
+                            <option value="@membro.Id">@membro.Nome</option>
+                        }
+                    </select>
+                    <div class="form-text mb-3">Use Ctrl para selecionar mais de um.</div>
+                    <button type="submit" class="btn btn-outline-warning">Regenerar selecionados</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-funnel me-2"></i>Filtros</h5>
+    </div>
+    <div class="card-body-pad">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Pescador</label>
+                <select name="membroId" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach (var membro in membros)
+                    {
+                        <option value="@membro.Id" selected="@(membroId == membro.Id ? "selected" : null)">@membro.Nome</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="TaxaInscricao" selected="@(tipo == "TaxaInscricao" ? "selected" : null)">Inscrição</option>
+                    <option value="Mensalidade" selected="@(tipo == "Mensalidade" ? "selected" : null)">Parcela</option>
+                    <option value="ProdutoExtra" selected="@(tipo == "ProdutoExtra" ? "selected" : null)">Produto extra</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input type="checkbox" class="form-check-input" id="naoPagas" name="naoPagas" value="true" checked="@naoPagas" />
+                    <label class="form-check-label" for="naoPagas">Somente não pagas</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input type="checkbox" class="form-check-input" id="inadimplentes" name="inadimplentes" value="true" checked="@inadimplentes" />
+                    <label class="form-check-label" for="inadimplentes">Somente inadimplentes</label>
+                </div>
+            </div>
+            <div class="col-md-1 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+            </div>
+            <div class="col-md-12 d-flex gap-2">
+                <a href="/@slug/financeiro/cobrancas" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-receipt-cutoff me-2"></i>Cobranças geradas</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhuma cobrança encontrada para os filtros informados.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Pescador</th>
+                        <th>Tipo</th>
+                        <th>Descricao</th>
+                        <th>Parcela</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Status</th>
+                        <th>Comprovante</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var parcela in lista)
+                    {
+                        <tr class="@(parcela.Pago ? "table-success" : parcela.Inadimplente ? "table-danger" : string.Empty)">
+                            <td class="fw-semibold">@parcela.NomeMembro</td>
+                            <td>@TipoLabel(parcela.TipoParcela)</td>
+                            <td>@parcela.Descricao</td>
+                            <td>@parcela.NumeroParcela</td>
+                            <td>R$ @parcela.Valor.ToString("N2")</td>
+                            <td>@parcela.Vencimento.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (parcela.Pago)
+                                {
+                                    <span class="badge text-bg-success">Pago</span>
+                                    if (parcela.DataPagamento.HasValue)
+                                    {
+                                        <div class="small text-muted mt-1">Pago em @parcela.DataPagamento.Value.ToString("dd/MM/yyyy")</div>
+                                    }
+                                }
+                                else if (parcela.Inadimplente)
+                                {
+                                    <span class="badge text-bg-danger">Inadimplente</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">Em aberto</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(parcela.ComprovanteUrl))
+                                {
+                                    <a href="@parcela.ComprovanteUrl" target="_blank" rel="noopener noreferrer">Visualizar</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a href="/@slug/financeiro/cobrancas/@parcela.Id/editar" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil me-1"></i>Gerenciar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

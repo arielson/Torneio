@@ -1,0 +1,99 @@
+@model Torneio.Web.Models.FinanceiroDashboardViewModel
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Visão geral financeira";
+    var indicadores = Model.Indicadores;
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Visão geral</h1>
+    </div>
+</div>
+<a href="/@slug/admin" class="back-link">
+    <i class="bi bi-arrow-left"></i> Painel
+</a>
+
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-grid-1x2 me-2"></i>Indicadores</h5>
+    </div>
+    <div class="card-body-pad">
+        <div class="row g-3">
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Pescadores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeMembros</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Embarcações</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeEquipes</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Administradores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeAdministradores</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Custo total</div><div class="fs-5 fw-semibold">R$ @indicadores.CustoTotalTorneio.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Taxa de inscrição</div><div class="fs-5 fw-semibold">R$ @indicadores.TaxaInscricaoValor.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Arrecadação prevista</div><div class="fs-5 fw-semibold">R$ @indicadores.ArrecadacaoPrevista.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Saldo projetado</div><div class="fs-5 fw-semibold @(indicadores.SaldoProjetado >= 0 ? "text-success" : "text-danger")">R$ @indicadores.SaldoProjetado.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Cobranças inadimplentes</div><div class="fs-4 fw-semibold text-danger">@indicadores.ParcelasInadimplentes</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Valor em aberto</div><div class="fs-5 fw-semibold text-warning">R$ @indicadores.ValorEmAberto.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Embarcações confirmadas</div><div class="fs-4 fw-semibold">@indicadores.EmbarcacoesConfirmadas</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Quantidade de custos</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeCustosLancados</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita prevista</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaPrevista.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Cobranças parceladas</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeParcelas</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Produtos extras</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeProdutosExtras</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita extras</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaExtrasPrevista.ToString("N2")</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Doações de patrocinadores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeDoacoesPatrocinadores</div></div></div>
+                    <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita com doações</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaDoacoesPatrocinadores.ToString("N2")</div></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/configuracao" class="action-card">
+            <div class="action-icon blue"><i class="bi bi-sliders"></i></div>
+            <div>
+                <div class="action-label">Configuração</div>
+                <div class="action-desc">Defina valores, taxa de inscrição e quantidade de parcelas</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/cobrancas" class="action-card">
+            <div class="action-icon blue"><i class="bi bi-receipt-cutoff"></i></div>
+            <div>
+                <div class="action-label">Cobranças</div>
+                <div class="action-desc">Controle de vencimento, pagamento e comprovantes</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/custos" class="action-card">
+            <div class="action-icon amber"><i class="bi bi-cash-stack"></i></div>
+            <div>
+                <div class="action-label">Custos</div>
+                <div class="action-desc">Lançamentos gerais e custos de embarcações</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/extras" class="action-card">
+            <div class="action-icon amber"><i class="bi bi-bag"></i></div>
+            <div>
+                <div class="action-label">Produtos extras</div>
+                <div class="action-desc">Cadastre produtos opcionais e registre vendas por pescador</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/doacoes" class="action-card">
+            <div class="action-icon teal"><i class="bi bi-gift"></i></div>
+            <div>
+                <div class="action-label">Doações</div>
+                <div class="action-desc">Controle doações de patrocinadores em dinheiro ou produtos</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="/@slug/financeiro/checklist" class="action-card">
+            <div class="action-icon teal"><i class="bi bi-list-check"></i></div>
+            <div>
+                <div class="action-label">Checklist</div>
+                <div class="action-desc">Itens operacionais do torneio</div>
+            </div>
+        </a>
+    </div>
+</div>

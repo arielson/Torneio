@@ -1,9 +1,11 @@
 @model CriarMembroDto
 @{
-    var slug    = Context.GetRouteData().Values["slug"]?.ToString();
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label       = torneio?.LabelMembro ?? "Membro";
+    var label = torneio?.LabelMembro ?? "Membro";
     var labelPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var tamanhosCamisa = new[] { "", "PP", "P", "M", "G", "GG", "XGG", "EXGG" };
+    var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = $"Novo {label}";
 }
 
@@ -29,6 +31,23 @@
             <input asp-for="Nome" class="form-control" />
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
+        @if (exibirFinanceiro)
+        {
+            <div class="mb-3">
+                <label asp-for="TamanhoCamisa" class="form-label">Tamanho da camisa</label>
+                <select asp-for="TamanhoCamisa" class="form-select">
+                    @foreach (var tamanho in tamanhosCamisa)
+                    {
+                        <option value="@tamanho">@(string.IsNullOrEmpty(tamanho) ? "Nao informado" : tamanho)</option>
+                    }
+                </select>
+                <span asp-validation-for="TamanhoCamisa" class="text-danger small"></span>
+            </div>
+        }
+        else
+        {
+            <input asp-for="TamanhoCamisa" type="hidden" value="" />
+        }
         <div class="form-section-title">Foto</div>
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto do {label}" } })' />
         <div class="d-flex gap-2 pt-2">

@@ -15,17 +15,18 @@ public class RegistrarLogDto
 /// <summary>Categorias padronizadas de log.</summary>
 public static class CategoriaLog
 {
-    public const string Usuarios  = "Usuários";
-    public const string Capturas  = "Capturas";
-    public const string Itens     = "Itens";
+    public const string Usuarios = "Usuarios";
+    public const string Capturas = "Capturas";
+    public const string Financeiro = "Financeiro";
+    public const string Itens = "Itens";
     public const string Patrocinadores = "Patrocinadores";
-    public const string Equipes   = "Equipes";
-    public const string Membros   = "Membros";
-    public const string Premios   = "Prêmios";
-    public const string Torneios  = "Torneios";
-    public const string Sorteio   = "Sorteio";
-    public const string Grupos    = "Grupos";
+    public const string Equipes = "Equipes";
+    public const string Membros = "Membros";
+    public const string Premios = "Premios";
+    public const string Torneios = "Torneios";
+    public const string Sorteio = "Sorteio";
+    public const string Grupos = "Grupos";
 
     public static readonly IReadOnlyList<string> Todas =
-        [Usuarios, Capturas, Itens, Patrocinadores, Equipes, Grupos, Membros, Premios, Torneios, Sorteio];
+        [Usuarios, Capturas, Financeiro, Itens, Patrocinadores, Equipes, Grupos, Membros, Premios, Torneios, Sorteio];
 }

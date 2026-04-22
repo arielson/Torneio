@@ -10,7 +10,7 @@ namespace Torneio.API.Controllers;
 /// <summary>
 /// /api/{slug}/admins-torneio — AdminGeral gerencia; AdminTorneio consulta
 /// </summary>
-[Authorize(Policy = "AdminGeral")]
+[Authorize(Policy = "AdminTorneio")]
 [Route("api/{slug}/admins-torneio")]
 public class AdminTorneioController : BaseController
 {

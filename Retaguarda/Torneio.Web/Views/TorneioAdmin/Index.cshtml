@@ -15,6 +15,7 @@
         _            => "bg-warning-subtle text-warning border-warning-subtle"
     };
     var exibirSorteio = !string.Equals(Model.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
+    var exibirFinanceiro = Model.ExibirModuloFinanceiro;
 }
 
 @functions {
@@ -211,6 +212,18 @@
             </div>
         </a>
     </div>
+    @if (exibirFinanceiro)
+    {
+        <div class="col-md-3 col-sm-6">
+            <a href="/@slug/financeiro" class="action-card">
+                <div class="action-icon gray"><i class="bi bi-cash-coin"></i></div>
+                <div>
+                    <div class="action-label">Financeiro</div>
+                    <div class="action-desc">Cobranças, custos e checklist</div>
+                </div>
+            </a>
+        </div>
+    }
     <div class="col-md-3 col-sm-6">
         <a href="/@slug/capturas" class="action-card">
             <div class="action-icon teal"><i class="bi bi-camera"></i></div>

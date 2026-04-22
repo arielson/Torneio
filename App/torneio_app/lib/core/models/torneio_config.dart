@@ -20,12 +20,16 @@ class TorneioConfig {
   final bool usarFatorMultiplicador;
   final String medidaCaptura;
   final bool permitirCapturaOffline;
+  final bool exibirModuloFinanceiro;
   final String modoSorteio;
   final bool permitirEscolhaManual;
   final int qtdGanhadores;
   final bool premiacaoPorEquipe;
   final bool premiacaoPorMembro;
   final String? corPrimaria;
+  final double valorPorMembro;
+  final int quantidadeParcelas;
+  final DateTime? dataPrimeiroVencimento;
 
   const TorneioConfig({
     required this.id,
@@ -47,12 +51,16 @@ class TorneioConfig {
     required this.usarFatorMultiplicador,
     required this.medidaCaptura,
     required this.permitirCapturaOffline,
+    required this.exibirModuloFinanceiro,
     required this.modoSorteio,
     required this.permitirEscolhaManual,
     required this.qtdGanhadores,
     required this.premiacaoPorEquipe,
     required this.premiacaoPorMembro,
     this.corPrimaria,
+    this.valorPorMembro = 0,
+    this.quantidadeParcelas = 0,
+    this.dataPrimeiroVencimento,
   });
 
   factory TorneioConfig.fromJson(Map<String, dynamic> json) => TorneioConfig(
@@ -75,11 +83,17 @@ class TorneioConfig {
         usarFatorMultiplicador: json['usarFatorMultiplicador'] as bool? ?? false,
         medidaCaptura: json['medidaCaptura'] as String? ?? 'cm',
         permitirCapturaOffline: json['permitirCapturaOffline'] as bool? ?? true,
+        exibirModuloFinanceiro: json['exibirModuloFinanceiro'] as bool? ?? true,
         modoSorteio: json['modoSorteio'] as String? ?? 'Sorteio',
         permitirEscolhaManual: json['permitirEscolhaManual'] as bool? ?? false,
         qtdGanhadores: json['qtdGanhadores'] as int? ?? 3,
         premiacaoPorEquipe: json['premiacaoPorEquipe'] as bool? ?? true,
         premiacaoPorMembro: json['premiacaoPorMembro'] as bool? ?? false,
         corPrimaria: json['corPrimaria'] as String?,
+        valorPorMembro: (json['valorPorMembro'] as num?)?.toDouble() ?? 0,
+        quantidadeParcelas: json['quantidadeParcelas'] as int? ?? 0,
+        dataPrimeiroVencimento: json['dataPrimeiroVencimento'] != null
+            ? DateTime.tryParse(json['dataPrimeiroVencimento'] as String)
+            : null,
       );
 }

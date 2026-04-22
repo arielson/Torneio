@@ -48,6 +48,18 @@ public class MembroController : TorneioBaseController
     public async Task<IActionResult> Criar(CriarMembroDto dto)
     {
         ModelState.Remove(nameof(dto.TorneioId));
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+
+        if (torneio is not null && !torneio.ExibirModuloFinanceiro)
+        {
+            dto = new CriarMembroDto
+            {
+                TorneioId = dto.TorneioId,
+                Nome = dto.Nome,
+                FotoUrl = dto.FotoUrl,
+                TamanhoCamisa = null,
+            };
+        }
 
         if (!ModelState.IsValid)
         {
@@ -62,9 +74,9 @@ public class MembroController : TorneioBaseController
                 TorneioId = TenantContext.TorneioId,
                 Nome = dto.Nome,
                 FotoUrl = fotoUrl,
+                TamanhoCamisa = dto.TamanhoCamisa,
             });
             TempData["Sucesso"] = "Membro criado com sucesso.";
-            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
             await _log.Registrar(new RegistrarLogDto
             {
                 TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
@@ -89,24 +101,35 @@ public class MembroController : TorneioBaseController
         if (membro is null) return NotFound();
         ViewBag.Membro = membro;
         await SetTorneioViewBag();
-        return View(new AtualizarMembroDto { Nome = membro.Nome, FotoUrl = membro.FotoUrl });
+        return View(new AtualizarMembroDto { Nome = membro.Nome, FotoUrl = membro.FotoUrl, TamanhoCamisa = membro.TamanhoCamisa });
     }
 
     [HttpPost("{id:guid}/editar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Editar(Guid id, AtualizarMembroDto dto)
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        var membroAtual = await _servico.ObterPorId(id);
+        if (torneio is not null && !torneio.ExibirModuloFinanceiro)
+        {
+            dto = new AtualizarMembroDto
+            {
+                Nome = dto.Nome,
+                FotoUrl = dto.FotoUrl,
+                TamanhoCamisa = membroAtual?.TamanhoCamisa,
+            };
+        }
+
         if (!ModelState.IsValid)
         {
-            ViewBag.Membro = await _servico.ObterPorId(id);
+            ViewBag.Membro = membroAtual;
             await SetTorneioViewBag();
             return View(dto);
         }
         try
         {
-            var membroAtual = await _servico.ObterPorId(id);
             var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/membros") ?? membroAtual?.FotoUrl;
-            dto = new AtualizarMembroDto { Nome = dto.Nome, FotoUrl = fotoUrl };
+            dto = new AtualizarMembroDto { Nome = dto.Nome, FotoUrl = fotoUrl, TamanhoCamisa = dto.TamanhoCamisa };
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Membro atualizado.";
             return RedirectToAction(nameof(Index), new { slug = Slug });

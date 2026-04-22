@@ -32,6 +32,7 @@
     var labelItem   = torneioNav?.LabelItem ?? "Item";
     var labelCaptura = torneioNav?.LabelCaptura ?? "Captura";
     var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
+    var exibirFinanceiro = torneioNav?.ExibirModuloFinanceiro ?? true;
     var applicationName = Configuration["Branding:ApplicationName"] ?? "Torneio";
     var usarLayoutAdmin = isAdmin && (isAdminGeral || !string.IsNullOrEmpty(effectiveSlug));
 
@@ -115,6 +116,46 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-megaphone"></i> Patrocinadores
                             </a>
                         </li>
+                        @if (exibirFinanceiro)
+                        {
+                            <hr class="sidebar-divider" />
+                            <li class="sidebar-section-label">Financeiro</li>
+                            <li>
+                                <a class="nav-link @(IsExact($"/{effectiveSlug}/financeiro") ? "active" : "")" href="/@effectiveSlug/financeiro">
+                                    <i class="bi bi-graph-up"></i> Visão geral
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/configuracao") ? "active" : "")" href="/@effectiveSlug/financeiro/configuracao">
+                                    <i class="bi bi-sliders"></i> Configuração
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/cobrancas") ? "active" : "")" href="/@effectiveSlug/financeiro/cobrancas">
+                                    <i class="bi bi-receipt-cutoff"></i> Cobranças
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/custos") ? "active" : "")" href="/@effectiveSlug/financeiro/custos">
+                                    <i class="bi bi-cash-stack"></i> Custos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/extras") ? "active" : "")" href="/@effectiveSlug/financeiro/extras">
+                                    <i class="bi bi-bag"></i> Produtos extras
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/doacoes") ? "active" : "")" href="/@effectiveSlug/financeiro/doacoes">
+                                    <i class="bi bi-gift"></i> Doações
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/checklist") ? "active" : "")" href="/@effectiveSlug/financeiro/checklist">
+                                    <i class="bi bi-list-check"></i> Checklist
+                                </a>
+                            </li>
+                        }
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Operações</li>
                         <li>

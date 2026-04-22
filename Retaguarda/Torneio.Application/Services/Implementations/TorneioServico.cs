@@ -90,7 +90,7 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
-            dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline,
+            dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro,
             dto.QtdGanhadores, dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.LogoUrl, dto.CorPrimaria);
 
@@ -114,7 +114,7 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.QtdGanhadores,
+            dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.QtdGanhadores,
             dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.LogoUrl, dto.CorPrimaria);
 
@@ -225,7 +225,7 @@ public class TorneioServico : ITorneioServico
             origem.LabelCaptura, origem.LabelCapturaPlural,
             origem.MedidaCaptura,
             origem.ModoSorteio, origem.TipoTorneio,
-            origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline,
+            origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline, origem.ExibirModuloFinanceiro,
             origem.QtdGanhadores, origem.PremiacaoPorEquipe, origem.PremiacaoPorMembro,
             origem.LogoUrl, origem.CorPrimaria);
 
@@ -313,6 +313,10 @@ public class TorneioServico : ITorneioServico
         UsarFatorMultiplicador = e.UsarFatorMultiplicador,
         MedidaCaptura = e.MedidaCaptura,
         PermitirCapturaOffline = e.PermitirCapturaOffline,
+        ExibirModuloFinanceiro = e.ExibirModuloFinanceiro,
+        ValorPorMembro = e.ValorPorMembro,
+        QuantidadeParcelas = e.QuantidadeParcelas,
+        DataPrimeiroVencimento = e.DataPrimeiroVencimento,
         ModoSorteio = e.ModoSorteio.ToString(),
         QtdGanhadores = e.QtdGanhadores,
         PremiacaoPorEquipe = e.PremiacaoPorEquipe,

@@ -137,6 +137,7 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
     final labelMembro = config?.labelMembro ?? 'Membro';
     final exibirMembros = config?.modoSorteio != 'Nenhum';
     final exibirVagas = config?.modoSorteio != 'Nenhum';
+    final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
 
     return Scaffold(
       appBar: AppBar(
@@ -241,6 +242,10 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
                                       Text(
                                         '${config?.labelMembroPlural ?? '${labelMembro}s'}: ${equipe.qtdMembros}/${equipe.qtdVagas}',
                                       ),
+                                    if (exibirFinanceiro) ...[
+                                      Text('Custo: R\$ ${equipe.custo.toStringAsFixed(2)}'),
+                                      Text('Status financeiro: ${equipe.statusFinanceiro}'),
+                                    ],
                                     const SizedBox(height: 12),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,

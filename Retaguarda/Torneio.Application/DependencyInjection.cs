@@ -21,6 +21,11 @@ public static class DependencyInjection
         services.AddScoped<IMembroServico, MembroServico>();
         services.AddScoped<IItemServico, ItemServico>();
         services.AddScoped<IPatrocinadorServico, PatrocinadorServico>();
+        services.AddScoped<IFinanceiroTorneioServico, FinanceiroTorneioServico>();
+        services.AddScoped<IProdutoExtraTorneioServico, ProdutoExtraTorneioServico>();
+        services.AddScoped<IDoacaoPatrocinadorServico, DoacaoPatrocinadorServico>();
+        services.AddScoped<ICustoTorneioServico, CustoTorneioServico>();
+        services.AddScoped<IChecklistTorneioItemServico, ChecklistTorneioItemServico>();
         services.AddScoped<ICapturaServico, CapturaServico>();
         services.AddScoped<ISorteioAppServico, SorteioAppServico>();
         services.AddScoped<IGrupoAppServico, GrupoAppServico>();

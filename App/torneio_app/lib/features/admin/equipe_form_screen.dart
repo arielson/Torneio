@@ -27,7 +27,9 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
   final _nomeController = TextEditingController();
   final _capitaoController = TextEditingController();
   final _qtdVagasController = TextEditingController(text: '1');
+  final _custoController = TextEditingController(text: '0');
   final _picker = ImagePicker();
+  String _statusFinanceiro = 'Pendente';
 
   bool _salvando = false;
   String? _fotoEquipePath;
@@ -43,6 +45,8 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
       _nomeController.text = equipe.nome;
       _capitaoController.text = equipe.capitao;
       _qtdVagasController.text = equipe.qtdVagas.toString();
+      _custoController.text = equipe.custo.toStringAsFixed(2);
+      _statusFinanceiro = equipe.statusFinanceiro;
     }
   }
 
@@ -106,13 +110,28 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
     setState(() => _salvando = true);
 
     final exibirVagas = config.modoSorteio != 'Nenhum';
+    final exibirFinanceiro = config.exibirModuloFinanceiro;
     final qtdVagas = exibirVagas ? int.parse(_qtdVagasController.text) : 1;
+    final custo = exibirFinanceiro
+        ? double.tryParse(_custoController.text.replaceAll(',', '.'))
+        : (_editando ? widget.equipe!.custo : 0);
+    if (exibirFinanceiro && (custo == null || custo < 0)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe um custo valido.'), backgroundColor: Colors.red),
+      );
+      setState(() => _salvando = false);
+      return;
+    }
 
     try {
       final fields = {
         'nome': _nomeController.text.trim(),
         'capitao': _capitaoController.text.trim(),
         'qtdVagas': '$qtdVagas',
+        'custo': '${custo ?? 0}',
+        'statusFinanceiro': exibirFinanceiro
+            ? _statusFinanceiro
+            : (_editando ? widget.equipe!.statusFinanceiro : 'Pendente'),
       };
 
       final files = {
@@ -153,6 +172,7 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
     final config = context.watch<ConfigProvider>().config;
     final label = config?.labelEquipe ?? 'Equipe';
     final exibirVagas = config?.modoSorteio != 'Nenhum';
+    final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
     final fotoEquipeAtualUrl = AppConfig.resolverUrl(widget.equipe?.fotoUrl);
     final fotoCapitaoAtualUrl = AppConfig.resolverUrl(widget.equipe?.fotoCapitaoUrl);
 
@@ -202,6 +222,41 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
                 },
               ),
             const SizedBox(height: 16),
+            if (exibirFinanceiro) ...[
+              TextFormField(
+                controller: _custoController,
+                decoration: const InputDecoration(
+                  labelText: 'Custo da embarcacao',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  final custo = double.tryParse((value ?? '').replaceAll(',', '.'));
+                  if (custo == null || custo < 0) {
+                    return 'Informe um custo valido.';
+                  }
+                  return null;
+                },
+              ),
+              DropdownButtonFormField<String>(
+                initialValue: _statusFinanceiro,
+                decoration: const InputDecoration(
+                  labelText: 'Status financeiro',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Pendente', child: Text('Pendente')),
+                  DropdownMenuItem(value: 'Confirmada', child: Text('Confirmada')),
+                  DropdownMenuItem(value: 'Cancelada', child: Text('Cancelada')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _statusFinanceiro = value);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
             AdminPhotoPicker(
               titulo: 'Foto da ${label.toLowerCase()}',
               fotoLocalPath: _fotoEquipePath,
@@ -238,6 +293,7 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
     _nomeController.dispose();
     _capitaoController.dispose();
     _qtdVagasController.dispose();
+    _custoController.dispose();
     super.dispose();
   }
 }

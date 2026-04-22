@@ -122,6 +122,7 @@ class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
     final config = context.watch<ConfigProvider>().config;
     final label = config?.labelMembro ?? 'Membro';
     final labelPlural = config?.labelMembroPlural ?? 'Membros';
+    final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
 
     return Scaffold(
       appBar: AppBar(
@@ -175,6 +176,9 @@ class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
                                   fallbackIcon: Icons.person,
                                 ),
                                 title: Text(membro.nome),
+                                subtitle: exibirFinanceiro && membro.tamanhoCamisa?.trim().isNotEmpty == true
+                                    ? Text('Camisa: ${membro.tamanhoCamisa}')
+                                    : null,
                                 trailing: Wrap(
                                   spacing: 8,
                                   children: [

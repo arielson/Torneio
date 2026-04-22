@@ -67,6 +67,23 @@ public class EquipeController : TorneioBaseController
                 QtdVagas = 1,
                 FotoUrl = dto.FotoUrl,
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
+                Custo = dto.Custo,
+                StatusFinanceiro = dto.StatusFinanceiro,
+            };
+        }
+
+        if (torneio is not null && !torneio.ExibirModuloFinanceiro)
+        {
+            dto = new CriarEquipeDto
+            {
+                TorneioId = dto.TorneioId,
+                Nome = dto.Nome,
+                Capitao = dto.Capitao,
+                QtdVagas = dto.QtdVagas,
+                FotoUrl = dto.FotoUrl,
+                FotoCapitaoUrl = dto.FotoCapitaoUrl,
+                Custo = 0,
+                StatusFinanceiro = StatusEmbarcacaoFinanceira.Pendente,
             };
         }
 
@@ -88,14 +105,20 @@ public class EquipeController : TorneioBaseController
                 QtdVagas = dto.QtdVagas,
                 FotoUrl = fotoUrl,
                 FotoCapitaoUrl = fotoCapitaoUrl,
+                Custo = dto.Custo,
+                StatusFinanceiro = dto.StatusFinanceiro,
             });
             TempData["Sucesso"] = "Equipe criada com sucesso.";
             await _log.Registrar(new RegistrarLogDto
             {
-                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
-                Categoria = CategoriaLog.Equipes, Acao = "CriarEquipe",
-                Descricao = $"Equipe criada | Nome: {dto.Nome} | Capitão: {dto.Capitao} | Vagas: {dto.QtdVagas}",
-                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Equipes,
+                Acao = "CriarEquipe",
+                Descricao = $"Equipe criada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Status financeiro: {dto.StatusFinanceiro}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
             });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
@@ -122,6 +145,8 @@ public class EquipeController : TorneioBaseController
             QtdVagas = equipe.QtdVagas,
             FotoUrl = equipe.FotoUrl,
             FotoCapitaoUrl = equipe.FotoCapitaoUrl,
+            Custo = equipe.Custo,
+            StatusFinanceiro = equipe.StatusFinanceiro,
         };
         return View(dto);
     }
@@ -131,6 +156,7 @@ public class EquipeController : TorneioBaseController
     public async Task<IActionResult> Editar(Guid id, AtualizarEquipeDto dto)
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        var equipeAtual = await _servico.ObterPorId(id);
         if (torneio is not null && string.Equals(torneio.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal))
         {
             dto = new AtualizarEquipeDto
@@ -140,6 +166,22 @@ public class EquipeController : TorneioBaseController
                 QtdVagas = 1,
                 FotoUrl = dto.FotoUrl,
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
+                Custo = dto.Custo,
+                StatusFinanceiro = dto.StatusFinanceiro,
+            };
+        }
+
+        if (torneio is not null && !torneio.ExibirModuloFinanceiro)
+        {
+            dto = new AtualizarEquipeDto
+            {
+                Nome = dto.Nome,
+                Capitao = dto.Capitao,
+                QtdVagas = dto.QtdVagas,
+                FotoUrl = dto.FotoUrl,
+                FotoCapitaoUrl = dto.FotoCapitaoUrl,
+                Custo = equipeAtual?.Custo ?? 0,
+                StatusFinanceiro = equipeAtual?.StatusFinanceiro ?? StatusEmbarcacaoFinanceira.Pendente,
             };
         }
 
@@ -151,7 +193,6 @@ public class EquipeController : TorneioBaseController
         }
         try
         {
-            var equipeAtual = await _servico.ObterPorId(id);
             var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/equipes") ?? equipeAtual?.FotoUrl;
             var fotoCapitaoUrl = await SalvarFotoAsync(Request.Form.Files["fotoCapitao"], "fotos/capitaos") ?? equipeAtual?.FotoCapitaoUrl;
 
@@ -162,16 +203,22 @@ public class EquipeController : TorneioBaseController
                 QtdVagas = dto.QtdVagas,
                 FotoUrl = fotoUrl,
                 FotoCapitaoUrl = fotoCapitaoUrl,
+                Custo = dto.Custo,
+                StatusFinanceiro = dto.StatusFinanceiro,
             };
 
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Equipe atualizada.";
             await _log.Registrar(new RegistrarLogDto
             {
-                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
-                Categoria = CategoriaLog.Equipes, Acao = "EditarEquipe",
-                Descricao = $"Equipe editada | Nome: {dto.Nome} | Capitão: {dto.Capitao} | Vagas: {dto.QtdVagas}",
-                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Equipes,
+                Acao = "EditarEquipe",
+                Descricao = $"Equipe editada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Status financeiro: {dto.StatusFinanceiro}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
             });
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }
@@ -194,10 +241,14 @@ public class EquipeController : TorneioBaseController
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto
         {
-            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
-            Categoria = CategoriaLog.Equipes, Acao = "RemoverEquipe",
-            Descricao = $"Equipe removida | Nome: {equipe?.Nome ?? id.ToString()} | Capitão: {equipe?.Capitao}",
-            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            TorneioId = TenantContext.TorneioId,
+            NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Equipes,
+            Acao = "RemoverEquipe",
+            Descricao = $"Equipe removida | Nome: {equipe?.Nome ?? id.ToString()} | Capitao: {equipe?.Capitao}",
+            UsuarioNome = UsuarioNome,
+            UsuarioPerfil = UsuarioPerfil,
+            IpAddress = IpAddress
         });
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
@@ -236,10 +287,14 @@ public class EquipeController : TorneioBaseController
             TempData["Sucesso"] = "Membro adicionado.";
             await _log.Registrar(new RegistrarLogDto
             {
-                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio.NomeTorneio,
-                Categoria = CategoriaLog.Equipes, Acao = "AdicionarMembroEquipe",
-                Descricao = $"Membro adicionado à equipe | Equipe: {equipe?.Nome} | Membro: {membro?.Nome}",
-                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneio.NomeTorneio,
+                Categoria = CategoriaLog.Equipes,
+                Acao = "AdicionarMembroEquipe",
+                Descricao = $"Membro adicionado a equipe | Equipe: {equipe?.Nome} | Membro: {membro?.Nome}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
             });
         }
         catch (Exception ex)
@@ -264,10 +319,14 @@ public class EquipeController : TorneioBaseController
         TempData["Sucesso"] = "Membro removido da equipe.";
         await _log.Registrar(new RegistrarLogDto
         {
-            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio.NomeTorneio,
-            Categoria = CategoriaLog.Equipes, Acao = "RemoverMembroEquipe",
+            TorneioId = TenantContext.TorneioId,
+            NomeTorneio = torneio.NomeTorneio,
+            Categoria = CategoriaLog.Equipes,
+            Acao = "RemoverMembroEquipe",
             Descricao = $"Membro removido da equipe | Equipe: {equipe?.Nome} | Membro: {membro?.Nome}",
-            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            UsuarioNome = UsuarioNome,
+            UsuarioPerfil = UsuarioPerfil,
+            IpAddress = IpAddress
         });
         return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }

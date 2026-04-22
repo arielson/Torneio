@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using Torneio.Application.DTOs.Equipe;
 using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Enums;
 using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
 
@@ -61,6 +62,8 @@ public class EquipeController : BaseController
             Nome = dto.Nome,
             Capitao = dto.Capitao,
             QtdVagas = dto.QtdVagas,
+            Custo = dto.Custo,
+            StatusFinanceiro = dto.StatusFinanceiro,
             FotoUrl = dto.FotoUrl,
             FotoCapitaoUrl = dto.FotoCapitaoUrl
         });
@@ -80,6 +83,8 @@ public class EquipeController : BaseController
             Nome = dto.Nome,
             Capitao = dto.Capitao,
             QtdVagas = dto.QtdVagas,
+            Custo = dto.Custo,
+            StatusFinanceiro = dto.StatusFinanceiro,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
         });
@@ -111,6 +116,8 @@ public class EquipeController : BaseController
             Nome = dto.Nome,
             Capitao = dto.Capitao,
             QtdVagas = dto.QtdVagas,
+            Custo = dto.Custo,
+            StatusFinanceiro = dto.StatusFinanceiro,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
         });
@@ -195,6 +202,8 @@ public class CriarEquipeFormDto
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]
     public int QtdVagas { get; init; }
+    public decimal Custo { get; init; }
+    public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
 
     public IFormFile? Foto { get; init; }
     public IFormFile? FotoCapitao { get; init; }
@@ -210,6 +219,8 @@ public class AtualizarEquipeFormDto
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]
     public int QtdVagas { get; init; }
+    public decimal Custo { get; init; }
+    public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
 
     public IFormFile? Foto { get; init; }
     public IFormFile? FotoCapitao { get; init; }

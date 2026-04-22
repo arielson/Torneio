@@ -1,0 +1,35 @@
+@model Torneio.Application.DTOs.Financeiro.CriarProdutoExtraTorneioDto
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Novo Extra";
+}
+
+<div class="page-header"><div class="page-header-left"><h1>Novo extra</h1></div></div>
+<a href="/@slug/financeiro/extras" class="back-link"><i class="bi bi-arrow-left"></i> Extras</a>
+
+<div class="form-card">
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Valor" class="form-label">Valor</label>
+            <input asp-for="Valor" class="form-control" type="number" step="0.01" min="0" />
+            <span asp-validation-for="Valor" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Descricao" class="form-label">Descricao</label>
+            <textarea asp-for="Descricao" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

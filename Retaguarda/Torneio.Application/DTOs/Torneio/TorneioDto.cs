@@ -23,6 +23,10 @@ public class TorneioDto
     public bool UsarFatorMultiplicador { get; init; }
     public string MedidaCaptura { get; init; } = null!;
     public bool PermitirCapturaOffline { get; init; }
+    public bool ExibirModuloFinanceiro { get; init; }
+    public decimal ValorPorMembro { get; init; }
+    public int QuantidadeParcelas { get; init; }
+    public DateTime? DataPrimeiroVencimento { get; init; }
     public string ModoSorteio { get; init; } = null!;
     public int QtdGanhadores { get; init; }
     public bool PremiacaoPorEquipe { get; init; }

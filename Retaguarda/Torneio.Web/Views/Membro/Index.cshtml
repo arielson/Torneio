@@ -2,8 +2,9 @@
 @{
     var slug    = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var label       = torneio?.LabelMembro ?? "Membro";
+    var label = torneio?.LabelMembro ?? "Membro";
     var labelPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
@@ -39,7 +40,11 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th class="text-end">Ações</th>
+                        @if (exibirFinanceiro)
+                        {
+                            <th>Tamanho da camisa</th>
+                        }
+                        <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,6 +52,10 @@
                     {
                         <tr>
                             <td class="fw-semibold">@m.Nome</td>
+                            @if (exibirFinanceiro)
+                            {
+                                <td>@(string.IsNullOrWhiteSpace(m.TamanhoCamisa) ? "-" : m.TamanhoCamisa)</td>
+                            }
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <a href="/@slug/membros/@m.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">

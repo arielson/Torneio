@@ -1,0 +1,135 @@
+@model Tuple<IEnumerable<Torneio.Application.DTOs.Financeiro.ProdutoExtraMembroDto>, Torneio.Application.DTOs.Financeiro.CriarProdutoExtraMembroDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var produto = (Torneio.Application.DTOs.Financeiro.ProdutoExtraTorneioDto)ViewBag.Produto;
+    var membros = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>)ViewBag.Membros).OrderBy(x => x.Nome).ToList();
+    var aderidos = Model.Item1.ToList();
+    var form = Model.Item2;
+    ViewData["Title"] = "Vendas do produto extra";
+}
+
+<div class="page-header"><div class="page-header-left"><h1>@produto.Nome</h1></div></div>
+<a href="/@slug/financeiro/extras" class="back-link"><i class="bi bi-arrow-left"></i> Produtos extras</a>
+
+<div class="content-card mb-4">
+    <div class="card-header-bar"><h5><i class="bi bi-cart-plus me-2"></i>Registrar venda para pescador</h5></div>
+    <div class="card-body-pad">
+        <form method="post" class="row g-3 align-items-end">
+            @Html.AntiForgeryToken()
+            <div class="col-md-4">
+                <label class="form-label">Pescador</label>
+                <select name="MembroId" class="form-select" required>
+                    <option value="">Selecione</option>
+                    @foreach (var membro in membros)
+                    {
+                        <option value="@membro.Id">@membro.Nome</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quantidade</label>
+                <input name="Quantidade" id="quantidadeVenda" class="form-control" type="number" step="0.01" min="0.01" value="@form.Quantidade.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Valor total</label>
+                <input name="ValorCobrado" id="valorCobradoVenda" class="form-control" type="number" step="0.01" min="0" readonly value="@form.ValorCobrado.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Observacao</label>
+                <input name="Observacao" class="form-control" />
+            </div>
+            <div class="col-md-12">
+                <div class="form-text">O valor total e calculado automaticamente com base em valor unitario x quantidade.</div>
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary w-100">Vender</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar"><h5><i class="bi bi-receipt me-2"></i>Vendas registradas</h5></div>
+    @if (!aderidos.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhuma venda registrada para este produto extra.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Pescador</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in aderidos)
+                    {
+                        <tr class="@(item.Pago ? "table-success" : item.Inadimplente ? "table-danger" : string.Empty)">
+                            <td>
+                                <div class="fw-semibold">@item.NomeMembro</div>
+                                @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                                {
+                                    <div class="small text-muted">@item.Observacao</div>
+                                }
+                            </td>
+                            <td>@item.Quantidade.ToString("N2")</td>
+                            <td>R$ @item.ValorCobrado.ToString("N2")</td>
+                            <td>
+                                @if (item.Pago)
+                                {
+                                    <span class="badge text-bg-success">Pago</span>
+                                }
+                                else if (item.Inadimplente)
+                                {
+                                    <span class="badge text-bg-danger">Inadimplente</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">Em aberto</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    @if (item.ParcelaId.HasValue)
+                                    {
+                                        <a href="/@slug/financeiro/cobrancas/@item.ParcelaId.Value/editar" class="btn btn-sm btn-outline-secondary">Cobranca</a>
+                                    }
+                                    <form asp-action="RemoverExtraMembro" asp-route-slug="@slug" asp-route-produtoExtraMembroId="@item.Id" asp-route-produtoId="@produto.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover esta venda?')">Remover</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const quantidadeInput = document.getElementById('quantidadeVenda');
+            const valorInput = document.getElementById('valorCobradoVenda');
+            const valorUnitario = @produto.Valor.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            const atualizarValor = () => {
+                if (!quantidadeInput || !valorInput) return;
+                const quantidade = Number.parseFloat(quantidadeInput.value || '0');
+                const total = Number.isFinite(quantidade) ? quantidade * valorUnitario : 0;
+                valorInput.value = total.toFixed(2);
+            };
+
+            quantidadeInput?.addEventListener('input', atualizarValor);
+            atualizarValor();
+        })();
+    </script>
+}

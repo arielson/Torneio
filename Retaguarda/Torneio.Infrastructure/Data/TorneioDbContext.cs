@@ -25,6 +25,12 @@ public class TorneioDbContext : DbContext
     public DbSet<Membro> Membros { get; set; }
     public DbSet<Item> Itens { get; set; }
     public DbSet<Patrocinador> Patrocinadores { get; set; }
+    public DbSet<ParcelaTorneio> ParcelasTorneio { get; set; }
+    public DbSet<ProdutoExtraTorneio> ProdutosExtrasTorneio { get; set; }
+    public DbSet<ProdutoExtraMembro> ProdutosExtrasMembros { get; set; }
+    public DbSet<DoacaoPatrocinador> DoacoesPatrocinadores { get; set; }
+    public DbSet<CustoTorneio> CustosTorneio { get; set; }
+    public DbSet<ChecklistTorneioItem> ChecklistTorneioItens { get; set; }
     public DbSet<Captura> Capturas { get; set; }
     public DbSet<SorteioEquipe> SorteiosEquipe { get; set; }
     public DbSet<Grupo> Grupos { get; set; }
@@ -62,6 +68,24 @@ public class TorneioDbContext : DbContext
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Patrocinador>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<ParcelaTorneio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<ProdutoExtraTorneio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<ProdutoExtraMembro>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<DoacaoPatrocinador>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<CustoTorneio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<ChecklistTorneioItem>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Captura>()

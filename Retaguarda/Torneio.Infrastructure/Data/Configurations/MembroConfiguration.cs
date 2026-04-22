@@ -12,6 +12,7 @@ public class MembroConfiguration : IEntityTypeConfiguration<Membro>
 
         builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
         builder.Property(e => e.FotoUrl).HasMaxLength(500);
+        builder.Property(e => e.TamanhoCamisa).HasMaxLength(20);
 
         builder.HasOne<TorneioEntity>()
             .WithMany()

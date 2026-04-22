@@ -7,6 +7,7 @@
     var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
     var exibirMembrosPorEquipe = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
     var exibirVagas = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
+    var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
 }
@@ -63,6 +64,11 @@
                         {
                             <th>@labelMembroPlural</th>
                         }
+                        @if (exibirFinanceiro)
+                        {
+                            <th>Custo</th>
+                            <th>Status financeiro</th>
+                        }
                         <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
@@ -83,6 +89,11 @@
                                         @e.QtdMembros / @e.QtdVagas
                                     </span>
                                 </td>
+                            }
+                            @if (exibirFinanceiro)
+                            {
+                                <td>R$ @e.Custo.ToString("N2")</td>
+                                <td>@e.StatusFinanceiro</td>
                             }
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end flex-wrap">

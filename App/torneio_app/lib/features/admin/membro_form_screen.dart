@@ -22,6 +22,7 @@ class MembroFormScreen extends StatefulWidget {
 }
 
 class _MembroFormScreenState extends State<MembroFormScreen> {
+  static const List<String> _tamanhosPadrao = ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'EXGG'];
   final _formKey = GlobalKey<FormState>();
   final _api = ApiService();
   final _nomeController = TextEditingController();
@@ -29,6 +30,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
 
   bool _salvando = false;
   String? _fotoPath;
+  String? _tamanhoCamisa;
 
   bool get _editando => widget.membro != null;
 
@@ -38,6 +40,9 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     final membro = widget.membro;
     if (membro != null) {
       _nomeController.text = membro.nome;
+      _tamanhoCamisa = (membro.tamanhoCamisa?.trim().isEmpty ?? true)
+          ? null
+          : membro.tamanhoCamisa?.trim();
     }
   }
 
@@ -97,6 +102,9 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
           '${ApiConstants.membros(auth!.slug!)}/${widget.membro!.id}',
           fields: {
             'nome': _nomeController.text.trim(),
+            'tamanhoCamisa': config.exibirModuloFinanceiro
+                ? (_tamanhoCamisa ?? '')
+                : (widget.membro?.tamanhoCamisa ?? ''),
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -106,6 +114,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
           ApiConstants.membros(auth!.slug!),
           fields: {
             'nome': _nomeController.text.trim(),
+            'tamanhoCamisa': config.exibirModuloFinanceiro ? (_tamanhoCamisa ?? '') : '',
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -130,7 +139,12 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
     final label = config?.labelMembro ?? 'Membro';
+    final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
     final fotoAtualUrl = AppConfig.resolverUrl(widget.membro?.fotoUrl);
+    final tamanhosCamisa = {
+      ..._tamanhosPadrao,
+      if ((_tamanhoCamisa ?? '').isNotEmpty) _tamanhoCamisa!,
+    }.toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -151,6 +165,29 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
                   (value == null || value.trim().isEmpty) ? 'Informe o nome.' : null,
             ),
             const SizedBox(height: 16),
+            if (exibirFinanceiro) ...[
+              DropdownButtonFormField<String>(
+                initialValue: _tamanhoCamisa,
+                decoration: const InputDecoration(
+                  labelText: 'Tamanho da camisa',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('Nao informado'),
+                  ),
+                  ...tamanhosCamisa.map(
+                    (tamanho) => DropdownMenuItem<String>(
+                      value: tamanho,
+                      child: Text(tamanho),
+                    ),
+                  ),
+                ],
+                onChanged: (value) => setState(() => _tamanhoCamisa = value),
+              ),
+              const SizedBox(height: 8),
+            ],
             AdminPhotoPicker(
               titulo: 'Foto do ${label.toLowerCase()}',
               fotoAtualUrl: fotoAtualUrl,

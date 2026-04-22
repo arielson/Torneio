@@ -1,0 +1,97 @@
+@model IEnumerable<Torneio.Application.DTOs.Financeiro.CustoTorneioDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Custos";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Custos</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/financeiro/custos/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Novo custo
+        </a>
+    </div>
+</div>
+<a href="/@slug/financeiro" class="back-link">
+    <i class="bi bi-arrow-left"></i> Financeiro
+</a>
+
+<div class="content-card mb-4">
+    <div class="card-body-pad">
+        <div class="alert alert-info mb-0">
+            Os custos das embarcacoes sao alimentados pelo cadastro de embarcacoes. Os demais custos do torneio sao gerenciados nesta tela.
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-cash-stack me-2"></i>Custos lancados</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhum custo lancado.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Descricao</th>
+                        <th>Quantidade</th>
+                        <th>Valor unitario</th>
+                        <th>Valor total</th>
+                        <th>Responsavel</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var custo in lista)
+                    {
+                        <tr>
+                            <td>@custo.Categoria</td>
+                            <td class="fw-semibold">
+                                @custo.Descricao
+                                @if (!string.IsNullOrWhiteSpace(custo.Observacao))
+                                {
+                                    <div class="small text-muted">@custo.Observacao</div>
+                                }
+                            </td>
+                            <td>@custo.Quantidade.ToString("N2")</td>
+                            <td>R$ @custo.ValorUnitario.ToString("N2")</td>
+                            <td>R$ @custo.ValorTotal.ToString("N2")</td>
+                            <td>@(string.IsNullOrWhiteSpace(custo.Responsavel) ? "-" : custo.Responsavel)</td>
+                            <td class="text-end">
+                                @if (custo.DerivadoDaEmbarcacao && custo.EquipeId.HasValue)
+                                {
+                                    <a href="/@slug/equipes/@custo.EquipeId/editar" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil me-1"></i>Editar embarcacao
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a href="/@slug/financeiro/custos/@custo.Id/editar" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-controller="Financeiro" asp-action="RemoverCusto" asp-route-slug="@slug" asp-route-id="@custo.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover o custo @custo.Descricao?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

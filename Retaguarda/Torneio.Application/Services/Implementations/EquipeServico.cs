@@ -52,7 +52,9 @@ public class EquipeServico : IEquipeServico
             dto.Capitao,
             dto.QtdVagas,
             dto.FotoUrl,
-            dto.FotoCapitaoUrl);
+            dto.FotoCapitaoUrl,
+            dto.Custo,
+            dto.StatusFinanceiro);
 
         await _repositorio.Adicionar(entidade);
         return ParaDto(entidade);
@@ -65,7 +67,7 @@ public class EquipeServico : IEquipeServico
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Equipe '{id}' nao encontrada.");
 
-        entidade.Atualizar(dto.Nome, dto.Capitao, dto.QtdVagas, dto.FotoUrl, dto.FotoCapitaoUrl);
+        entidade.Atualizar(dto.Nome, dto.Capitao, dto.QtdVagas, dto.FotoUrl, dto.FotoCapitaoUrl, dto.Custo, dto.StatusFinanceiro);
         await _repositorio.Atualizar(entidade);
     }
 
@@ -154,6 +156,8 @@ public class EquipeServico : IEquipeServico
         Capitao = e.Capitao,
         FotoCapitaoUrl = e.FotoCapitaoUrl,
         QtdVagas = e.QtdVagas,
+        Custo = e.Custo,
+        StatusFinanceiro = e.StatusFinanceiro,
         QtdMembros = e.Membros.Count,
         MembroIds = e.Membros.Select(m => m.Id).ToList(),
         FiscalIds = e.Fiscais.Select(f => f.FiscalId).Distinct().ToList()
@@ -164,6 +168,7 @@ public class EquipeServico : IEquipeServico
         Id = m.Id,
         TorneioId = m.TorneioId,
         Nome = m.Nome,
-        FotoUrl = m.FotoUrl
+        FotoUrl = m.FotoUrl,
+        TamanhoCamisa = m.TamanhoCamisa
     };
 }

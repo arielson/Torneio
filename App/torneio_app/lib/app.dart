@@ -28,6 +28,13 @@ import 'features/admin/relatorios_ganhadores_screen.dart';
 import 'features/admin/reorganizacao_emergencial_screen.dart';
 import 'features/admin/sorteio_screen.dart';
 import 'features/admin/grupos_screen.dart';
+import 'features/admin/financeiro_screen.dart';
+import 'features/admin/financeiro_configuracao_screen.dart';
+import 'features/admin/parcelas_screen.dart';
+import 'features/admin/custos_screen.dart';
+import 'features/admin/checklist_screen.dart';
+import 'features/admin/doacoes_screen.dart';
+import 'features/admin/extras_screen.dart';
 import 'theme/app_theme.dart';
 
 class TorneioApp extends StatefulWidget {
@@ -102,6 +109,13 @@ class _TorneioAppState extends State<TorneioApp> {
                     (_) => const ReorganizacaoEmergencialScreen(),
                 '/admin/sorteio': (_) => const SorteioAdminScreen(),
                 '/admin/grupos': (_) => const GruposAdminScreen(),
+                '/admin/financeiro': (_) => const FinanceiroAdminScreen(),
+                '/admin/financeiro/configuracao': (_) => const FinanceiroConfiguracaoScreen(),
+                '/admin/financeiro/cobrancas': (_) => const ParcelasAdminScreen(),
+                '/admin/financeiro/custos': (_) => const CustosAdminScreen(),
+                '/admin/financeiro/checklist': (_) => const ChecklistAdminScreen(),
+                '/admin/financeiro/doacoes': (_) => const DoacoesAdminScreen(),
+                '/admin/financeiro/extras': (_) => const ExtrasAdminScreen(),
                 '/admin/relatorios': (_) => const RelatoriosAdminScreen(),
                 '/admin/relatorios/equipes':
                     (_) => const RelatoriosEquipesScreen(),

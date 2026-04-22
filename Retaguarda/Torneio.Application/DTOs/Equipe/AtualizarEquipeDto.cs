@@ -1,3 +1,4 @@
+using Torneio.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Torneio.Application.DTOs.Equipe;
@@ -12,6 +13,8 @@ public class AtualizarEquipeDto
 
     [Range(1, int.MaxValue, ErrorMessage = "Informe ao menos 1 vaga.")]
     public int QtdVagas { get; init; }
+    public decimal Custo { get; init; }
+    public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
 
     public string? FotoUrl { get; init; }
     public string? FotoCapitaoUrl { get; init; }

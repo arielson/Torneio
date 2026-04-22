@@ -1,0 +1,56 @@
+@model Torneio.Application.DTOs.Financeiro.AtualizarChecklistTorneioItemDto
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var admins = ((IEnumerable<AdminTorneioDto>?)ViewBag.AdminsTorneio ?? Enumerable.Empty<AdminTorneioDto>())
+        .OrderBy(x => x.Nome)
+        .ToList();
+    ViewData["Title"] = "Editar item de checklist";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Editar item de checklist</h1>
+    </div>
+</div>
+<a href="/@slug/financeiro/checklist" class="back-link">
+    <i class="bi bi-arrow-left"></i> Checklist
+</a>
+
+<div class="form-card">
+    <form method="post">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+        }
+        <div class="mb-3">
+            <label asp-for="Item" class="form-label">Item</label>
+            <input asp-for="Item" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Data" class="form-label">Data</label>
+            <input asp-for="Data" class="form-control" type="date" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Responsavel" class="form-label">Responsável</label>
+            <select asp-for="Responsavel" class="form-select">
+                <option value="">Selecione</option>
+                @foreach (var admin in admins)
+                {
+                    <option value="@admin.Nome">@admin.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="Concluido" class="form-check-input" />
+            <label asp-for="Concluido" class="form-check-label">Concluido</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salvar alteracoes</button>
+            <a href="/@slug/financeiro/checklist" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

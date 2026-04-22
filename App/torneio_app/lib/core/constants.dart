@@ -11,7 +11,36 @@ class ApiConstants {
   static String membros(String slug) => '$_base/api/$slug/membros';
   static String itens(String slug) => '$_base/api/$slug/itens';
   static String patrocinadores(String slug) => '$_base/api/$slug/patrocinadores';
+  static String adminsTorneio(String slug) => '$_base/api/$slug/admins-torneio';
   static String capturas(String slug) => '$_base/api/$slug/capturas';
+  static String financeiroConfig(String slug) => '$_base/api/$slug/financeiro/config';
+  static String financeiroIndicadores(String slug) => '$_base/api/$slug/financeiro/indicadores';
+  static String financeiroGerarParcelas(String slug) => '$_base/api/$slug/financeiro/cobrancas/gerar';
+  static String financeiroCobrancas(
+    String slug, {
+    String? membroId,
+    bool inadimplentes = false,
+    bool naoPagas = false,
+    String? tipo,
+  }) {
+    final params = <String>[
+      if (membroId != null && membroId.isNotEmpty) 'membroId=$membroId',
+      if (tipo != null && tipo.isNotEmpty) 'tipo=${Uri.encodeComponent(tipo)}',
+      if (naoPagas) 'naoPagas=true',
+      if (inadimplentes) 'inadimplentes=true',
+    ];
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    return '$_base/api/$slug/financeiro/cobrancas$query';
+  }
+  static String financeiroCobranca(String slug, String cobrancaId) => '$_base/api/$slug/financeiro/cobrancas/$cobrancaId';
+  static String financeiroPagamentoCobranca(String slug, String cobrancaId) => '$_base/api/$slug/financeiro/cobrancas/$cobrancaId/pagamento';
+  static String financeiroComprovanteCobranca(String slug, String cobrancaId) => '$_base/api/$slug/financeiro/cobrancas/$cobrancaId/comprovante';
+  static String financeiroExtras(String slug) => '$_base/api/$slug/financeiro/extras';
+  static String financeiroExtraMembros(String slug, String produtoId) => '$_base/api/$slug/financeiro/extras/$produtoId/membros';
+  static String financeiroRemoverExtraMembro(String slug, String adesaoId) => '$_base/api/$slug/financeiro/extras/membros/$adesaoId';
+  static String financeiroDoacoes(String slug) => '$_base/api/$slug/financeiro/doacoes';
+  static String financeiroCustos(String slug) => '$_base/api/$slug/financeiro/custos';
+  static String financeiroChecklist(String slug) => '$_base/api/$slug/financeiro/checklist';
   static String relatoriosGanhadores(String slug) => '$_base/api/$slug/relatorios/ganhadores';
   static String relatorioMaioresCapturasPdf(String slug, int quantidade) =>
       '$_base/api/$slug/relatorios/maiores-capturas?quantidade=$quantidade';

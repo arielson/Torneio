@@ -1,0 +1,89 @@
+@model IEnumerable<Torneio.Application.DTOs.Financeiro.DoacaoPatrocinadorDto>
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Doacoes";
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Doacoes</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/financeiro/doacoes/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Nova doacao
+        </a>
+    </div>
+</div>
+<a href="/@slug/financeiro" class="back-link">
+    <i class="bi bi-arrow-left"></i> Financeiro
+</a>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-gift me-2"></i>Doacoes de patrocinadores</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhuma doacao registrada.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Patrocinador</th>
+                        <th>Tipo</th>
+                        <th>Descricao</th>
+                        <th>Data</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in lista)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.NomePatrocinador</td>
+                            <td>@item.Tipo</td>
+                            <td>
+                                @item.Descricao
+                                @if (!string.IsNullOrWhiteSpace(item.Observacao))
+                                {
+                                    <div class="small text-muted">@item.Observacao</div>
+                                }
+                            </td>
+                            <td>@item.DataDoacao.ToString("dd/MM/yyyy")</td>
+                            <td>@(item.Quantidade.HasValue ? item.Quantidade.Value.ToString("N2") : "-")</td>
+                            <td>
+                                @if (item.Valor.HasValue)
+                                {
+                                    @:R$ @item.Valor.Value.ToString("N2")
+                                }
+                                else
+                                {
+                                    @:-
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/@slug/financeiro/doacoes/@item.Id/editar" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="RemoverDoacao" asp-route-slug="@slug" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover esta doacao?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

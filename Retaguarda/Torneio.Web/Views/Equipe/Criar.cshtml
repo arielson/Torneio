@@ -5,6 +5,7 @@
     var label = torneio?.LabelEquipe ?? "Equipe";
     var labelPlural = torneio?.LabelEquipePlural ?? "Equipes";
     var exibirVagas = !string.Equals(torneio?.ModoSorteio, nameof(ModoSorteio.Nenhum), StringComparison.Ordinal);
+    var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = $"Nova {label}";
 }
 
@@ -46,6 +47,27 @@
         else
         {
             <input asp-for="QtdVagas" type="hidden" value="1" />
+        }
+        @if (exibirFinanceiro)
+        {
+            <div class="form-section-title">Financeiro da embarcacao</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Custo" class="form-label">Custo</label>
+                    <input asp-for="Custo" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="Custo" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="StatusFinanceiro" class="form-label">Status</label>
+                    <select asp-for="StatusFinanceiro" class="form-select" asp-items="Html.GetEnumSelectList<StatusEmbarcacaoFinanceira>()"></select>
+                    <span asp-validation-for="StatusFinanceiro" class="text-danger small"></span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <input asp-for="Custo" type="hidden" value="0" />
+            <input asp-for="StatusFinanceiro" type="hidden" value="@StatusEmbarcacaoFinanceira.Pendente" />
         }
         <div class="form-section-title">Fotos</div>
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto da {label}" } })' />

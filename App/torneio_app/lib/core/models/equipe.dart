@@ -8,6 +8,8 @@ class Equipe {
   final String capitao;
   final String? fotoCapitaoUrl;
   final int qtdVagas;
+  final double custo;
+  final String statusFinanceiro;
   final int qtdMembros;
   final List<String> membroIds;
   final List<String> fiscalIds;
@@ -20,6 +22,8 @@ class Equipe {
     required this.capitao,
     this.fotoCapitaoUrl,
     required this.qtdVagas,
+    this.custo = 0,
+    this.statusFinanceiro = 'Pendente',
     required this.qtdMembros,
     this.membroIds = const [],
     this.fiscalIds = const [],
@@ -33,8 +37,22 @@ class Equipe {
     capitao: json['capitao'] as String,
     fotoCapitaoUrl: AppConfig.resolverUrl(json['fotoCapitaoUrl'] as String?),
     qtdVagas: json['qtdVagas'] as int,
+    custo: (json['custo'] as num?)?.toDouble() ?? 0,
+    statusFinanceiro: _parseStatusFinanceiro(json['statusFinanceiro']),
     qtdMembros: json['qtdMembros'] as int,
     membroIds: (json['membroIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
     fiscalIds: (json['fiscalIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
   );
+
+  static String _parseStatusFinanceiro(dynamic value) {
+    if (value is String && value.isNotEmpty) return value;
+    if (value is int) {
+      return switch (value) {
+        1 => 'Confirmada',
+        2 => 'Cancelada',
+        _ => 'Pendente',
+      };
+    }
+    return 'Pendente';
+  }
 }

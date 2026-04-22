@@ -12,15 +12,18 @@ public class MembroServico : IMembroServico
     private readonly IMembroRepositorio _repositorio;
     private readonly ITenantContext _tenantContext;
     private readonly IValidator<CriarMembroDto> _validador;
+    private readonly IFinanceiroTorneioServico _financeiroServico;
 
     public MembroServico(
         IMembroRepositorio repositorio,
         ITenantContext tenantContext,
-        IValidator<CriarMembroDto> validador)
+        IValidator<CriarMembroDto> validador,
+        IFinanceiroTorneioServico financeiroServico)
     {
         _repositorio = repositorio;
         _tenantContext = tenantContext;
         _validador = validador;
+        _financeiroServico = financeiroServico;
     }
 
     public async Task<MembroDto?> ObterPorId(Guid id)
@@ -42,8 +45,9 @@ public class MembroServico : IMembroServico
     {
         await _validador.ValidateAndThrowAsync(dto);
 
-        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl);
+        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl, dto.TamanhoCamisa);
         await _repositorio.Adicionar(entidade);
+        await _financeiroServico.SincronizarParcelas(dto.TorneioId);
         return ParaDto(entidade);
     }
 
@@ -57,6 +61,7 @@ public class MembroServico : IMembroServico
         entidade.AtualizarNome(dto.Nome);
         if (dto.FotoUrl is not null)
             entidade.AtualizarFoto(dto.FotoUrl);
+        entidade.AtualizarTamanhoCamisa(dto.TamanhoCamisa);
 
         await _repositorio.Atualizar(entidade);
     }
@@ -68,7 +73,9 @@ public class MembroServico : IMembroServico
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Membro '{id}' nao encontrado.");
 
+        await _financeiroServico.ValidarRemocaoMembro(id);
         await _repositorio.Remover(entidade.Id);
+        await _financeiroServico.SincronizarParcelas(entidade.TorneioId);
     }
 
     private static MembroDto ParaDto(Membro e) => new()
@@ -76,6 +83,7 @@ public class MembroServico : IMembroServico
         Id = e.Id,
         TorneioId = e.TorneioId,
         Nome = e.Nome,
-        FotoUrl = e.FotoUrl
+        FotoUrl = e.FotoUrl,
+        TamanhoCamisa = e.TamanhoCamisa
     };
 }

@@ -29,6 +29,12 @@ public class TorneioEntity
     public bool UsarFatorMultiplicador { get; private set; }
     public string MedidaCaptura { get; private set; } = null!;
     public bool PermitirCapturaOffline { get; private set; }
+    public bool ExibirModuloFinanceiro { get; private set; } = true;
+    public decimal ValorPorMembro { get; private set; }
+    public int QuantidadeParcelas { get; private set; }
+    public DateTime? DataPrimeiroVencimento { get; private set; }
+    public decimal TaxaInscricaoValor { get; private set; }
+    public DateTime? DataVencimentoTaxaInscricao { get; private set; }
 
     // Sorteio
     public ModoSorteio ModoSorteio { get; private set; }
@@ -68,11 +74,17 @@ public class TorneioEntity
         TipoTorneio tipoTorneio = TipoTorneio.Pesca,
         bool usarFatorMultiplicador = false,
         bool permitirCapturaOffline = true,
+        bool exibirModuloFinanceiro = true,
         int qtdGanhadores = 3,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
         string? logoUrl = null,
-        string? corPrimaria = null)
+        string? corPrimaria = null,
+        decimal valorPorMembro = 0,
+        int quantidadeParcelas = 0,
+        DateTime? dataPrimeiroVencimento = null,
+        decimal taxaInscricaoValor = 0,
+        DateTime? dataVencimentoTaxaInscricao = null)
     {
         return new TorneioEntity
         {
@@ -95,12 +107,18 @@ public class TorneioEntity
             MedidaCaptura = medidaCaptura,
             UsarFatorMultiplicador = usarFatorMultiplicador,
             PermitirCapturaOffline = permitirCapturaOffline,
+            ExibirModuloFinanceiro = exibirModuloFinanceiro,
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
             PremiacaoPorEquipe = premiacaoPorEquipe,
             PremiacaoPorMembro = premiacaoPorMembro,
             CorPrimaria = corPrimaria,
+            ValorPorMembro = valorPorMembro,
+            QuantidadeParcelas = quantidadeParcelas,
+            DataPrimeiroVencimento = dataPrimeiroVencimento,
+            TaxaInscricaoValor = taxaInscricaoValor,
+            DataVencimentoTaxaInscricao = dataVencimentoTaxaInscricao,
             CriadoEm = DateTime.UtcNow,
         };
     }
@@ -146,11 +164,15 @@ public class TorneioEntity
         ModoSorteio modoSorteio,
         bool usarFatorMultiplicador,
         bool permitirCapturaOffline,
+        bool exibirModuloFinanceiro,
         int qtdGanhadores,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
         string? logoUrl = null,
-        string? corPrimaria = null)
+        string? corPrimaria = null,
+        decimal? valorPorMembro = null,
+        int? quantidadeParcelas = null,
+        DateTime? dataPrimeiroVencimento = null)
     {
         NomeTorneio = nomeTorneio;
         LabelEquipe = labelEquipe;
@@ -167,10 +189,35 @@ public class TorneioEntity
         ModoSorteio = modoSorteio;
         UsarFatorMultiplicador = usarFatorMultiplicador;
         PermitirCapturaOffline = permitirCapturaOffline;
+        ExibirModuloFinanceiro = exibirModuloFinanceiro;
         QtdGanhadores = qtdGanhadores;
         PremiacaoPorEquipe = premiacaoPorEquipe;
         PremiacaoPorMembro = premiacaoPorMembro;
         if (logoUrl != null) LogoUrl = logoUrl;
         CorPrimaria = corPrimaria;
+        if (valorPorMembro.HasValue) ValorPorMembro = valorPorMembro.Value;
+        if (quantidadeParcelas.HasValue) QuantidadeParcelas = quantidadeParcelas.Value;
+        DataPrimeiroVencimento = dataPrimeiroVencimento;
+    }
+
+    public void AtualizarFinanceiro(
+        decimal valorPorMembro,
+        int quantidadeParcelas,
+        DateTime? dataPrimeiroVencimento,
+        decimal taxaInscricaoValor,
+        DateTime? dataVencimentoTaxaInscricao)
+    {
+        if (valorPorMembro < 0)
+            throw new InvalidOperationException("O valor por membro nao pode ser negativo.");
+        if (quantidadeParcelas < 0)
+            throw new InvalidOperationException("A quantidade de parcelas nao pode ser negativa.");
+        if (taxaInscricaoValor < 0)
+            throw new InvalidOperationException("A taxa de inscricao nao pode ser negativa.");
+
+        ValorPorMembro = valorPorMembro;
+        QuantidadeParcelas = quantidadeParcelas;
+        DataPrimeiroVencimento = dataPrimeiroVencimento;
+        TaxaInscricaoValor = taxaInscricaoValor;
+        DataVencimentoTaxaInscricao = dataVencimentoTaxaInscricao;
     }
 }

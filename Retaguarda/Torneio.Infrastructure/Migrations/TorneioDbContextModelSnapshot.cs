@@ -238,6 +238,149 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("capturas", (string)null);
                 });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.ChecklistTorneioItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Concluido")
+                        .HasColumnType("boolean")
+                        .HasColumnName("concluido");
+
+                    b.Property<DateTime?>("Data")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data");
+
+                    b.Property<string>("Item")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("item");
+
+                    b.Property<string>("Responsavel")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("responsavel");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_checklist_torneio_itens");
+
+                    b.ToTable("checklist_torneio_itens", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.CustoTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Categoria")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("descricao");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("observacao");
+
+                    b.Property<decimal>("Quantidade")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("quantidade");
+
+                    b.Property<string>("Responsavel")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("responsavel");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("ValorTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_total");
+
+                    b.Property<decimal>("ValorUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_unitario");
+
+                    b.HasKey("Id")
+                        .HasName("pk_custos_torneio");
+
+                    b.ToTable("custos_torneio", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.DoacaoPatrocinador", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateTime>("DataDoacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_doacao");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("descricao");
+
+                    b.Property<string>("NomePatrocinador")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nome_patrocinador");
+
+                    b.Property<string>("Observacao")
+                        .HasColumnType("text")
+                        .HasColumnName("observacao");
+
+                    b.Property<Guid?>("PatrocinadorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patrocinador_id");
+
+                    b.Property<decimal?>("Quantidade")
+                        .HasColumnType("numeric")
+                        .HasColumnName("quantidade");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal?>("Valor")
+                        .HasColumnType("numeric")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_doacoes_patrocinadores");
+
+                    b.ToTable("doacoes_patrocinadores", (string)null);
+                });
+
             modelBuilder.Entity("Torneio.Domain.Entities.Equipe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -250,6 +393,13 @@ namespace Torneio.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("capitao");
+
+                    b.Property<decimal>("Custo")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("custo");
 
                     b.Property<string>("FotoCapitaoUrl")
                         .HasMaxLength(500)
@@ -270,6 +420,10 @@ namespace Torneio.Infrastructure.Migrations
                     b.Property<int>("QtdVagas")
                         .HasColumnType("integer")
                         .HasColumnName("qtd_vagas");
+
+                    b.Property<int>("StatusFinanceiro")
+                        .HasColumnType("integer")
+                        .HasColumnName("status_financeiro");
 
                     b.Property<Guid>("TorneioId")
                         .HasColumnType("uuid")
@@ -535,6 +689,11 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome");
 
+                    b.Property<string>("TamanhoCamisa")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tamanho_camisa");
+
                     b.Property<Guid>("TorneioId")
                         .HasColumnType("uuid")
                         .HasColumnName("torneio_id");
@@ -546,6 +705,101 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDatabaseName("ix_membros_torneio_id");
 
                     b.ToTable("membros", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ParcelaTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ComprovanteContentType")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("comprovante_content_type");
+
+                    b.Property<DateTime?>("ComprovanteDataUpload")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("comprovante_data_upload");
+
+                    b.Property<string>("ComprovanteNomeArquivo")
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)")
+                        .HasColumnName("comprovante_nome_arquivo");
+
+                    b.Property<string>("ComprovanteUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("comprovante_url");
+
+                    b.Property<string>("ComprovanteUsuarioNome")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("comprovante_usuario_nome");
+
+                    b.Property<DateTime?>("DataPagamento")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_pagamento");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
+
+                    b.Property<Guid>("MembroId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("membro_id");
+
+                    b.Property<int>("NumeroParcela")
+                        .HasColumnType("integer")
+                        .HasColumnName("numero_parcela");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("observacao");
+
+                    b.Property<bool>("Pago")
+                        .HasColumnType("boolean")
+                        .HasColumnName("pago");
+
+                    b.Property<Guid?>("ReferenciaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("referencia_id");
+
+                    b.Property<string>("TipoParcela")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("tipo_parcela");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor");
+
+                    b.Property<DateTime>("Vencimento")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("vencimento");
+
+                    b.Property<bool>("VencimentoEditadoManual")
+                        .HasColumnType("boolean")
+                        .HasColumnName("vencimento_editado_manual");
+
+                    b.HasKey("Id")
+                        .HasName("pk_parcelas_torneio");
+
+                    b.HasIndex("TorneioId", "MembroId", "TipoParcela", "NumeroParcela", "ReferenciaId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_parcelas_torneio_torneio_id_membro_id_tipo_parcela_numero_p");
+
+                    b.ToTable("parcelas_torneio", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Patrocinador", b =>
@@ -636,6 +890,105 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDatabaseName("ix_premios_torneio_id_posicao");
 
                     b.ToTable("premios", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ProdutoExtraMembro", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<Guid>("MembroId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("membro_id");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("observacao");
+
+                    b.Property<Guid>("ProdutoExtraTorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("produto_extra_torneio_id");
+
+                    b.Property<decimal>("Quantidade")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("quantidade");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("ValorCobrado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_cobrado");
+
+                    b.HasKey("Id")
+                        .HasName("pk_produtos_extras_membros");
+
+                    b.HasIndex("TorneioId")
+                        .HasDatabaseName("ix_produtos_extras_membros_torneio_id");
+
+                    b.HasIndex("ProdutoExtraTorneioId", "MembroId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_produtos_extras_membros_produto_extra_torneio_id_membro_id");
+
+                    b.ToTable("produtos_extras_membros", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ProdutoExtraTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("descricao");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_produtos_extras_torneio");
+
+                    b.HasIndex("TorneioId")
+                        .HasDatabaseName("ix_produtos_extras_torneio_torneio_id");
+
+                    b.ToTable("produtos_extras_torneio", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>
@@ -746,6 +1099,20 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("criado_em");
 
+                    b.Property<DateTime?>("DataPrimeiroVencimento")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_primeiro_vencimento");
+
+                    b.Property<DateTime?>("DataVencimentoTaxaInscricao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_vencimento_taxa_inscricao");
+
+                    b.Property<bool>("ExibirModuloFinanceiro")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("exibir_modulo_financeiro");
+
                     b.Property<string>("LabelCaptura")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -849,6 +1216,12 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDefaultValue(3)
                         .HasColumnName("qtd_ganhadores");
 
+                    b.Property<int>("QuantidadeParcelas")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("quantidade_parcelas");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -859,6 +1232,13 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<decimal>("TaxaInscricaoValor")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("taxa_inscricao_valor");
+
                     b.Property<int>("TipoTorneio")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -868,6 +1248,13 @@ namespace Torneio.Infrastructure.Migrations
                     b.Property<bool>("UsarFatorMultiplicador")
                         .HasColumnType("boolean")
                         .HasColumnName("usar_fator_multiplicador");
+
+                    b.Property<decimal>("ValorPorMembro")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("valor_por_membro");
 
                     b.HasKey("Id")
                         .HasName("pk_torneio");
@@ -1061,6 +1448,26 @@ namespace Torneio.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_premios_torneiros_torneio_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ProdutoExtraMembro", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_produtos_extras_membros_torneiros_torneio_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ProdutoExtraTorneio", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_produtos_extras_torneio_torneiros_torneio_id");
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>

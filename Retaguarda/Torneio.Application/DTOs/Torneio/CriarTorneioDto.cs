@@ -28,6 +28,7 @@ public class CriarTorneioDto
 
     public bool UsarFatorMultiplicador { get; init; } = false;
     public bool PermitirCapturaOffline { get; init; } = true;
+    public bool ExibirModuloFinanceiro { get; init; } = true;
     public ModoSorteio ModoSorteio { get; init; }
 
     [Range(1, 100, ErrorMessage = "Informe entre 1 e 100 ganhadores.")]

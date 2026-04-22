@@ -62,21 +62,20 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Sair'),
-            content: const Text('Deseja encerrar a sessão?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Sair'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text('Sair'),
+        content: const Text('Deseja encerrar a sessao?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
     );
     if (confirm == true && mounted) {
       context.read<AuthProvider>().logout();
@@ -102,21 +101,20 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text(titulo),
-            content: Text(mensagem),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Confirmar'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: Text(titulo),
+        content: Text(mensagem),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
     );
 
     if (confirm != true || !mounted) return;
@@ -125,14 +123,10 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
       await _api.post(endpoint, null, token: auth.token);
       await configProvider.carregarConfig(auth.slug!);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(sucesso)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(sucesso)));
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,6 +148,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
     final exibirSorteio = config?.modoSorteio != 'Nenhum';
     final exibirGrupos = config?.modoSorteio == 'GrupoEquipe';
     final exibirReorganizacao = config?.modoSorteio != 'Nenhum';
+    final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
 
     return Scaffold(
       appBar: AppBar(
@@ -181,14 +176,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Olá, ${auth.usuario?.nome ?? ''}',
+                'Ola, ${auth.usuario?.nome ?? ''}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               Text(
                 'Administrador do torneio',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
               if (config != null) ...[
                 const SizedBox(height: 12),
@@ -196,27 +189,24 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                 const SizedBox(height: 12),
                 _StatusActions(
                   status: config.status,
-                  onLiberar:
-                      () => _alterarStatus(
-                        titulo: 'Liberar torneio',
-                        mensagem: 'Deseja alterar o status do torneio para Liberado?',
-                        endpoint: ApiConstants.torneioLiberar(config.slug),
-                        sucesso: 'Torneio liberado com sucesso.',
-                      ),
-                  onReabrir:
-                      () => _alterarStatus(
-                        titulo: 'Voltar para aberto',
-                        mensagem: 'Deseja voltar o torneio para o status Aberto?',
-                        endpoint: ApiConstants.torneioReabrir(config.slug),
-                        sucesso: 'Torneio reaberto com sucesso.',
-                      ),
-                  onFinalizar:
-                      () => _alterarStatus(
-                        titulo: 'Finalizar torneio',
-                        mensagem: 'Deseja alterar o status do torneio para Finalizado?',
-                        endpoint: ApiConstants.torneioFinalizar(config.slug),
-                        sucesso: 'Torneio finalizado com sucesso.',
-                      ),
+                  onLiberar: () => _alterarStatus(
+                    titulo: 'Liberar torneio',
+                    mensagem: 'Deseja alterar o status do torneio para Liberado?',
+                    endpoint: ApiConstants.torneioLiberar(config.slug),
+                    sucesso: 'Torneio liberado com sucesso.',
+                  ),
+                  onReabrir: () => _alterarStatus(
+                    titulo: 'Voltar para aberto',
+                    mensagem: 'Deseja voltar o torneio para o status Aberto?',
+                    endpoint: ApiConstants.torneioReabrir(config.slug),
+                    sucesso: 'Torneio reaberto com sucesso.',
+                  ),
+                  onFinalizar: () => _alterarStatus(
+                    titulo: 'Finalizar torneio',
+                    mensagem: 'Deseja alterar o status do torneio para Finalizado?',
+                    endpoint: ApiConstants.torneioFinalizar(config.slug),
+                    sucesso: 'Torneio finalizado com sucesso.',
+                  ),
                 ),
               ],
               const SizedBox(height: 20),
@@ -265,8 +255,59 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     ),
                 ],
               ),
+              if (exibirFinanceiro) ...[
+                const SizedBox(height: 20),
+                Text('Financeiro', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                _NavGrid(
+                  items: [
+                    _NavItem(
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: 'Visão geral',
+                      color: Colors.blueGrey,
+                      onTap: () => _abrirSecao('/admin/financeiro'),
+                    ),
+                    _NavItem(
+                      icon: Icons.tune,
+                      label: 'Configuração',
+                      color: Colors.indigo,
+                      onTap: () => _abrirSecao('/admin/financeiro/configuracao'),
+                    ),
+                    _NavItem(
+                      icon: Icons.receipt_long_outlined,
+                      label: 'Cobranças',
+                      color: Colors.teal,
+                      onTap: () => _abrirSecao('/admin/financeiro/cobrancas'),
+                    ),
+                    _NavItem(
+                      icon: Icons.payments_outlined,
+                      label: 'Custos',
+                      color: Colors.orange,
+                      onTap: () => _abrirSecao('/admin/financeiro/custos'),
+                    ),
+                    _NavItem(
+                      icon: Icons.shopping_bag_outlined,
+                      label: 'Produtos extras',
+                      color: Colors.brown,
+                      onTap: () => _abrirSecao('/admin/financeiro/extras'),
+                    ),
+                    _NavItem(
+                      icon: Icons.card_giftcard_outlined,
+                      label: 'Doações',
+                      color: Colors.purple,
+                      onTap: () => _abrirSecao('/admin/financeiro/doacoes'),
+                    ),
+                    _NavItem(
+                      icon: Icons.checklist_outlined,
+                      label: 'Checklist',
+                      color: Colors.green,
+                      onTap: () => _abrirSecao('/admin/financeiro/checklist'),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
-              Text('Operações', style: Theme.of(context).textTheme.titleMedium),
+              Text('Operacoes', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               _NavGrid(
                 items: [
@@ -285,7 +326,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     ),
                   _NavItem(
                     icon: Icons.picture_as_pdf,
-                    label: 'Relatórios',
+                    label: 'Relatorios',
                     color: Colors.red,
                     onTap: () => _abrirSecao('/admin/relatorios'),
                   ),
@@ -294,8 +335,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
               if (exibirReorganizacao) ...[
                 const SizedBox(height: 12),
                 FilledButton.icon(
-                  onPressed:
-                      () => _abrirSecao('/admin/reorganizacao-emergencial'),
+                  onPressed: () => _abrirSecao('/admin/reorganizacao-emergencial'),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
