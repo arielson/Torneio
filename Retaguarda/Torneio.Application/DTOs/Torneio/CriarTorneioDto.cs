@@ -26,7 +26,7 @@ public class CriarTorneioDto
     [Required] public string LabelCapturaPlural { get; init; } = null!;
     [Required] public string MedidaCaptura      { get; init; } = null!;
 
-    public bool UsarFatorMultiplicador { get; init; } = false;
+    public bool UsarFatorMultiplicador { get; init; }
     public bool PermitirCapturaOffline { get; init; } = true;
     public bool ExibirModuloFinanceiro { get; init; } = true;
     public bool PermitirRegistroPublicoMembro { get; init; }
@@ -36,7 +36,7 @@ public class CriarTorneioDto
     public int QtdGanhadores { get; init; } = 3;
 
     public bool PremiacaoPorEquipe { get; init; } = true;
-    public bool PremiacaoPorMembro { get; init; } = false;
+    public bool PremiacaoPorMembro { get; init; } = true;
 
     [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "Cor inválida. Use o formato #RRGGBB.")]
     public string? CorPrimaria { get; init; }
