@@ -1,0 +1,196 @@
+@model TorneioDto
+@{
+    ViewData["Title"] = $"Registro de {Model.LabelMembro}";
+    var tamanhosCamisa = new[] { "", "PP", "P", "M", "G", "GG", "XGG", "EXGG" };
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Registro de @Model.LabelMembro</h1>
+        <p class="text-muted mb-0">@Model.NomeTorneio</p>
+    </div>
+</div>
+<a href="/@Model.Slug" class="back-link">
+    <i class="bi bi-arrow-left"></i> Voltar ao torneio
+</a>
+
+@if (!Model.PermitirRegistroPublicoMembro)
+{
+    <div class="alert alert-warning mt-3">
+        O cadastro público de @Model.LabelMembroPlural.ToLower() não está habilitado neste torneio.
+    </div>
+}
+else
+{
+    <div class="form-card">
+        <div class="form-section-title">Dados do @Model.LabelMembro</div>
+        <div id="erroBox" class="alert alert-danger d-none"></div>
+        <div id="sucessoBox" class="alert alert-success d-none"></div>
+
+        <form id="registroForm">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome do @Model.LabelMembro</label>
+                <input id="nome" class="form-control" maxlength="200" required />
+            </div>
+            <div class="mb-3">
+                <label for="celular" class="form-label">Celular</label>
+                <input id="celular" class="form-control" maxlength="15" inputmode="numeric" required />
+                <div class="form-text">Você receberá um código por SMS para confirmar o cadastro.</div>
+            </div>
+            @if (Model.ExibirModuloFinanceiro)
+            {
+                <div class="mb-3">
+                    <label for="tamanhoCamisa" class="form-label">Tamanho da camisa <small class="text-muted">(opcional)</small></label>
+                    <select id="tamanhoCamisa" class="form-select">
+                        @foreach (var tamanho in tamanhosCamisa)
+                        {
+                            <option value="@tamanho">@(string.IsNullOrWhiteSpace(tamanho) ? "Nao informado" : tamanho)</option>
+                        }
+                    </select>
+                </div>
+            }
+            <button type="button" id="solicitarBtn" class="btn btn-primary">
+                Enviar código por SMS
+            </button>
+        </form>
+
+        <div id="confirmacaoBox" class="mt-4 d-none">
+            <div class="form-section-title">Validação do código</div>
+            <p class="text-muted mb-3">
+                Digite o código enviado para <strong id="celularMascarado"></strong>.
+            </p>
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Usuario <small class="text-muted">(opcional)</small></label>
+                <input id="usuario" class="form-control" maxlength="100" />
+                <div class="form-text">Se desejar acompanhar suas cobrancas, defina usuario e senha.</div>
+            </div>
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha <small class="text-muted">(opcional)</small></label>
+                <input id="senha" class="form-control" type="password" maxlength="100" />
+            </div>
+            <div class="mb-3">
+                <label for="codigo" class="form-label">Código</label>
+                <input id="codigo" class="form-control" maxlength="10" inputmode="numeric" />
+            </div>
+            <button type="button" id="confirmarBtn" class="btn btn-success">
+                Confirmar cadastro
+            </button>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (() => {
+            const celularInput = document.getElementById('celular');
+            const solicitarBtn = document.getElementById('solicitarBtn');
+            const confirmarBtn = document.getElementById('confirmarBtn');
+            const erroBox = document.getElementById('erroBox');
+            const sucessoBox = document.getElementById('sucessoBox');
+            const confirmacaoBox = document.getElementById('confirmacaoBox');
+            const celularMascarado = document.getElementById('celularMascarado');
+            const codigoInput = document.getElementById('codigo');
+            let registroId = null;
+
+            if (!celularInput) return;
+
+            const limparMensagens = () => {
+                erroBox?.classList.add('d-none');
+                sucessoBox?.classList.add('d-none');
+                if (erroBox) erroBox.textContent = '';
+                if (sucessoBox) sucessoBox.textContent = '';
+            };
+
+            const mostrarErro = (mensagem) => {
+                limparMensagens();
+                if (!erroBox) return;
+                erroBox.textContent = mensagem;
+                erroBox.classList.remove('d-none');
+            };
+
+            const mostrarSucesso = (mensagem) => {
+                limparMensagens();
+                if (!sucessoBox) return;
+                sucessoBox.textContent = mensagem;
+                sucessoBox.classList.remove('d-none');
+            };
+
+            const formatarCelular = (valor) => {
+                const digitos = (valor || '').replace(/\D/g, '').slice(0, 11);
+                if (!digitos) return '';
+                if (digitos.length <= 2) return `(${digitos}`;
+                if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+                return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+            };
+
+            celularInput.value = formatarCelular(celularInput.value);
+            celularInput.addEventListener('input', function () {
+                this.value = formatarCelular(this.value);
+            });
+
+            solicitarBtn?.addEventListener('click', async () => {
+                limparMensagens();
+                solicitarBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/@Model.Slug/registro-pescador/solicitar-codigo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nome: document.getElementById('nome')?.value?.trim(),
+                            celular: celularInput.value.trim(),
+                            tamanhoCamisa: document.getElementById('tamanhoCamisa')?.value || null
+                        })
+                    });
+
+                    const body = await response.json();
+                    if (!response.ok) {
+                        throw new Error(body.erro || 'Nao foi possivel enviar o codigo.');
+                    }
+
+                    registroId = body.registroId;
+                    if (celularMascarado) celularMascarado.textContent = body.celularMascarado;
+                    confirmacaoBox?.classList.remove('d-none');
+                    mostrarSucesso(body.mensagem || 'Codigo enviado por SMS.');
+                } catch (error) {
+                    mostrarErro(error.message || 'Nao foi possivel enviar o codigo.');
+                } finally {
+                    solicitarBtn.disabled = false;
+                }
+            });
+
+            confirmarBtn?.addEventListener('click', async () => {
+                limparMensagens();
+                confirmarBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/@Model.Slug/registro-pescador/confirmar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            registroId,
+                            codigo: codigoInput?.value?.trim(),
+                            usuario: document.getElementById('usuario')?.value?.trim(),
+                            senha: document.getElementById('senha')?.value ?? ''
+                        })
+                    });
+
+                    const body = await response.json();
+                    if (!response.ok) {
+                        throw new Error(body.erro || 'Nao foi possivel confirmar o cadastro.');
+                    }
+
+                    mostrarSucesso('@Model.LabelMembro cadastrado com sucesso.');
+                    document.getElementById('registroForm')?.reset();
+                    if (codigoInput) codigoInput.value = '';
+                    confirmacaoBox?.classList.add('d-none');
+                    registroId = null;
+                } catch (error) {
+                    mostrarErro(error.message || 'Nao foi possivel confirmar o cadastro.');
+                } finally {
+                    confirmarBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+}

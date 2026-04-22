@@ -75,7 +75,9 @@ public class MembroController : BaseController
             Nome = dto.Nome,
             FotoUrl = dto.FotoUrl,
             Celular = dto.Celular,
-            TamanhoCamisa = dto.TamanhoCamisa
+            TamanhoCamisa = dto.TamanhoCamisa,
+            Usuario = dto.Usuario,
+            Senha = dto.Senha
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
@@ -92,7 +94,9 @@ public class MembroController : BaseController
             Nome = dto.Nome,
             FotoUrl = fotoUrl,
             Celular = dto.Celular,
-            TamanhoCamisa = dto.TamanhoCamisa
+            TamanhoCamisa = dto.TamanhoCamisa,
+            Usuario = dto.Usuario,
+            Senha = dto.Senha
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
@@ -120,7 +124,9 @@ public class MembroController : BaseController
             Nome = dto.Nome,
             FotoUrl = fotoUrl,
             Celular = dto.Celular,
-            TamanhoCamisa = dto.TamanhoCamisa
+            TamanhoCamisa = dto.TamanhoCamisa,
+            Usuario = dto.Usuario,
+            Senha = dto.Senha
         });
         return NoContent();
     }
@@ -148,6 +154,8 @@ public class CriarMembroFormDto
     public string Nome { get; init; } = null!;
     public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
+    public string? Usuario { get; init; }
+    public string? Senha { get; init; }
     public IFormFile? Foto { get; init; }
 }
 
@@ -157,5 +165,7 @@ public class AtualizarMembroFormDto
     public string Nome { get; init; } = null!;
     public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
+    public string? Usuario { get; init; }
+    public string? Senha { get; init; }
     public IFormFile? Foto { get; init; }
 }

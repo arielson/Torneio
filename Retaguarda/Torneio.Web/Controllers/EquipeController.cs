@@ -69,6 +69,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
                 Custo = dto.Custo,
                 StatusFinanceiro = dto.StatusFinanceiro,
+                DataVencimentoCusto = dto.DataVencimentoCusto,
             };
         }
 
@@ -84,6 +85,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
                 Custo = 0,
                 StatusFinanceiro = StatusEmbarcacaoFinanceira.Pendente,
+                DataVencimentoCusto = null,
             };
         }
 
@@ -107,6 +109,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = fotoCapitaoUrl,
                 Custo = dto.Custo,
                 StatusFinanceiro = dto.StatusFinanceiro,
+                DataVencimentoCusto = dto.DataVencimentoCusto,
             });
             TempData["Sucesso"] = "Equipe criada com sucesso.";
             await _log.Registrar(new RegistrarLogDto
@@ -115,7 +118,7 @@ public class EquipeController : TorneioBaseController
                 NomeTorneio = torneio?.NomeTorneio,
                 Categoria = CategoriaLog.Equipes,
                 Acao = "CriarEquipe",
-                Descricao = $"Equipe criada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Status financeiro: {dto.StatusFinanceiro}",
+                Descricao = $"Equipe criada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Vencimento custo: {(dto.DataVencimentoCusto.HasValue ? dto.DataVencimentoCusto.Value.ToString("dd/MM/yyyy") : "-")} | Status financeiro: {dto.StatusFinanceiro}",
                 UsuarioNome = UsuarioNome,
                 UsuarioPerfil = UsuarioPerfil,
                 IpAddress = IpAddress
@@ -147,6 +150,7 @@ public class EquipeController : TorneioBaseController
             FotoCapitaoUrl = equipe.FotoCapitaoUrl,
             Custo = equipe.Custo,
             StatusFinanceiro = equipe.StatusFinanceiro,
+            DataVencimentoCusto = equipe.DataVencimentoCusto,
         };
         return View(dto);
     }
@@ -168,6 +172,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
                 Custo = dto.Custo,
                 StatusFinanceiro = dto.StatusFinanceiro,
+                DataVencimentoCusto = dto.DataVencimentoCusto,
             };
         }
 
@@ -182,6 +187,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = dto.FotoCapitaoUrl,
                 Custo = equipeAtual?.Custo ?? 0,
                 StatusFinanceiro = equipeAtual?.StatusFinanceiro ?? StatusEmbarcacaoFinanceira.Pendente,
+                DataVencimentoCusto = equipeAtual?.DataVencimentoCusto,
             };
         }
 
@@ -205,6 +211,7 @@ public class EquipeController : TorneioBaseController
                 FotoCapitaoUrl = fotoCapitaoUrl,
                 Custo = dto.Custo,
                 StatusFinanceiro = dto.StatusFinanceiro,
+                DataVencimentoCusto = dto.DataVencimentoCusto,
             };
 
             await _servico.Atualizar(id, dto);
@@ -215,7 +222,7 @@ public class EquipeController : TorneioBaseController
                 NomeTorneio = torneio?.NomeTorneio,
                 Categoria = CategoriaLog.Equipes,
                 Acao = "EditarEquipe",
-                Descricao = $"Equipe editada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Status financeiro: {dto.StatusFinanceiro}",
+                Descricao = $"Equipe editada | Nome: {dto.Nome} | Capitao: {dto.Capitao} | Vagas: {dto.QtdVagas} | Custo: {dto.Custo:0.00} | Vencimento custo: {(dto.DataVencimentoCusto.HasValue ? dto.DataVencimentoCusto.Value.ToString("dd/MM/yyyy") : "-")} | Status financeiro: {dto.StatusFinanceiro}",
                 UsuarioNome = UsuarioNome,
                 UsuarioPerfil = UsuarioPerfil,
                 IpAddress = IpAddress

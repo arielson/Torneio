@@ -149,6 +149,26 @@ class _TorneioScreenState extends State<TorneioScreen> {
               label: const Text('Fiscal/Administração'),
               onPressed: () => Navigator.pushNamed(context, '/login'),
             ),
+            if (config.permitirRegistroPublicoMembro) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.person_add_alt_1_outlined),
+                label: Text('Registrar ${config.labelMembro.toLowerCase()}'),
+                onPressed: () => Navigator.pushNamed(context, '/registro-pescador'),
+              ),
+            ],
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.badge_outlined),
+              label: Text('Entrar como ${config.labelMembro.toLowerCase()}'),
+              onPressed: () => Navigator.pushNamed(context, '/login', arguments: 'Membro'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.lock_reset_outlined),
+              label: Text('Recuperar senha do ${config.labelMembro.toLowerCase()}'),
+              onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
+            ),
           ],
         ),
       ),

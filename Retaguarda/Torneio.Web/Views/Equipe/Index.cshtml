@@ -67,6 +67,7 @@
                         @if (exibirFinanceiro)
                         {
                             <th>Custo</th>
+                            <th>Vencimento do custo</th>
                             <th>Status financeiro</th>
                         }
                         <th class="text-end">Acoes</th>
@@ -93,6 +94,7 @@
                             @if (exibirFinanceiro)
                             {
                                 <td>R$ @e.Custo.ToString("N2")</td>
+                                <td>@(e.DataVencimentoCusto.HasValue ? e.DataVencimentoCusto.Value.ToString("dd/MM/yyyy") : "-")</td>
                                 <td>@e.StatusFinanceiro</td>
                             }
                             <td class="text-end">

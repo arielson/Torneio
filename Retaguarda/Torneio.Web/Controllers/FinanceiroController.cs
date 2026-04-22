@@ -63,6 +63,12 @@ public class FinanceiroController : TorneioBaseController
         return View(vm);
     }
 
+    [HttpGet("relatorios")]
+    public async Task<IActionResult> Relatorios()
+    {
+        return View(await _financeiroServico.ObterRelatorio(TenantContext.TorneioId));
+    }
+
     [HttpGet("configuracao")]
     public async Task<IActionResult> Configuracao()
     {
@@ -251,13 +257,14 @@ public class FinanceiroController : TorneioBaseController
                 Descricao = dto.Descricao,
                 Quantidade = dto.Quantidade,
                 ValorUnitario = dto.ValorUnitario,
+                Vencimento = dto.Vencimento,
                 Responsavel = dto.Responsavel,
                 Observacao = dto.Observacao
             });
             TempData["Sucesso"] = "Custo criado com sucesso.";
             await RegistrarLog(
                 "CriarCustoWeb",
-                $"Custo criado pela retaguarda web | Categoria: {criado.Categoria} | Descricao: {criado.Descricao} | Valor total: {criado.ValorTotal:0.00}");
+                $"Custo criado pela retaguarda web | Categoria: {criado.CategoriaLabel} | Descricao: {criado.Descricao} | Valor total: {criado.ValorTotal:0.00} | Vencimento: {(criado.Vencimento.HasValue ? criado.Vencimento.Value.ToString("dd/MM/yyyy") : "-")}");
             return RedirectToAction(nameof(Custos), new { slug = Slug });
         }
         catch (Exception ex)
@@ -281,6 +288,7 @@ public class FinanceiroController : TorneioBaseController
             Descricao = custo.Descricao,
             Quantidade = custo.Quantidade,
             ValorUnitario = custo.ValorUnitario,
+            Vencimento = custo.Vencimento,
             Responsavel = custo.Responsavel,
             Observacao = custo.Observacao
         });
@@ -299,7 +307,7 @@ public class FinanceiroController : TorneioBaseController
             TempData["Sucesso"] = "Custo atualizado.";
             await RegistrarLog(
                 "AtualizarCustoWeb",
-                $"Custo atualizado pela retaguarda web | Custo: {id} | Categoria: {dto.Categoria} | Descricao: {dto.Descricao} | Quantidade: {dto.Quantidade:0.##} | Valor unitario: {dto.ValorUnitario:0.00}");
+                $"Custo atualizado pela retaguarda web | Custo: {id} | Categoria: {dto.Categoria} | Descricao: {dto.Descricao} | Quantidade: {dto.Quantidade:0.##} | Valor unitario: {dto.ValorUnitario:0.00} | Vencimento: {(dto.Vencimento.HasValue ? dto.Vencimento.Value.ToString("dd/MM/yyyy") : "-")}");
             return RedirectToAction(nameof(Custos), new { slug = Slug });
         }
         catch (Exception ex)

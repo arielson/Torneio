@@ -28,6 +28,7 @@ public class TorneioEntityConfiguration : IEntityTypeConfiguration<TorneioEntity
         builder.Property(e => e.LabelCapturaPlural).IsRequired().HasMaxLength(50);
         builder.Property(e => e.MedidaCaptura).IsRequired().HasMaxLength(20);
         builder.Property(e => e.ExibirModuloFinanceiro).IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.PermitirRegistroPublicoMembro).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.ValorPorMembro).HasPrecision(18, 2).HasDefaultValue(0m);
         builder.Property(e => e.QuantidadeParcelas).HasDefaultValue(0);
         builder.Property(e => e.TaxaInscricaoValor).HasPrecision(18, 2).HasDefaultValue(0m);

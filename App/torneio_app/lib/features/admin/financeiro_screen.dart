@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/constants.dart';
 import '../../core/models/indicadores_financeiros.dart';
 import '../../core/providers/auth_provider.dart';
@@ -81,18 +82,9 @@ class _FinanceiroAdminScreenState extends State<FinanceiroAdminScreen> {
                       children: [
                         _IndicadorCard(titulo: 'Pescadores', valor: '${_indicadores!.quantidadeMembros}'),
                         _IndicadorCard(titulo: 'Embarcações', valor: '${_indicadores!.quantidadeEquipes}'),
-                        _IndicadorCard(
-                          titulo: 'Arrecadação prevista',
-                          valor: moeda.format(_indicadores!.arrecadacaoPrevista),
-                        ),
-                        _IndicadorCard(
-                          titulo: 'Custo total',
-                          valor: moeda.format(_indicadores!.custoTotalTorneio),
-                        ),
-                        _IndicadorCard(
-                          titulo: 'Taxa de inscrição',
-                          valor: moeda.format(_indicadores!.taxaInscricaoValor),
-                        ),
+                        _IndicadorCard(titulo: 'Arrecadação prevista', valor: moeda.format(_indicadores!.arrecadacaoPrevista)),
+                        _IndicadorCard(titulo: 'Custo total', valor: moeda.format(_indicadores!.custoTotalTorneio)),
+                        _IndicadorCard(titulo: 'Taxa de inscrição', valor: moeda.format(_indicadores!.taxaInscricaoValor)),
                         _IndicadorCard(
                           titulo: 'Saldo projetado',
                           valor: moeda.format(_indicadores!.saldoProjetado),
@@ -108,22 +100,10 @@ class _FinanceiroAdminScreenState extends State<FinanceiroAdminScreen> {
                           valor: moeda.format(_indicadores!.valorEmAberto),
                           destaque: Colors.orange,
                         ),
-                        _IndicadorCard(
-                          titulo: 'Custos lançados',
-                          valor: '${_indicadores!.quantidadeCustosLancados}',
-                        ),
-                        _IndicadorCard(
-                          titulo: 'Produtos extras',
-                          valor: '${_indicadores!.quantidadeProdutosExtras}',
-                        ),
-                        _IndicadorCard(
-                          titulo: 'Receita extras',
-                          valor: moeda.format(_indicadores!.receitaExtrasPrevista),
-                        ),
-                        _IndicadorCard(
-                          titulo: 'Doações',
-                          valor: '${_indicadores!.quantidadeDoacoesPatrocinadores}',
-                        ),
+                        _IndicadorCard(titulo: 'Custos lançados', valor: '${_indicadores!.quantidadeCustosLancados}'),
+                        _IndicadorCard(titulo: 'Produtos extras', valor: '${_indicadores!.quantidadeProdutosExtras}'),
+                        _IndicadorCard(titulo: 'Receita extras', valor: moeda.format(_indicadores!.receitaExtrasPrevista)),
+                        _IndicadorCard(titulo: 'Doações', valor: '${_indicadores!.quantidadeDoacoesPatrocinadores}'),
                         _IndicadorCard(
                           titulo: 'Receita doações',
                           valor: moeda.format(_indicadores!.receitaDoacoesPatrocinadores),
@@ -159,6 +139,14 @@ class _FinanceiroAdminScreenState extends State<FinanceiroAdminScreen> {
                         ),
                         const Divider(height: 1),
                         ListTile(
+                          leading: const Icon(Icons.query_stats_outlined),
+                          title: const Text('Relatórios'),
+                          subtitle: const Text('Acompanhe fluxo projetado, receitas e despesas por categoria.'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => Navigator.pushNamed(context, '/admin/financeiro/relatorios'),
+                        ),
+                        const Divider(height: 1),
+                        ListTile(
                           leading: const Icon(Icons.shopping_bag_outlined),
                           title: const Text('Produtos extras'),
                           subtitle: const Text('Cadastre produtos opcionais e registre vendas por pescador.'),
@@ -177,7 +165,7 @@ class _FinanceiroAdminScreenState extends State<FinanceiroAdminScreen> {
                         ListTile(
                           leading: const Icon(Icons.checklist_outlined),
                           title: const Text('Checklist'),
-                          subtitle: const Text('Acompanhe as pendencias operacionais do torneio.'),
+                          subtitle: const Text('Acompanhe as pendências operacionais do torneio.'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () => Navigator.pushNamed(context, '/admin/financeiro/checklist'),
                         ),
@@ -189,7 +177,6 @@ class _FinanceiroAdminScreenState extends State<FinanceiroAdminScreen> {
             ),
     );
   }
-
 }
 
 class _IndicadorCard extends StatelessWidget {

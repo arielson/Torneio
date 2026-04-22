@@ -1,0 +1,206 @@
+@model Torneio.Application.DTOs.Financeiro.RelatorioFinanceiroDto
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    ViewData["Title"] = "Relatórios financeiros";
+    var fluxo = Model.FluxoCaixaProjetado.OrderBy(x => x.Data).ToList();
+    var minValor = fluxo.Any() ? Math.Min(0m, fluxo.Min(x => Math.Min(x.RecebimentosPrevistos, Math.Min(x.PagamentosPrevistos, x.SaldoAcumulado)))) : 0m;
+    var maxValor = fluxo.Any() ? Math.Max(1m, fluxo.Max(x => Math.Max(x.RecebimentosPrevistos, Math.Max(x.PagamentosPrevistos, x.SaldoAcumulado)))) : 1m;
+    var faixa = maxValor - minValor;
+    if (faixa == 0) { faixa = 1; }
+    var largura = 920m;
+    var altura = 280m;
+    string PlotLine(Func<Torneio.Application.DTOs.Financeiro.FluxoFinanceiroLinhaDto, decimal> selector)
+    {
+        if (!fluxo.Any()) return string.Empty;
+        var pontos = fluxo.Select((item, index) =>
+        {
+            var x = fluxo.Count == 1 ? largura / 2 : largura * index / (fluxo.Count - 1);
+            var y = altura - ((selector(item) - minValor) / faixa * altura);
+            return $"{x:0.##},{y:0.##}";
+        });
+        return string.Join(" ", pontos);
+    }
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Relatórios financeiros</h1>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/financeiro" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Visão geral
+        </a>
+    </div>
+</div>
+<a href="/@slug/financeiro" class="back-link">
+    <i class="bi bi-arrow-left"></i> Financeiro
+</a>
+
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-graph-up-arrow me-2"></i>Fluxo projetado de recebimentos e pagamentos</h5>
+    </div>
+    <div class="card-body-pad">
+        @if (!fluxo.Any())
+        {
+            <div class="text-muted">Ainda não há datas suficientes para montar a linha do tempo financeira.</div>
+        }
+        else
+        {
+            <div class="small text-muted mb-3">Azul: recebimentos previstos. Vermelho: pagamentos previstos. Verde: saldo acumulado projetado.</div>
+            <svg viewBox="0 0 960 340" width="100%" role="img" aria-label="Gráfico de linha do fluxo financeiro">
+                <rect x="0" y="0" width="960" height="340" fill="#fff" />
+                <line x1="20" y1="300" x2="940" y2="300" stroke="#cbd5e1" stroke-width="1" />
+                <line x1="20" y1="20" x2="20" y2="300" stroke="#cbd5e1" stroke-width="1" />
+                <polyline fill="none" stroke="#2563eb" stroke-width="3" points="@PlotLine(x => x.RecebimentosPrevistos)" transform="translate(20,20)" />
+                <polyline fill="none" stroke="#dc2626" stroke-width="3" points="@PlotLine(x => x.PagamentosPrevistos)" transform="translate(20,20)" />
+                <polyline fill="none" stroke="#16a34a" stroke-width="3" points="@PlotLine(x => x.SaldoAcumulado)" transform="translate(20,20)" />
+                @for (var i = 0; i < fluxo.Count; i++)
+                {
+                    var x = fluxo.Count == 1 ? largura / 2 : largura * i / (fluxo.Count - 1);
+                    @Html.Raw($"<text x=\"{x + 20:0.##}\" y=\"325\" font-size=\"10\" text-anchor=\"middle\" fill=\"#475569\">{fluxo[i].Data:dd/MM}</text>")
+                }
+            </svg>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-cash-coin me-2"></i>Receitas por tipo</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Qtd.</th>
+                            <th>Total</th>
+                            <th>Pago</th>
+                            <th>Em aberto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ReceitasPorTipo)
+                        {
+                            <tr>
+                                <td>@item.Label</td>
+                                <td>@item.Quantidade</td>
+                                <td>R$ @item.Total.ToString("N2")</td>
+                                <td>R$ @item.Pago.ToString("N2")</td>
+                                <td>R$ @item.EmAberto.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-wallet2 me-2"></i>Custos por categoria</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Qtd.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.CustosPorCategoria)
+                        {
+                            <tr>
+                                <td>@item.Label</td>
+                                <td>@item.Quantidade</td>
+                                <td>R$ @item.Total.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-calendar-check me-2"></i>Próximos recebimentos pendentes</h5>
+            </div>
+            @if (!Model.ProximosRecebimentosPendentes.Any())
+            {
+                <div class="card-body-pad text-muted">Nenhuma cobrança pendente encontrada.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Pescador</th>
+                                <th>Descrição</th>
+                                <th>Vencimento</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ProximosRecebimentosPendentes)
+                            {
+                                <tr>
+                                    <td>@item.NomeMembro</td>
+                                    <td>@item.Descricao</td>
+                                    <td>@item.Vencimento.ToString("dd/MM/yyyy")</td>
+                                    <td>R$ @item.Valor.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-calendar-x me-2"></i>Próximos pagamentos previstos</h5>
+            </div>
+            @if (!Model.ProximosPagamentosPendentes.Any())
+            {
+                <div class="card-body-pad text-muted">Nenhum pagamento com vencimento informado.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Descrição</th>
+                                <th>Vencimento</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ProximosPagamentosPendentes)
+                            {
+                                <tr>
+                                    <td>@item.CategoriaLabel</td>
+                                    <td>@item.Descricao</td>
+                                    <td>@item.Vencimento?.ToString("dd/MM/yyyy")</td>
+                                    <td>R$ @item.ValorTotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

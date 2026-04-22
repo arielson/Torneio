@@ -13,6 +13,7 @@ public class CustoTorneioConfiguration : IEntityTypeConfiguration<CustoTorneio>
         builder.Property(x => x.Quantidade).HasPrecision(18, 2);
         builder.Property(x => x.ValorUnitario).HasPrecision(18, 2);
         builder.Property(x => x.ValorTotal).HasPrecision(18, 2);
+        builder.Property(x => x.Vencimento);
         builder.Property(x => x.Responsavel).HasMaxLength(200);
         builder.Property(x => x.Observacao).HasMaxLength(1000);
     }

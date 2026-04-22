@@ -28,9 +28,12 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
   final _api = ApiService();
   final _nomeController = TextEditingController();
   final _celularController = TextEditingController();
+  final _usuarioController = TextEditingController();
+  final _senhaController = TextEditingController();
   final _picker = ImagePicker();
 
   bool _salvando = false;
+  bool _senhaVisivel = false;
   String? _fotoPath;
   String? _tamanhoCamisa;
 
@@ -43,6 +46,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     if (membro != null) {
       _nomeController.text = membro.nome;
       _celularController.text = _formatarCelular(membro.celular ?? '');
+      _usuarioController.text = membro.usuario ?? '';
       _tamanhoCamisa = (membro.tamanhoCamisa?.trim().isEmpty ?? true)
           ? null
           : membro.tamanhoCamisa?.trim();
@@ -97,6 +101,15 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     final config = context.read<ConfigProvider>().config;
     if (auth?.slug == null || auth?.token == null || config == null) return;
 
+    final usuario = _usuarioController.text.trim();
+    final senha = _senhaController.text;
+    if ((usuario.isEmpty && senha.isNotEmpty) || (usuario.isNotEmpty && !_editando && senha.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe usuario e senha juntos para habilitar o acesso do pescador.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() => _salvando = true);
 
     try {
@@ -109,6 +122,8 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
             'tamanhoCamisa': config.exibirModuloFinanceiro
                 ? (_tamanhoCamisa ?? '')
                 : (widget.membro?.tamanhoCamisa ?? ''),
+            'usuario': usuario,
+            'senha': senha,
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -120,6 +135,8 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
             'nome': _nomeController.text.trim(),
             'celular': _celularController.text.trim(),
             'tamanhoCamisa': config.exibirModuloFinanceiro ? (_tamanhoCamisa ?? '') : '',
+            'usuario': usuario,
+            'senha': senha,
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -181,6 +198,29 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            TextFormField(
+              controller: _usuarioController,
+              decoration: const InputDecoration(
+                labelText: 'Usuario',
+                hintText: 'Opcional',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _senhaController,
+              obscureText: !_senhaVisivel,
+              decoration: InputDecoration(
+                labelText: _editando ? 'Nova senha' : 'Senha',
+                hintText: _editando ? 'Deixe em branco para manter a atual' : 'Opcional',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  onPressed: () => setState(() => _senhaVisivel = !_senhaVisivel),
+                  icon: Icon(_senhaVisivel ? Icons.visibility_off : Icons.visibility),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             if (exibirFinanceiro) ...[
               DropdownButtonFormField<String>(
                 initialValue: _tamanhoCamisa,
@@ -232,6 +272,8 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
   void dispose() {
     _nomeController.dispose();
     _celularController.dispose();
+    _usuarioController.dispose();
+    _senhaController.dispose();
     super.dispose();
   }
 

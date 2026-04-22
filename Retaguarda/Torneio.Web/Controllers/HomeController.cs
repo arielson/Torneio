@@ -111,6 +111,57 @@ public class HomeController : Controller
         return Redirect(model.ReturnUrl ?? $"/{slug}/admin");
     }
 
+    [HttpGet("{slug}/pescador/login")]
+    public async Task<IActionResult> MembroLogin(string slug, string? returnUrl)
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return Redirect(returnUrl ?? $"/{slug}/minhas-cobrancas");
+
+        var torneio = await _torneioServico.ObterPorSlug(slug);
+        if (torneio is null) return NotFound();
+
+        return View(new MembroLoginViewModel
+        {
+            Slug = slug,
+            NomeTorneio = torneio.NomeTorneio,
+            ReturnUrl = returnUrl
+        });
+    }
+
+    [HttpPost("{slug}/pescador/login")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MembroLogin(string slug, MembroLoginViewModel model)
+    {
+        var torneio = await _torneioServico.ObterPorSlug(slug);
+        if (torneio is null) return NotFound();
+
+        model.Slug = slug;
+        model.NomeTorneio = torneio.NomeTorneio;
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var usuario = await _autenticacao.AutenticarMembro(model.Usuario, model.Senha, torneio.Id);
+        if (usuario is null)
+        {
+            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            return View(model);
+        }
+
+        var claims = new List<Claim>
+        {
+            new("sub", usuario.Id.ToString()),
+            new(ClaimTypes.Name, usuario.Nome),
+            new("perfil", usuario.Perfil.ToString()),
+            new("torneio_id", torneio.Id.ToString()),
+            new("slug", slug),
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TorneioCookie"));
+        await HttpContext.SignInAsync("TorneioCookie", principal);
+        return Redirect(model.ReturnUrl ?? $"/{slug}/minhas-cobrancas");
+    }
+
     [HttpPost("/logout")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()

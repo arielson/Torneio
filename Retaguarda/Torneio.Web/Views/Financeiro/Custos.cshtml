@@ -22,18 +22,18 @@
 <div class="content-card mb-4">
     <div class="card-body-pad">
         <div class="alert alert-info mb-0">
-            Os custos das embarcacoes sao alimentados pelo cadastro de embarcacoes. Os demais custos do torneio sao gerenciados nesta tela.
+            Os custos das embarcações são alimentados pelo cadastro de embarcações. Os demais custos do torneio são gerenciados nesta tela.
         </div>
     </div>
 </div>
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-cash-stack me-2"></i>Custos lancados</h5>
+        <h5><i class="bi bi-cash-stack me-2"></i>Custos lançados</h5>
     </div>
     @if (!lista.Any())
     {
-        <div class="card-body-pad text-muted">Nenhum custo lancado.</div>
+        <div class="card-body-pad text-muted">Nenhum custo lançado.</div>
     }
     else
     {
@@ -44,8 +44,9 @@
                         <th>Categoria</th>
                         <th>Descricao</th>
                         <th>Quantidade</th>
-                        <th>Valor unitario</th>
+                        <th>Valor unitário</th>
                         <th>Valor total</th>
+                        <th>Vencimento</th>
                         <th>Responsavel</th>
                         <th class="text-end">Acoes</th>
                     </tr>
@@ -54,7 +55,7 @@
                     @foreach (var custo in lista)
                     {
                         <tr>
-                            <td>@custo.Categoria</td>
+                            <td>@custo.CategoriaLabel</td>
                             <td class="fw-semibold">
                                 @custo.Descricao
                                 @if (!string.IsNullOrWhiteSpace(custo.Observacao))
@@ -65,12 +66,13 @@
                             <td>@custo.Quantidade.ToString("N2")</td>
                             <td>R$ @custo.ValorUnitario.ToString("N2")</td>
                             <td>R$ @custo.ValorTotal.ToString("N2")</td>
+                            <td>@(custo.Vencimento.HasValue ? custo.Vencimento.Value.ToString("dd/MM/yyyy") : "-")</td>
                             <td>@(string.IsNullOrWhiteSpace(custo.Responsavel) ? "-" : custo.Responsavel)</td>
                             <td class="text-end">
                                 @if (custo.DerivadoDaEmbarcacao && custo.EquipeId.HasValue)
                                 {
                                     <a href="/@slug/equipes/@custo.EquipeId/editar" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-pencil me-1"></i>Editar embarcacao
+                                        <i class="bi bi-pencil me-1"></i>Editar embarcação
                                     </a>
                                 }
                                 else

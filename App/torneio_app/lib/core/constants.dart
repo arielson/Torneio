@@ -11,10 +11,16 @@ class ApiConstants {
   static String membros(String slug) => '$_base/api/$slug/membros';
   static String itens(String slug) => '$_base/api/$slug/itens';
   static String patrocinadores(String slug) => '$_base/api/$slug/patrocinadores';
+  static String registroPescadorSolicitarCodigo(String slug) => '$_base/api/$slug/registro-pescador/solicitar-codigo';
+  static String registroPescadorConfirmar(String slug) => '$_base/api/$slug/registro-pescador/confirmar';
+  static String recuperarSenhaPescadorSolicitarCodigo(String slug) => '$_base/api/$slug/pescador/recuperar-senha/solicitar-codigo';
+  static String recuperarSenhaPescadorConfirmar(String slug) => '$_base/api/$slug/pescador/recuperar-senha/confirmar';
+  static String membroCobrancas(String slug) => '$_base/api/$slug/membro/financeiro/cobrancas';
   static String adminsTorneio(String slug) => '$_base/api/$slug/admins-torneio';
   static String capturas(String slug) => '$_base/api/$slug/capturas';
   static String financeiroConfig(String slug) => '$_base/api/$slug/financeiro/config';
   static String financeiroIndicadores(String slug) => '$_base/api/$slug/financeiro/indicadores';
+  static String financeiroRelatorios(String slug) => '$_base/api/$slug/financeiro/relatorios';
   static String financeiroGerarParcelas(String slug) => '$_base/api/$slug/financeiro/cobrancas/gerar';
   static String financeiroCobrancas(
     String slug, {

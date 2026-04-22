@@ -64,6 +64,9 @@ class AuthProvider extends ChangeNotifier {
   Future<void> loginFiscal(String slug, String usuario, String senha) =>
       loginTorneio(slug, usuario, senha, perfil: 'Fiscal');
 
+  Future<void> loginMembro(String slug, String usuario, String senha) =>
+      loginTorneio(slug, usuario, senha, perfil: 'Membro');
+
   Future<void> _login({
     required String url,
     required String usuario,

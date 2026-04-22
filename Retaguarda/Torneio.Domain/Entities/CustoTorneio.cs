@@ -11,6 +11,7 @@ public class CustoTorneio
     public decimal Quantidade { get; private set; }
     public decimal ValorUnitario { get; private set; }
     public decimal ValorTotal { get; private set; }
+    public DateTime? Vencimento { get; private set; }
     public string? Responsavel { get; private set; }
     public string? Observacao { get; private set; }
 
@@ -22,6 +23,7 @@ public class CustoTorneio
         string descricao,
         decimal quantidade,
         decimal valorUnitario,
+        DateTime? vencimento,
         string? responsavel,
         string? observacao)
     {
@@ -34,6 +36,7 @@ public class CustoTorneio
             Quantidade = quantidade,
             ValorUnitario = valorUnitario,
             ValorTotal = quantidade * valorUnitario,
+            Vencimento = vencimento?.Date,
             Responsavel = string.IsNullOrWhiteSpace(responsavel) ? null : responsavel.Trim(),
             Observacao = string.IsNullOrWhiteSpace(observacao) ? null : observacao.Trim()
         };
@@ -44,6 +47,7 @@ public class CustoTorneio
         string descricao,
         decimal quantidade,
         decimal valorUnitario,
+        DateTime? vencimento,
         string? responsavel,
         string? observacao)
     {
@@ -52,6 +56,7 @@ public class CustoTorneio
         Quantidade = quantidade;
         ValorUnitario = valorUnitario;
         ValorTotal = quantidade * valorUnitario;
+        Vencimento = vencimento?.Date;
         Responsavel = string.IsNullOrWhiteSpace(responsavel) ? null : responsavel.Trim();
         Observacao = string.IsNullOrWhiteSpace(observacao) ? null : observacao.Trim();
     }

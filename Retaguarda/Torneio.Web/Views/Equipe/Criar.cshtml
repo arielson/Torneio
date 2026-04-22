@@ -58,6 +58,11 @@
                     <span asp-validation-for="Custo" class="text-danger small"></span>
                 </div>
                 <div class="col-md-6">
+                    <label asp-for="DataVencimentoCusto" class="form-label">Vencimento do custo</label>
+                    <input asp-for="DataVencimentoCusto" class="form-control" type="date" />
+                    <span asp-validation-for="DataVencimentoCusto" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
                     <label asp-for="StatusFinanceiro" class="form-label">Status</label>
                     <select asp-for="StatusFinanceiro" class="form-select" asp-items="Html.GetEnumSelectList<StatusEmbarcacaoFinanceira>()"></select>
                     <span asp-validation-for="StatusFinanceiro" class="text-danger small"></span>
@@ -67,6 +72,7 @@
         else
         {
             <input asp-for="Custo" type="hidden" value="0" />
+            <input asp-for="DataVencimentoCusto" type="hidden" />
             <input asp-for="StatusFinanceiro" type="hidden" value="@StatusEmbarcacaoFinanceira.Pendente" />
         }
         <div class="form-section-title">Fotos</div>

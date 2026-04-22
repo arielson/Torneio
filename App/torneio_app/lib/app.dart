@@ -9,6 +9,9 @@ import 'core/providers/config_provider.dart';
 import 'core/providers/home_provider.dart';
 import 'features/home/home_screen.dart';
 import 'features/torneio/torneio_screen.dart';
+import 'features/torneio/registro_pescador_screen.dart';
+import 'features/torneio/recuperar_senha_pescador_screen.dart';
+import 'features/membro/cobrancas_screen.dart';
 import 'features/login/login_screen.dart';
 import 'features/fiscal/home_screen.dart';
 import 'features/fiscal/registrar_captura_screen.dart';
@@ -29,6 +32,7 @@ import 'features/admin/reorganizacao_emergencial_screen.dart';
 import 'features/admin/sorteio_screen.dart';
 import 'features/admin/grupos_screen.dart';
 import 'features/admin/financeiro_screen.dart';
+import 'features/admin/financeiro_relatorios_screen.dart';
 import 'features/admin/financeiro_configuracao_screen.dart';
 import 'features/admin/parcelas_screen.dart';
 import 'features/admin/custos_screen.dart';
@@ -93,7 +97,10 @@ class _TorneioAppState extends State<TorneioApp> {
                 '/': (_) => const _SplashRedirect(),
                 '/home': (_) => const HomeScreen(),
                 '/torneio': (_) => const TorneioScreen(),
+                '/registro-pescador': (_) => const RegistroPescadorScreen(),
+                '/recuperar-senha-pescador': (_) => const RecuperarSenhaPescadorScreen(),
                 '/login': (_) => const LoginScreen(),
+                '/membro/cobrancas': (_) => const CobrancasMembroScreen(),
                 '/fiscal/home': (_) => const HomeFiscalScreen(),
                 '/fiscal/registrar': (_) => const RegistrarCapturaScreen(),
                 '/fiscal/capturas': (_) => const CapturasScreen(),
@@ -113,6 +120,7 @@ class _TorneioAppState extends State<TorneioApp> {
                 '/admin/financeiro/configuracao': (_) => const FinanceiroConfiguracaoScreen(),
                 '/admin/financeiro/cobrancas': (_) => const ParcelasAdminScreen(),
                 '/admin/financeiro/custos': (_) => const CustosAdminScreen(),
+                '/admin/financeiro/relatorios': (_) => const FinanceiroRelatoriosScreen(),
                 '/admin/financeiro/checklist': (_) => const ChecklistAdminScreen(),
                 '/admin/financeiro/doacoes': (_) => const DoacoesAdminScreen(),
                 '/admin/financeiro/extras': (_) => const ExtrasAdminScreen(),
@@ -163,6 +171,8 @@ class _SplashRedirectState extends State<_SplashRedirect> {
     switch (perfil) {
       case 'Fiscal':
         Navigator.pushReplacementNamed(context, '/fiscal/home');
+      case 'Membro':
+        Navigator.pushReplacementNamed(context, '/membro/cobrancas');
       case 'AdminTorneio':
       case 'AdminGeral':
         Navigator.pushReplacementNamed(context, '/admin/home');

@@ -9,6 +9,8 @@ public class CustoTorneioDto
     public decimal Quantidade { get; init; }
     public decimal ValorUnitario { get; init; }
     public decimal ValorTotal { get; init; }
+    public string CategoriaLabel { get; init; } = null!;
+    public DateTime? Vencimento { get; init; }
     public string? Responsavel { get; init; }
     public string? Observacao { get; init; }
     public bool DerivadoDaEmbarcacao { get; init; }

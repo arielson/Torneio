@@ -286,6 +286,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                       onTap: () => _abrirSecao('/admin/financeiro/custos'),
                     ),
                     _NavItem(
+                      icon: Icons.query_stats_outlined,
+                      label: 'Relatórios',
+                      color: Colors.blue,
+                      onTap: () => _abrirSecao('/admin/financeiro/relatorios'),
+                    ),
+                    _NavItem(
                       icon: Icons.shopping_bag_outlined,
                       label: 'Produtos extras',
                       color: Colors.brown,

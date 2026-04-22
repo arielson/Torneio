@@ -59,6 +59,8 @@ public class MembroController : TorneioBaseController
                 FotoUrl = dto.FotoUrl,
                 Celular = dto.Celular,
                 TamanhoCamisa = null,
+                Usuario = dto.Usuario,
+                Senha = dto.Senha,
             };
         }
 
@@ -77,6 +79,8 @@ public class MembroController : TorneioBaseController
                 FotoUrl = fotoUrl,
                 Celular = dto.Celular,
                 TamanhoCamisa = dto.TamanhoCamisa,
+                Usuario = dto.Usuario,
+                Senha = dto.Senha,
             });
             TempData["Sucesso"] = "Membro criado com sucesso.";
             await _log.Registrar(new RegistrarLogDto
@@ -109,6 +113,8 @@ public class MembroController : TorneioBaseController
             FotoUrl = membro.FotoUrl,
             Celular = membro.Celular,
             TamanhoCamisa = membro.TamanhoCamisa
+            ,
+            Usuario = membro.Usuario
         });
     }
 
@@ -126,6 +132,8 @@ public class MembroController : TorneioBaseController
                 FotoUrl = dto.FotoUrl,
                 Celular = dto.Celular,
                 TamanhoCamisa = membroAtual?.TamanhoCamisa,
+                Usuario = dto.Usuario,
+                Senha = dto.Senha,
             };
         }
 
@@ -143,7 +151,9 @@ public class MembroController : TorneioBaseController
                 Nome = dto.Nome,
                 FotoUrl = fotoUrl,
                 Celular = dto.Celular,
-                TamanhoCamisa = dto.TamanhoCamisa
+                TamanhoCamisa = dto.TamanhoCamisa,
+                Usuario = dto.Usuario,
+                Senha = dto.Senha
             };
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Membro atualizado.";

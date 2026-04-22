@@ -30,6 +30,7 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
   final _custoController = TextEditingController(text: '0');
   final _picker = ImagePicker();
   String _statusFinanceiro = 'Pendente';
+  DateTime? _dataVencimentoCusto;
 
   bool _salvando = false;
   String? _fotoEquipePath;
@@ -47,6 +48,20 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
       _qtdVagasController.text = equipe.qtdVagas.toString();
       _custoController.text = equipe.custo.toStringAsFixed(2);
       _statusFinanceiro = equipe.statusFinanceiro;
+      _dataVencimentoCusto = equipe.dataVencimentoCusto;
+    }
+  }
+
+  Future<void> _selecionarDataVencimento() async {
+    final agora = DateTime.now();
+    final data = await showDatePicker(
+      context: context,
+      initialDate: _dataVencimentoCusto ?? agora,
+      firstDate: DateTime(agora.year - 5),
+      lastDate: DateTime(agora.year + 10),
+    );
+    if (data != null && mounted) {
+      setState(() => _dataVencimentoCusto = data);
     }
   }
 
@@ -129,6 +144,7 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
         'capitao': _capitaoController.text.trim(),
         'qtdVagas': '$qtdVagas',
         'custo': '${custo ?? 0}',
+        'dataVencimentoCusto': _dataVencimentoCusto?.toIso8601String() ?? '',
         'statusFinanceiro': exibirFinanceiro
             ? _statusFinanceiro
             : (_editando ? widget.equipe!.statusFinanceiro : 'Pendente'),
@@ -255,6 +271,24 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
                   }
                 },
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _selecionarDataVencimento,
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: Text(
+                  _dataVencimentoCusto == null
+                      ? 'Selecionar vencimento do custo'
+                      : 'Vencimento do custo: ${_dataVencimentoCusto!.day.toString().padLeft(2, '0')}/${_dataVencimentoCusto!.month.toString().padLeft(2, '0')}/${_dataVencimentoCusto!.year}',
+                ),
+              ),
+              if (_dataVencimentoCusto != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => setState(() => _dataVencimentoCusto = null),
+                    child: const Text('Limpar vencimento'),
+                  ),
+                ),
               const SizedBox(height: 16),
             ],
             AdminPhotoPicker(

@@ -88,6 +88,7 @@ public class AdminGeralController : Controller
             LabelCapturaPlural   = p.LabelCapturaPlural,
             MedidaCaptura        = p.MedidaCaptura,
             ExibirModuloFinanceiro = true,
+            PermitirRegistroPublicoMembro = false,
         });
     }
 
@@ -152,6 +153,7 @@ public class AdminGeralController : Controller
             MedidaCaptura = torneio.MedidaCaptura,
             PermitirCapturaOffline = torneio.PermitirCapturaOffline,
             ExibirModuloFinanceiro = torneio.ExibirModuloFinanceiro,
+            PermitirRegistroPublicoMembro = torneio.PermitirRegistroPublicoMembro,
             ModoSorteio = Enum.Parse<ModoSorteio>(torneio.ModoSorteio),
             QtdGanhadores = torneio.QtdGanhadores,
             PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,

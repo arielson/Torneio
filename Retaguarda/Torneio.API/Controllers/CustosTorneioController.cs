@@ -42,12 +42,13 @@ public class CustosTorneioController : BaseController
             Descricao = dto.Descricao,
             Quantidade = dto.Quantidade,
             ValorUnitario = dto.ValorUnitario,
+            Vencimento = dto.Vencimento,
             Responsavel = dto.Responsavel,
             Observacao = dto.Observacao
         });
         await RegistrarLog(
             "CriarCustoApp",
-            $"Custo criado pelo app | Categoria: {criado.Categoria} | Descricao: {criado.Descricao} | Valor total: {criado.ValorTotal:0.00}");
+            $"Custo criado pelo app | Categoria: {criado.CategoriaLabel} | Descricao: {criado.Descricao} | Valor total: {criado.ValorTotal:0.00} | Vencimento: {(criado.Vencimento.HasValue ? criado.Vencimento.Value.ToString("dd/MM/yyyy") : "-")}");
         return Ok(criado);
     }
 
@@ -57,7 +58,7 @@ public class CustosTorneioController : BaseController
         await _servico.Atualizar(id, dto);
         await RegistrarLog(
             "AtualizarCustoApp",
-            $"Custo atualizado pelo app | Custo: {id} | Categoria: {dto.Categoria} | Descricao: {dto.Descricao} | Quantidade: {dto.Quantidade:0.##} | Valor unitario: {dto.ValorUnitario:0.00}");
+            $"Custo atualizado pelo app | Custo: {id} | Categoria: {dto.Categoria} | Descricao: {dto.Descricao} | Quantidade: {dto.Quantidade:0.##} | Valor unitario: {dto.ValorUnitario:0.00} | Vencimento: {(dto.Vencimento.HasValue ? dto.Vencimento.Value.ToString("dd/MM/yyyy") : "-")}");
         return NoContent();
     }
 

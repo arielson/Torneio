@@ -24,6 +24,7 @@ public class TorneioDto
     public string MedidaCaptura { get; init; } = null!;
     public bool PermitirCapturaOffline { get; init; }
     public bool ExibirModuloFinanceiro { get; init; }
+    public bool PermitirRegistroPublicoMembro { get; init; }
     public decimal ValorPorMembro { get; init; }
     public int QuantidadeParcelas { get; init; }
     public DateTime? DataPrimeiroVencimento { get; init; }

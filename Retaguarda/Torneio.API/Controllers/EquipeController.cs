@@ -64,6 +64,7 @@ public class EquipeController : BaseController
             QtdVagas = dto.QtdVagas,
             Custo = dto.Custo,
             StatusFinanceiro = dto.StatusFinanceiro,
+            DataVencimentoCusto = dto.DataVencimentoCusto,
             FotoUrl = dto.FotoUrl,
             FotoCapitaoUrl = dto.FotoCapitaoUrl
         });
@@ -85,6 +86,7 @@ public class EquipeController : BaseController
             QtdVagas = dto.QtdVagas,
             Custo = dto.Custo,
             StatusFinanceiro = dto.StatusFinanceiro,
+            DataVencimentoCusto = dto.DataVencimentoCusto,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
         });
@@ -118,6 +120,7 @@ public class EquipeController : BaseController
             QtdVagas = dto.QtdVagas,
             Custo = dto.Custo,
             StatusFinanceiro = dto.StatusFinanceiro,
+            DataVencimentoCusto = dto.DataVencimentoCusto,
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl
         });
@@ -204,6 +207,7 @@ public class CriarEquipeFormDto
     public int QtdVagas { get; init; }
     public decimal Custo { get; init; }
     public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
+    public DateTime? DataVencimentoCusto { get; init; }
 
     public IFormFile? Foto { get; init; }
     public IFormFile? FotoCapitao { get; init; }
@@ -221,6 +225,7 @@ public class AtualizarEquipeFormDto
     public int QtdVagas { get; init; }
     public decimal Custo { get; init; }
     public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
+    public DateTime? DataVencimentoCusto { get; init; }
 
     public IFormFile? Foto { get; init; }
     public IFormFile? FotoCapitao { get; init; }

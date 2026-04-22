@@ -13,6 +13,7 @@ public class Equipe
     public int QtdVagas { get; private set; }
     public decimal Custo { get; private set; }
     public StatusEmbarcacaoFinanceira StatusFinanceiro { get; private set; }
+    public DateTime? DataVencimentoCusto { get; private set; }
 
     private readonly List<Membro> _membros = new();
     private readonly List<FiscalEquipe> _fiscais = new();
@@ -30,7 +31,8 @@ public class Equipe
         string? fotoUrl = null,
         string? fotoCapitaoUrl = null,
         decimal custo = 0,
-        StatusEmbarcacaoFinanceira statusFinanceiro = StatusEmbarcacaoFinanceira.Pendente)
+        StatusEmbarcacaoFinanceira statusFinanceiro = StatusEmbarcacaoFinanceira.Pendente,
+        DateTime? dataVencimentoCusto = null)
     {
         return new Equipe
         {
@@ -42,7 +44,8 @@ public class Equipe
             FotoUrl = fotoUrl,
             FotoCapitaoUrl = fotoCapitaoUrl,
             Custo = custo,
-            StatusFinanceiro = statusFinanceiro
+            StatusFinanceiro = statusFinanceiro,
+            DataVencimentoCusto = dataVencimentoCusto?.Date
         };
     }
 
@@ -70,7 +73,8 @@ public class Equipe
         string? fotoUrl = null,
         string? fotoCapitaoUrl = null,
         decimal? custo = null,
-        StatusEmbarcacaoFinanceira? statusFinanceiro = null)
+        StatusEmbarcacaoFinanceira? statusFinanceiro = null,
+        DateTime? dataVencimentoCusto = null)
     {
         Nome = nome;
         Capitao = capitao;
@@ -79,5 +83,6 @@ public class Equipe
         if (fotoCapitaoUrl != null) FotoCapitaoUrl = fotoCapitaoUrl;
         if (custo.HasValue) Custo = custo.Value;
         if (statusFinanceiro.HasValue) StatusFinanceiro = statusFinanceiro.Value;
+        DataVencimentoCusto = dataVencimentoCusto?.Date;
     }
 }

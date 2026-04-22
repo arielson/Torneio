@@ -74,6 +74,10 @@ public class FinanceiroController : BaseController
     public async Task<IActionResult> Indicadores() =>
         Ok(await _servico.ObterIndicadores(_tenantContext.TorneioId));
 
+    [HttpGet("relatorios")]
+    public async Task<IActionResult> Relatorios() =>
+        Ok(await _servico.ObterRelatorio(_tenantContext.TorneioId));
+
     [HttpGet("cobrancas")]
     public async Task<IActionResult> Cobrancas(
         [FromQuery] Guid? membroId,

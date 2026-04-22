@@ -179,6 +179,7 @@ class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
                                 subtitle: () {
                                   final detalhes = <String>[
                                     if (membro.celular?.trim().isNotEmpty == true) membro.celular!.trim(),
+                                    if (membro.usuario?.trim().isNotEmpty == true) 'Usuario: ${membro.usuario!.trim()}',
                                     if (exibirFinanceiro && membro.tamanhoCamisa?.trim().isNotEmpty == true)
                                       'Camisa: ${membro.tamanhoCamisa}',
                                   ];

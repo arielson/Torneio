@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IFiscalServico, FiscalServico>();
         services.AddScoped<IEquipeServico, EquipeServico>();
         services.AddScoped<IMembroServico, MembroServico>();
+        services.AddScoped<IRegistroPublicoMembroServico, RegistroPublicoMembroServico>();
         services.AddScoped<IItemServico, ItemServico>();
         services.AddScoped<IPatrocinadorServico, PatrocinadorServico>();
         services.AddScoped<IFinanceiroTorneioServico, FinanceiroTorneioServico>();

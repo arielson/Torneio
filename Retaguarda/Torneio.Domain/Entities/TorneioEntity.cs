@@ -30,6 +30,7 @@ public class TorneioEntity
     public string MedidaCaptura { get; private set; } = null!;
     public bool PermitirCapturaOffline { get; private set; }
     public bool ExibirModuloFinanceiro { get; private set; } = true;
+    public bool PermitirRegistroPublicoMembro { get; private set; }
     public decimal ValorPorMembro { get; private set; }
     public int QuantidadeParcelas { get; private set; }
     public DateTime? DataPrimeiroVencimento { get; private set; }
@@ -75,6 +76,7 @@ public class TorneioEntity
         bool usarFatorMultiplicador = false,
         bool permitirCapturaOffline = true,
         bool exibirModuloFinanceiro = true,
+        bool permitirRegistroPublicoMembro = false,
         int qtdGanhadores = 3,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -108,6 +110,7 @@ public class TorneioEntity
             UsarFatorMultiplicador = usarFatorMultiplicador,
             PermitirCapturaOffline = permitirCapturaOffline,
             ExibirModuloFinanceiro = exibirModuloFinanceiro,
+            PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro,
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
@@ -165,6 +168,7 @@ public class TorneioEntity
         bool usarFatorMultiplicador,
         bool permitirCapturaOffline,
         bool exibirModuloFinanceiro,
+        bool permitirRegistroPublicoMembro,
         int qtdGanhadores,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -190,6 +194,7 @@ public class TorneioEntity
         UsarFatorMultiplicador = usarFatorMultiplicador;
         PermitirCapturaOffline = permitirCapturaOffline;
         ExibirModuloFinanceiro = exibirModuloFinanceiro;
+        PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro;
         QtdGanhadores = qtdGanhadores;
         PremiacaoPorEquipe = premiacaoPorEquipe;
         PremiacaoPorMembro = premiacaoPorMembro;

@@ -15,6 +15,8 @@ public class AtualizarCustoTorneioDto
 
     [Range(0, 999999999)]
     public decimal ValorUnitario { get; init; }
+    [DataType(DataType.Date)]
+    public DateTime? Vencimento { get; init; }
     public string? Responsavel { get; init; }
     public string? Observacao { get; init; }
 }

@@ -8,6 +8,8 @@ public class Membro
     public string? FotoUrl { get; private set; }
     public string? Celular { get; private set; }
     public string? TamanhoCamisa { get; private set; }
+    public string? Usuario { get; private set; }
+    public string? SenhaHash { get; private set; }
 
     private Membro() { }
 
@@ -16,7 +18,9 @@ public class Membro
         string nome,
         string? fotoUrl = null,
         string? celular = null,
-        string? tamanhoCamisa = null)
+        string? tamanhoCamisa = null,
+        string? usuario = null,
+        string? senhaHash = null)
     {
         return new Membro
         {
@@ -25,7 +29,9 @@ public class Membro
             Nome = nome,
             FotoUrl = fotoUrl,
             Celular = string.IsNullOrWhiteSpace(celular) ? null : celular.Trim(),
-            TamanhoCamisa = string.IsNullOrWhiteSpace(tamanhoCamisa) ? null : tamanhoCamisa.Trim()
+            TamanhoCamisa = string.IsNullOrWhiteSpace(tamanhoCamisa) ? null : tamanhoCamisa.Trim(),
+            Usuario = string.IsNullOrWhiteSpace(usuario) ? null : usuario.Trim(),
+            SenhaHash = string.IsNullOrWhiteSpace(senhaHash) ? null : senhaHash.Trim()
         };
     }
 
@@ -38,4 +44,13 @@ public class Membro
 
     public void AtualizarTamanhoCamisa(string? tamanhoCamisa) =>
         TamanhoCamisa = string.IsNullOrWhiteSpace(tamanhoCamisa) ? null : tamanhoCamisa.Trim();
+
+    public void AtualizarCredenciais(string? usuario, string? senhaHash)
+    {
+        if (!string.IsNullOrWhiteSpace(usuario))
+            Usuario = usuario.Trim();
+
+        if (!string.IsNullOrWhiteSpace(senhaHash))
+            SenhaHash = senhaHash.Trim();
+    }
 }

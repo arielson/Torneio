@@ -16,6 +16,7 @@ public class EquipeConfiguration : IEntityTypeConfiguration<Equipe>
         builder.Property(e => e.FotoCapitaoUrl).HasMaxLength(500);
         builder.Property(e => e.QtdVagas).IsRequired();
         builder.Property(e => e.Custo).HasPrecision(18, 2).HasDefaultValue(0m);
+        builder.Property(e => e.DataVencimentoCusto);
         builder.HasOne<TorneioEntity>()
             .WithMany()
             .HasForeignKey(e => e.TorneioId)

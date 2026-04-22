@@ -244,6 +244,9 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
                                       ),
                                     if (exibirFinanceiro) ...[
                                       Text('Custo: R\$ ${equipe.custo.toStringAsFixed(2)}'),
+                                      Text(
+                                        'Vencimento do custo: ${equipe.dataVencimentoCusto == null ? '-' : '${equipe.dataVencimentoCusto!.day.toString().padLeft(2, '0')}/${equipe.dataVencimentoCusto!.month.toString().padLeft(2, '0')}/${equipe.dataVencimentoCusto!.year}'}',
+                                      ),
                                       Text('Status financeiro: ${equipe.statusFinanceiro}'),
                                     ],
                                     const SizedBox(height: 12),

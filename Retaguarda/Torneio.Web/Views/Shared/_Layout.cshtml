@@ -25,6 +25,7 @@
     var perfil      = User.FindFirst("perfil")?.Value;
     var isAdmin     = perfil == "AdminGeral" || perfil == "AdminTorneio";
     var isAdminGeral = perfil == "AdminGeral";
+    var isMembro = perfil == "Membro";
     var slug        = Context.GetRouteData()?.Values["slug"]?.ToString();
     var nomeUsuario = User.Identity?.Name;
     var torneioNav  = ViewBag.Torneio as TorneioDto;
@@ -138,6 +139,11 @@ else if (usarLayoutAdmin)
                             <li>
                                 <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/custos") ? "active" : "")" href="/@effectiveSlug/financeiro/custos">
                                     <i class="bi bi-cash-stack"></i> Custos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/relatorios") ? "active" : "")" href="/@effectiveSlug/financeiro/relatorios">
+                                    <i class="bi bi-graph-up-arrow"></i> Relatórios
                                 </a>
                             </li>
                             <li>
@@ -320,11 +326,30 @@ else
                     <ul class="navbar-nav ms-auto">
                         @if (!string.IsNullOrEmpty(slug))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" href="/@slug/login">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
-                                </a>
-                            </li>
+                            @if (isMembro)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/@slug/minhas-cobrancas">
+                                        <i class="bi bi-receipt me-1"></i>Minhas cobranças
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <form method="post" action="/logout" class="d-inline m-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="nav-link btn btn-link">
+                                            <i class="bi bi-box-arrow-right me-1"></i>Sair
+                                        </button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/@slug/login">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                                    </a>
+                                </li>
+                            }
                         }
                         else
                         {

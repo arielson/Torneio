@@ -4,7 +4,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
 
-enum _Perfil { fiscal, admin }
+enum _Perfil { fiscal, admin, membro }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,7 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
       config.slug,
       _usuarioController.text.trim(),
       _senhaController.text,
-      perfil: _perfil == _Perfil.fiscal ? 'Fiscal' : 'Admin',
+      perfil: switch (_perfil) {
+        _Perfil.fiscal => 'Fiscal',
+        _Perfil.admin => 'Admin',
+        _Perfil.membro => 'Membro',
+      },
     );
 
     if (!mounted) return;
@@ -53,6 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/fiscal/home');
         return;
+      case 'Membro':
+        Navigator.pushReplacementNamed(context, '/membro/cobrancas');
+        return;
       case 'AdminTorneio':
       case 'AdminGeral':
         Navigator.pushReplacementNamed(context, '/admin/home');
@@ -65,9 +72,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs is String) {
+      final perfilInicial = switch (routeArgs.toLowerCase()) {
+        'membro' || 'pescador' => _Perfil.membro,
+        'admin' => _Perfil.admin,
+        _ => _Perfil.fiscal,
+      };
+      if (_perfil != perfilInicial) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _perfil = perfilInicial);
+        });
+      }
+    }
+
     final config = context.watch<ConfigProvider>().config;
     final auth = context.watch<AuthProvider>();
     final labelFiscal = config?.labelSupervisor ?? 'Fiscal';
+    final labelMembro = config?.labelMembro ?? 'Pescador';
 
     return Scaffold(
       appBar: AppBar(
@@ -100,6 +122,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: Text('Admin'),
                       icon: Icon(Icons.admin_panel_settings),
                     ),
+                    ButtonSegment(
+                      value: _Perfil.membro,
+                      label: Text(labelMembro),
+                      icon: const Icon(Icons.badge_outlined),
+                    ),
                   ],
                   selected: {_perfil},
                   onSelectionChanged: (s) => setState(() => _perfil = s.first),
@@ -111,7 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 _perfil == _Perfil.fiscal
                     ? 'Acesso $labelFiscal'
-                    : 'Acesso Administrador',
+                    : _perfil == _Perfil.admin
+                        ? 'Acesso Administrador'
+                        : 'Acesso $labelMembro',
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -171,6 +200,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                         : const Text('Entrar'),
               ),
+              if (_perfil == _Perfil.membro) ...[
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
+                  child: const Text('Esqueci minha senha'),
+                ),
+                if (config?.permitirRegistroPublicoMembro ?? false)
+                  TextButton(
+                    onPressed: () => Navigator.pushNamed(context, '/registro-pescador'),
+                    child: const Text('Quero me registrar'),
+                  ),
+              ],
             ],
           ),
         ),

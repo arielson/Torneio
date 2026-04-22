@@ -15,6 +15,7 @@ public class AtualizarEquipeDto
     public int QtdVagas { get; init; }
     public decimal Custo { get; init; }
     public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; } = StatusEmbarcacaoFinanceira.Pendente;
+    public DateTime? DataVencimentoCusto { get; init; }
 
     public string? FotoUrl { get; init; }
     public string? FotoCapitaoUrl { get; init; }

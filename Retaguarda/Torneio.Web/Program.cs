@@ -6,7 +6,7 @@ using Torneio.Web.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 
 builder.Services.AddAuthentication("TorneioCookie")
     .AddCookie("TorneioCookie", options =>
@@ -24,6 +24,8 @@ builder.Services.AddAuthorization(options =>
         p.RequireAuthenticatedUser().RequireClaim("perfil", "AdminGeral"));
     options.AddPolicy("AdminTorneio", p =>
         p.RequireAuthenticatedUser().RequireClaim("perfil", "AdminGeral", "AdminTorneio"));
+    options.AddPolicy("MembroTorneio", p =>
+        p.RequireAuthenticatedUser().RequireClaim("perfil", "Membro"));
 });
 
 builder.Services.AddControllersWithViews(options =>
@@ -62,6 +64,10 @@ app.MapStaticAssets();
 var storagePath = app.Configuration["Storage:BasePath"];
 if (!string.IsNullOrEmpty(storagePath))
 {
+    storagePath = Path.IsPathRooted(storagePath)
+        ? Path.GetFullPath(storagePath)
+        : Path.GetFullPath(storagePath, app.Environment.ContentRootPath);
+
     Directory.CreateDirectory(storagePath);
     app.UseStaticFiles(new StaticFileOptions
     {

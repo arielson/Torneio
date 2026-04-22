@@ -10,6 +10,7 @@ class Equipe {
   final int qtdVagas;
   final double custo;
   final String statusFinanceiro;
+  final DateTime? dataVencimentoCusto;
   final int qtdMembros;
   final List<String> membroIds;
   final List<String> fiscalIds;
@@ -24,6 +25,7 @@ class Equipe {
     required this.qtdVagas,
     this.custo = 0,
     this.statusFinanceiro = 'Pendente',
+    this.dataVencimentoCusto,
     required this.qtdMembros,
     this.membroIds = const [],
     this.fiscalIds = const [],
@@ -39,6 +41,7 @@ class Equipe {
     qtdVagas: json['qtdVagas'] as int,
     custo: (json['custo'] as num?)?.toDouble() ?? 0,
     statusFinanceiro: _parseStatusFinanceiro(json['statusFinanceiro']),
+    dataVencimentoCusto: json['dataVencimentoCusto'] == null ? null : DateTime.tryParse(json['dataVencimentoCusto'].toString()),
     qtdMembros: json['qtdMembros'] as int,
     membroIds: (json['membroIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
     fiscalIds: (json['fiscalIds'] as List<dynamic>? ?? []).map((e) => e as String).toList(),

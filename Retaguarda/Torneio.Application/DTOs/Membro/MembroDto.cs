@@ -8,4 +8,6 @@ public class MembroDto
     public string? FotoUrl { get; init; }
     public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
+    public string? Usuario { get; init; }
+    public bool PossuiSenha { get; init; }
 }

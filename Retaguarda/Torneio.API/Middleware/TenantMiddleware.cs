@@ -34,9 +34,23 @@ public class TenantMiddleware
             var perfil = context.User.FindFirst("perfil")?.Value;
 
             if (perfil == "AdminGeral")
+            {
                 tenantContext.DefinirAdminGeral(torneio.Id, torneio.Slug);
+            }
             else
+            {
+                var torneioIdClaim = context.User.FindFirst("torneio_id")?.Value;
+                if (!string.IsNullOrWhiteSpace(torneioIdClaim) &&
+                    (!Guid.TryParse(torneioIdClaim, out var claimTorneioId) || claimTorneioId != torneio.Id))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new { erro = "Acesso negado para este torneio." });
+                    return;
+                }
+
                 tenantContext.DefinirTenant(torneio.Id, torneio.Slug);
+            }
         }
         else
         {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/constants.dart';
 import '../../core/models/custo_torneio.dart';
 import '../../core/providers/auth_provider.dart';
@@ -13,12 +15,12 @@ class CustosAdminScreen extends StatefulWidget {
 }
 
 class _CustosAdminScreenState extends State<CustosAdminScreen> {
-  static const _categorias = [
-    'Camisas',
-    'Alimentacao',
-    'Combustivel',
-    'Trofeus',
-    'Outros',
+  static const _categorias = <Map<String, String>>[
+    {'value': 'Camisas', 'label': 'Camisas'},
+    {'value': 'Alimentacao', 'label': 'Alimentação'},
+    {'value': 'Combustivel', 'label': 'Combustível'},
+    {'value': 'Premiacoes', 'label': 'Premiações'},
+    {'value': 'Outros', 'label': 'Outros'},
   ];
 
   final _api = ApiService();
@@ -60,6 +62,16 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     }
   }
 
+  Future<DateTime?> _selecionarData(DateTime? inicial) {
+    final agora = DateTime.now();
+    return showDatePicker(
+      context: context,
+      initialDate: inicial ?? agora,
+      firstDate: DateTime(agora.year - 5),
+      lastDate: DateTime(agora.year + 10),
+    );
+  }
+
   Future<void> _abrirFormulario({CustoTorneio? custo}) async {
     final descricaoController = TextEditingController(text: custo?.descricao ?? '');
     final quantidadeController = TextEditingController(
@@ -70,7 +82,8 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     );
     final responsavelController = TextEditingController(text: custo?.responsavel ?? '');
     final observacaoController = TextEditingController(text: custo?.observacao ?? '');
-    String categoria = _categorias.contains(custo?.categoria) ? custo!.categoria : 'Outros';
+    String categoria = _categorias.any((item) => item['value'] == custo?.categoria) ? custo!.categoria : 'Outros';
+    DateTime? vencimento = custo?.vencimento;
 
     final confirmar = await showDialog<bool>(
       context: context,
@@ -88,7 +101,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: _categorias
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .map((c) => DropdownMenuItem(value: c['value'], child: Text(c['label']!)))
                       .toList(),
                   onChanged: (value) => setStateDialog(() => categoria = value ?? categoria),
                 ),
@@ -96,7 +109,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                 TextField(
                   controller: descricaoController,
                   decoration: const InputDecoration(
-                    labelText: 'Descricao',
+                    labelText: 'Descrição',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -114,15 +127,35 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   controller: valorUnitarioController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: const InputDecoration(
-                    labelText: 'Valor unitario',
+                    labelText: 'Valor unitário',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final data = await _selecionarData(vencimento);
+                    if (data != null) {
+                      setStateDialog(() => vencimento = data);
+                    }
+                  },
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  label: Text(
+                    vencimento == null
+                        ? 'Selecionar vencimento'
+                        : 'Vencimento: ${DateFormat('dd/MM/yyyy').format(vencimento!)}',
+                  ),
+                ),
+                if (vencimento != null)
+                  TextButton(
+                    onPressed: () => setStateDialog(() => vencimento = null),
+                    child: const Text('Limpar vencimento'),
+                  ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: responsavelController,
                   decoration: const InputDecoration(
-                    labelText: 'Responsavel',
+                    labelText: 'Responsável',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -131,7 +164,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   controller: observacaoController,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: 'Observacao',
+                    labelText: 'Observação',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -152,14 +185,12 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     final quantidade = double.tryParse(quantidadeController.text.replaceAll(',', '.'));
     final valorUnitario = double.tryParse(valorUnitarioController.text.replaceAll(',', '.'));
     if (descricaoController.text.trim().isEmpty || quantidade == null || quantidade <= 0 || valorUnitario == null || valorUnitario < 0) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha descricao, quantidade e valor unitario corretamente.')),
+        const SnackBar(content: Text('Preencha descrição, quantidade e valor unitário corretamente.')),
       );
       return;
     }
 
-    if (!mounted) return;
     final auth = context.read<AuthProvider>().usuario;
     if (auth?.slug == null || auth?.token == null) return;
 
@@ -168,6 +199,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
       'descricao': descricaoController.text.trim(),
       'quantidade': quantidade,
       'valorUnitario': valorUnitario,
+      'vencimento': vencimento?.toIso8601String(),
       'responsavel': responsavelController.text.trim(),
       'observacao': observacaoController.text.trim(),
     };
@@ -212,9 +244,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     try {
       await _api.delete('${ApiConstants.financeiroCustos(auth!.slug!)}/${custo.id}', token: auth.token);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Custo removido.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Custo removido.')));
       await _carregar();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -246,7 +276,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          'Os custos das embarcacoes sao derivados do cadastro de embarcacoes. Os demais custos podem ser lancados aqui.',
+                          'Os custos das embarcações são derivados do cadastro de embarcações. Os demais custos podem ser lançados aqui.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -254,7 +284,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   if (_erro == null && _custos.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 24),
-                      child: Text('Nenhum custo lancado.', textAlign: TextAlign.center),
+                      child: Text('Nenhum custo lançado.', textAlign: TextAlign.center),
                     ),
                   ..._custos.map(
                     (custo) => Card(
@@ -262,11 +292,11 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                       child: ListTile(
                         title: Text(custo.descricao),
                         subtitle: Text(
-                          '${custo.categoria} - ${custo.valorTotalFormatado}${(custo.observacao ?? '').trim().isNotEmpty ? '\n${custo.observacao}' : ''}',
+                          '${custo.categoriaLabel} • ${custo.valorTotalFormatado}${custo.vencimento != null ? ' • Vencimento ${DateFormat('dd/MM/yyyy').format(custo.vencimento!)}' : ''}${(custo.observacao ?? '').trim().isNotEmpty ? '\n${custo.observacao}' : ''}',
                         ),
                         isThreeLine: (custo.observacao ?? '').trim().isNotEmpty,
                         trailing: custo.derivadoDaEmbarcacao
-                            ? const Chip(label: Text('Embarcacao'))
+                            ? const Chip(label: Text('Embarcação'))
                             : Wrap(
                                 spacing: 4,
                                 children: [

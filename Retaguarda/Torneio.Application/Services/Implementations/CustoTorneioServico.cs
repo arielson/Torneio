@@ -1,6 +1,8 @@
 using Torneio.Application.DTOs.Financeiro;
+using Torneio.Application.Extensions;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
+using Torneio.Domain.Enums;
 using Torneio.Domain.Interfaces.Repositories;
 using Torneio.Domain.Interfaces.Services;
 
@@ -33,11 +35,13 @@ public class CustoTorneioServico : ICustoTorneioServico
             {
                 Id = Guid.Empty,
                 TorneioId = torneioId,
-                Categoria = "Embarcacao",
+                Categoria = CategoriaCustoTorneio.Embarcacao.ToString(),
+                CategoriaLabel = CategoriaCustoTorneio.Embarcacao.ObterDisplayName(),
                 Descricao = x.Nome,
                 Quantidade = 1,
                 ValorUnitario = x.Custo,
                 ValorTotal = x.Custo,
+                Vencimento = x.DataVencimentoCusto,
                 Responsavel = x.Capitao,
                 Observacao = $"Status: {x.StatusFinanceiro}",
                 DerivadoDaEmbarcacao = true,
@@ -63,6 +67,7 @@ public class CustoTorneioServico : ICustoTorneioServico
             dto.Descricao,
             dto.Quantidade,
             dto.ValorUnitario,
+            dto.Vencimento,
             dto.Responsavel,
             dto.Observacao);
 
@@ -77,7 +82,7 @@ public class CustoTorneioServico : ICustoTorneioServico
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Custo '{id}' nao encontrado.");
 
-        entidade.Atualizar(dto.Categoria, dto.Descricao, dto.Quantidade, dto.ValorUnitario, dto.Responsavel, dto.Observacao);
+        entidade.Atualizar(dto.Categoria, dto.Descricao, dto.Quantidade, dto.ValorUnitario, dto.Vencimento, dto.Responsavel, dto.Observacao);
         await _repositorio.Atualizar(entidade);
     }
 
@@ -96,10 +101,12 @@ public class CustoTorneioServico : ICustoTorneioServico
         Id = x.Id,
         TorneioId = x.TorneioId,
         Categoria = x.Categoria.ToString(),
+        CategoriaLabel = x.Categoria.ObterDisplayName(),
         Descricao = x.Descricao,
         Quantidade = x.Quantidade,
         ValorUnitario = x.ValorUnitario,
         ValorTotal = x.ValorTotal,
+        Vencimento = x.Vencimento,
         Responsavel = x.Responsavel,
         Observacao = x.Observacao
     };

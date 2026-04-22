@@ -8,6 +8,8 @@ class CustoTorneio {
   final double quantidade;
   final double valorUnitario;
   final double valorTotal;
+  final String categoriaLabel;
+  final DateTime? vencimento;
   final String? responsavel;
   final String? observacao;
   final bool derivadoDaEmbarcacao;
@@ -21,6 +23,8 @@ class CustoTorneio {
     required this.quantidade,
     required this.valorUnitario,
     required this.valorTotal,
+    required this.categoriaLabel,
+    this.vencimento,
     this.responsavel,
     this.observacao,
     required this.derivadoDaEmbarcacao,
@@ -35,6 +39,8 @@ class CustoTorneio {
         quantidade: (json['quantidade'] as num?)?.toDouble() ?? 0,
         valorUnitario: (json['valorUnitario'] as num?)?.toDouble() ?? 0,
         valorTotal: (json['valorTotal'] as num?)?.toDouble() ?? 0,
+        categoriaLabel: json['categoriaLabel'] as String? ?? _labelCategoria(json['categoria'] as String?),
+        vencimento: json['vencimento'] == null ? null : DateTime.tryParse(json['vencimento'].toString()),
         responsavel: json['responsavel'] as String?,
         observacao: json['observacao'] as String?,
         derivadoDaEmbarcacao: json['derivadoDaEmbarcacao'] as bool? ?? false,
@@ -42,4 +48,13 @@ class CustoTorneio {
       );
 
   String get valorTotalFormatado => NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(valorTotal);
+
+  static String _labelCategoria(String? categoria) => switch (categoria) {
+        'Embarcacao' => 'Embarcação',
+        'Camisas' => 'Camisas',
+        'Alimentacao' => 'Alimentação',
+        'Combustivel' => 'Combustível',
+        'Premiacoes' => 'Premiações',
+        _ => 'Outros',
+      };
 }

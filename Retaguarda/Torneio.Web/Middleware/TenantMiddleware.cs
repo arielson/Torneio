@@ -31,11 +31,11 @@ public class TenantMiddleware
             }
             else
             {
-                // Verify AdminTorneio belongs to this torneio
-                if (perfil == "AdminTorneio")
+                if (!string.IsNullOrWhiteSpace(perfil))
                 {
                     var torneioIdClaim = context.User.FindFirst("torneio_id")?.Value;
-                    if (torneioIdClaim is null || !Guid.TryParse(torneioIdClaim, out var claimTorneioId) || claimTorneioId != torneio.Id)
+                    if (!string.IsNullOrWhiteSpace(torneioIdClaim) &&
+                        (!Guid.TryParse(torneioIdClaim, out var claimTorneioId) || claimTorneioId != torneio.Id))
                     {
                         var slugAtual = context.User.FindFirst("slug")?.Value;
                         var destino = $"/acesso-negado?motivo=torneio-diferente&slugSolicitado={Uri.EscapeDataString(slug)}";

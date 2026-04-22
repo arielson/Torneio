@@ -17,7 +17,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        string contentRootPath)
     {
         // QuestPDF — licença Community (gratuita)
         QuestPDF.Settings.License = LicenseType.Community;
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<ISorteioServico, SorteioServico>();
         services.AddScoped<ISorteioGrupoServico, SorteioGrupoServico>();
         services.AddScoped<IRelatorioServico, RelatorioServico>();
+        services.AddScoped<ISmsVerificacaoServico, TwilioSmsVerificacaoServico>();
 
         // Repositórios
         services.AddScoped<ITorneioRepositorio, TorneioRepositorio>();
@@ -49,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IFiscalRepositorio, FiscalRepositorio>();
         services.AddScoped<IEquipeRepositorio, EquipeRepositorio>();
         services.AddScoped<IMembroRepositorio, MembroRepositorio>();
+        services.AddScoped<IRegistroPublicoMembroRepositorio, RegistroPublicoMembroRepositorio>();
         services.AddScoped<IItemRepositorio, ItemRepositorio>();
         services.AddScoped<IPatrocinadorRepositorio, PatrocinadorRepositorio>();
         services.AddScoped<IParcelaTorneioRepositorio, ParcelaTorneioRepositorio>();
@@ -67,6 +70,18 @@ public static class DependencyInjection
 
         // Opções de armazenamento de arquivos
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.Section));
+        services.PostConfigure<StorageOptions>(options =>
+        {
+            if (string.IsNullOrWhiteSpace(options.BasePath))
+            {
+                return;
+            }
+
+            options.BasePath = Path.IsPathRooted(options.BasePath)
+                ? Path.GetFullPath(options.BasePath)
+                : Path.GetFullPath(options.BasePath, contentRootPath);
+        });
+        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
 
         return services;
     }

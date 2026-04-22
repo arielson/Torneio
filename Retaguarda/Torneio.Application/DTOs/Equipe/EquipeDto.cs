@@ -13,6 +13,7 @@ public class EquipeDto
     public int QtdVagas { get; init; }
     public decimal Custo { get; init; }
     public StatusEmbarcacaoFinanceira StatusFinanceiro { get; init; }
+    public DateTime? DataVencimentoCusto { get; init; }
     public int QtdMembros { get; init; }
     public List<Guid> MembroIds { get; init; } = new();
     public List<Guid> FiscalIds { get; init; } = new();

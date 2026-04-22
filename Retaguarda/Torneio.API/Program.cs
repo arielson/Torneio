@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Camadas de aplicação e infraestrutura ──────────────────────────────────────
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 
 // ── JWT ────────────────────────────────────────────────────────────────────────
 var jwtSection = builder.Configuration.GetSection(JwtOptions.Section);
@@ -46,6 +46,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("AdminTorneio", policy =>
         policy.RequireClaim("perfil", "AdminGeral", "AdminTorneio"));
+
+    options.AddPolicy("MembroTorneio", policy =>
+        policy.RequireClaim("perfil", "Membro"));
 });
 
 // ── Controllers ────────────────────────────────────────────────────────────────
@@ -74,6 +77,10 @@ app.UseHttpsRedirection();
 var storagePath = app.Configuration["Storage:BasePath"];
 if (!string.IsNullOrEmpty(storagePath))
 {
+    storagePath = Path.IsPathRooted(storagePath)
+        ? Path.GetFullPath(storagePath)
+        : Path.GetFullPath(storagePath, app.Environment.ContentRootPath);
+
     Directory.CreateDirectory(storagePath);
     app.UseStaticFiles(new StaticFileOptions
     {

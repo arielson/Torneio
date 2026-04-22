@@ -55,11 +55,14 @@ public class AuthController : BaseController
         {
             "fiscal" =>
                 await _autenticacaoServico.AutenticarFiscal(dto.Usuario, dto.Senha, torneio.Id),
+            "membro" or "pescador" =>
+                await _autenticacaoServico.AutenticarMembro(dto.Usuario, dto.Senha, torneio.Id),
             "admin" or "admintorneio" =>
                 await _autenticacaoServico.AutenticarAdminTorneio(dto.Usuario, dto.Senha, torneio.Id),
             _ =>
                 await _autenticacaoServico.AutenticarAdminTorneio(dto.Usuario, dto.Senha, torneio.Id)
                 ?? await _autenticacaoServico.AutenticarFiscal(dto.Usuario, dto.Senha, torneio.Id)
+                ?? await _autenticacaoServico.AutenticarMembro(dto.Usuario, dto.Senha, torneio.Id)
         };
 
         if (usuario is null) return Unauthorized(new { erro = "Usuário ou senha inválidos." });

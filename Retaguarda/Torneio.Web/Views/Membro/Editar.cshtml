@@ -39,6 +39,18 @@
             <input asp-for="Celular" class="form-control" placeholder="Opcional" inputmode="numeric" maxlength="15" />
             <span asp-validation-for="Celular" class="text-danger small"></span>
         </div>
+        <div class="form-section-title">Acesso do pescador</div>
+        <div class="mb-3">
+            <label asp-for="Usuario" class="form-label">Usuario <small class="text-muted">(opcional)</small></label>
+            <input asp-for="Usuario" class="form-control" placeholder="Opcional" />
+            <div class="form-text">Se alterar o usuario e deixar a senha em branco, a senha atual sera mantida.</div>
+            <span asp-validation-for="Usuario" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Senha" class="form-label">Nova senha <small class="text-muted">(opcional)</small></label>
+            <input asp-for="Senha" class="form-control" type="password" placeholder="Deixe em branco para manter a atual" />
+            <span asp-validation-for="Senha" class="text-danger small"></span>
+        </div>
         @if (exibirFinanceiro)
         {
             <div class="mb-3">

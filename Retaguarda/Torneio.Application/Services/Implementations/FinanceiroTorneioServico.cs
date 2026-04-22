@@ -1,4 +1,5 @@
 using Torneio.Application.DTOs.Financeiro;
+using Torneio.Application.Extensions;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Domain.Entities;
 using Torneio.Domain.Enums;
@@ -215,53 +216,113 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
 
     public async Task<IndicadoresFinanceiroDto> ObterIndicadores(Guid torneioId)
     {
-        var torneio = await _torneioRepositorio.ObterPorId(torneioId)
-            ?? throw new KeyNotFoundException($"Torneio '{torneioId}' nao encontrado.");
-        var membros = (await _membroRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var equipes = (await _equipeRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var admins = (await _adminRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var parcelas = (await _parcelaRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var custos = (await _custoRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var produtos = (await _produtoRepositorio.ListarPorTorneio(torneioId)).ToList();
-        var adesoes = (await _produtoMembroRepositorio.ListarPorTorneio(torneioId)).Where(x => x.Ativo).ToList();
-        var doacoes = (await _doacaoRepositorio.ListarPorTorneio(torneioId)).ToList();
+        var dados = await CarregarDadosFinanceiros(torneioId);
+        return MontarIndicadores(dados);
+    }
 
-        var custoEmbarcacoes = equipes
-            .Where(x => x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada)
-            .Sum(x => x.Custo);
-        var custoTotal = custos.Sum(x => x.ValorTotal) + custoEmbarcacoes;
-        var arrecadacaoBase = membros.Count * torneio.ValorPorMembro;
-        var receitaTaxaInscricao = membros.Count * torneio.TaxaInscricaoValor;
-        var receitaExtras = adesoes.Sum(x => x.ValorCobrado);
-        var arrecadacaoPrevista = arrecadacaoBase + receitaTaxaInscricao + receitaExtras;
-        var receitaDoacoes = doacoes
-            .Where(x => x.Tipo == TipoDoacaoPatrocinador.Dinheiro)
-            .Sum(x => x.Valor ?? 0);
-        var receitaPrevista = arrecadacaoPrevista + receitaDoacoes;
-        var abertas = parcelas.Where(x => !x.Pago).ToList();
-        var inadimplentes = abertas.Where(x => x.Vencimento.Date < DateTime.UtcNow.Date).ToList();
-        var quantidadeCustos = custos.Count + equipes.Count(x => x.Custo > 0 && x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada);
+    public async Task<RelatorioFinanceiroDto> ObterRelatorio(Guid torneioId)
+    {
+        var dados = await CarregarDadosFinanceiros(torneioId);
+        var membrosMap = dados.Membros.ToDictionary(x => x.Id, x => x.Nome);
+        var indicadores = MontarIndicadores(dados);
 
-        return new IndicadoresFinanceiroDto
+        var receitasPorTipo = dados.Parcelas
+            .GroupBy(x => x.TipoParcela)
+            .Select(g => new ResumoFinanceiroPorTipoDto
+            {
+                Chave = g.Key.ToString(),
+                Label = ObterLabelTipoReceita(g.Key),
+                Quantidade = g.Count(),
+                Total = g.Sum(x => x.Valor),
+                Pago = g.Where(x => x.Pago).Sum(x => x.Valor),
+                EmAberto = g.Where(x => !x.Pago).Sum(x => x.Valor)
+            })
+            .OrderBy(x => x.Label)
+            .ToList();
+
+        var custosDetalhados = dados.Custos
+            .Select(ParaCustoDto)
+            .Concat(dados.Equipes
+                .Where(x => x.Custo > 0 && x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada)
+                .Select(x => new CustoTorneioDto
+                {
+                    Id = Guid.Empty,
+                    TorneioId = torneioId,
+                    Categoria = CategoriaCustoTorneio.Embarcacao.ToString(),
+                    CategoriaLabel = CategoriaCustoTorneio.Embarcacao.ObterDisplayName(),
+                    Descricao = x.Nome,
+                    Quantidade = 1,
+                    ValorUnitario = x.Custo,
+                    ValorTotal = x.Custo,
+                    Vencimento = x.DataVencimentoCusto,
+                    Responsavel = x.Capitao,
+                    Observacao = $"Status: {x.StatusFinanceiro}",
+                    DerivadoDaEmbarcacao = true,
+                    EquipeId = x.Id
+                }))
+            .ToList();
+
+        var custosPorCategoria = custosDetalhados
+            .GroupBy(x => new { x.Categoria, x.CategoriaLabel })
+            .Select(g => new ResumoFinanceiroPorCategoriaDto
+            {
+                Chave = g.Key.Categoria,
+                Label = g.Key.CategoriaLabel,
+                Quantidade = g.Count(),
+                Total = g.Sum(x => x.ValorTotal)
+            })
+            .OrderBy(x => x.Label)
+            .ToList();
+
+        var eventos = new List<(DateTime Data, decimal Recebimento, decimal Pagamento)>();
+        eventos.AddRange(dados.Parcelas.Select(x => (x.Vencimento.Date, x.Valor, 0m)));
+        eventos.AddRange(custosDetalhados
+            .Where(x => x.Vencimento.HasValue)
+            .Select(x => (x.Vencimento!.Value.Date, 0m, x.ValorTotal)));
+        eventos.AddRange(dados.Doacoes
+            .Where(x => x.Tipo == TipoDoacaoPatrocinador.Dinheiro && x.Valor.HasValue)
+            .Select(x => (x.DataDoacao.Date, x.Valor!.Value, 0m)));
+
+        decimal saldoAcumulado = 0;
+        var fluxo = eventos
+            .GroupBy(x => x.Data)
+            .OrderBy(x => x.Key)
+            .Select(g =>
+            {
+                var recebimentos = g.Sum(x => x.Recebimento);
+                var pagamentos = g.Sum(x => x.Pagamento);
+                var saldoDiario = recebimentos - pagamentos;
+                saldoAcumulado += saldoDiario;
+                return new FluxoFinanceiroLinhaDto
+                {
+                    Data = g.Key,
+                    RecebimentosPrevistos = recebimentos,
+                    PagamentosPrevistos = pagamentos,
+                    SaldoDiario = saldoDiario,
+                    SaldoAcumulado = saldoAcumulado
+                };
+            })
+            .ToList();
+
+        return new RelatorioFinanceiroDto
         {
-            QuantidadeMembros = membros.Count,
-            QuantidadeEquipes = equipes.Count,
-            QuantidadeAdministradores = admins.Count,
-            CustoTotalTorneio = custoTotal,
-            ValorPorMembro = torneio.ValorPorMembro,
-            TaxaInscricaoValor = torneio.TaxaInscricaoValor,
-            QuantidadeParcelas = torneio.QuantidadeParcelas,
-            ArrecadacaoPrevista = arrecadacaoPrevista,
-            ReceitaPrevista = receitaPrevista,
-            ReceitaExtrasPrevista = receitaExtras,
-            ReceitaDoacoesPatrocinadores = receitaDoacoes,
-            SaldoProjetado = receitaPrevista - custoTotal,
-            ParcelasInadimplentes = inadimplentes.Count,
-            ValorEmAberto = abertas.Sum(x => x.Valor),
-            EmbarcacoesConfirmadas = equipes.Count(x => x.StatusFinanceiro == StatusEmbarcacaoFinanceira.Confirmada),
-            QuantidadeCustosLancados = quantidadeCustos,
-            QuantidadeProdutosExtras = produtos.Count,
-            QuantidadeDoacoesPatrocinadores = doacoes.Count
+            Indicadores = indicadores,
+            FluxoCaixaProjetado = fluxo,
+            ReceitasPorTipo = receitasPorTipo,
+            CustosPorCategoria = custosPorCategoria,
+            ProximosRecebimentosPendentes = dados.Parcelas
+                .Where(x => !x.Pago)
+                .OrderBy(x => x.Vencimento)
+                .ThenBy(x => x.Descricao)
+                .Take(10)
+                .Select(x => ParaParcelaDto(x, membrosMap))
+                .ToList(),
+            ProximosPagamentosPendentes = custosDetalhados
+                .Where(x => x.Vencimento.HasValue)
+                .OrderBy(x => x.Vencimento)
+                .ThenBy(x => x.Descricao)
+                .Take(10)
+                .ToList()
         };
     }
 
@@ -502,4 +563,101 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         || torneio.DataPrimeiroVencimento?.Date != dto.DataPrimeiroVencimento?.Date
         || torneio.TaxaInscricaoValor != dto.TaxaInscricaoValor
         || torneio.DataVencimentoTaxaInscricao?.Date != dto.DataVencimentoTaxaInscricao?.Date;
+
+    private async Task<FinanceiroDadosContexto> CarregarDadosFinanceiros(Guid torneioId)
+    {
+        var torneio = await _torneioRepositorio.ObterPorId(torneioId)
+            ?? throw new KeyNotFoundException($"Torneio '{torneioId}' nao encontrado.");
+
+        return new FinanceiroDadosContexto
+        {
+            Torneio = torneio,
+            Membros = (await _membroRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Equipes = (await _equipeRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Admins = (await _adminRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Parcelas = (await _parcelaRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Custos = (await _custoRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Produtos = (await _produtoRepositorio.ListarPorTorneio(torneioId)).ToList(),
+            Adesoes = (await _produtoMembroRepositorio.ListarPorTorneio(torneioId)).Where(x => x.Ativo).ToList(),
+            Doacoes = (await _doacaoRepositorio.ListarPorTorneio(torneioId)).ToList()
+        };
+    }
+
+    private static IndicadoresFinanceiroDto MontarIndicadores(FinanceiroDadosContexto dados)
+    {
+        var custoEmbarcacoes = dados.Equipes
+            .Where(x => x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada)
+            .Sum(x => x.Custo);
+        var custoTotal = dados.Custos.Sum(x => x.ValorTotal) + custoEmbarcacoes;
+        var arrecadacaoBase = dados.Membros.Count * dados.Torneio.ValorPorMembro;
+        var receitaTaxaInscricao = dados.Membros.Count * dados.Torneio.TaxaInscricaoValor;
+        var receitaExtras = dados.Adesoes.Sum(x => x.ValorCobrado);
+        var arrecadacaoPrevista = arrecadacaoBase + receitaTaxaInscricao + receitaExtras;
+        var receitaDoacoes = dados.Doacoes
+            .Where(x => x.Tipo == TipoDoacaoPatrocinador.Dinheiro)
+            .Sum(x => x.Valor ?? 0);
+        var receitaPrevista = arrecadacaoPrevista + receitaDoacoes;
+        var abertas = dados.Parcelas.Where(x => !x.Pago).ToList();
+        var inadimplentes = abertas.Where(x => x.Vencimento.Date < DateTime.UtcNow.Date).ToList();
+        var quantidadeCustos = dados.Custos.Count + dados.Equipes.Count(x => x.Custo > 0 && x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada);
+
+        return new IndicadoresFinanceiroDto
+        {
+            QuantidadeMembros = dados.Membros.Count,
+            QuantidadeEquipes = dados.Equipes.Count,
+            QuantidadeAdministradores = dados.Admins.Count,
+            CustoTotalTorneio = custoTotal,
+            ValorPorMembro = dados.Torneio.ValorPorMembro,
+            TaxaInscricaoValor = dados.Torneio.TaxaInscricaoValor,
+            QuantidadeParcelas = dados.Torneio.QuantidadeParcelas,
+            ArrecadacaoPrevista = arrecadacaoPrevista,
+            ReceitaPrevista = receitaPrevista,
+            ReceitaExtrasPrevista = receitaExtras,
+            ReceitaDoacoesPatrocinadores = receitaDoacoes,
+            SaldoProjetado = receitaPrevista - custoTotal,
+            ParcelasInadimplentes = inadimplentes.Count,
+            ValorEmAberto = abertas.Sum(x => x.Valor),
+            EmbarcacoesConfirmadas = dados.Equipes.Count(x => x.StatusFinanceiro == StatusEmbarcacaoFinanceira.Confirmada),
+            QuantidadeCustosLancados = quantidadeCustos,
+            QuantidadeProdutosExtras = dados.Produtos.Count,
+            QuantidadeDoacoesPatrocinadores = dados.Doacoes.Count
+        };
+    }
+
+    private static string ObterLabelTipoReceita(TipoParcelaTorneio tipo) =>
+        tipo switch
+        {
+            TipoParcelaTorneio.Mensalidade => "Parcelas",
+            TipoParcelaTorneio.TaxaInscricao => "Inscrições",
+            TipoParcelaTorneio.ProdutoExtra => "Produtos extras",
+            _ => tipo.ToString()
+        };
+
+    private static CustoTorneioDto ParaCustoDto(CustoTorneio x) => new()
+    {
+        Id = x.Id,
+        TorneioId = x.TorneioId,
+        Categoria = x.Categoria.ToString(),
+        CategoriaLabel = x.Categoria.ObterDisplayName(),
+        Descricao = x.Descricao,
+        Quantidade = x.Quantidade,
+        ValorUnitario = x.ValorUnitario,
+        ValorTotal = x.ValorTotal,
+        Vencimento = x.Vencimento,
+        Responsavel = x.Responsavel,
+        Observacao = x.Observacao
+    };
+
+    private sealed class FinanceiroDadosContexto
+    {
+        public TorneioEntity Torneio { get; init; } = null!;
+        public List<Membro> Membros { get; init; } = [];
+        public List<Equipe> Equipes { get; init; } = [];
+        public List<AdminTorneio> Admins { get; init; } = [];
+        public List<ParcelaTorneio> Parcelas { get; init; } = [];
+        public List<CustoTorneio> Custos { get; init; } = [];
+        public List<ProdutoExtraTorneio> Produtos { get; init; } = [];
+        public List<ProdutoExtraMembro> Adesoes { get; init; } = [];
+        public List<DoacaoPatrocinador> Doacoes { get; init; } = [];
+    }
 }

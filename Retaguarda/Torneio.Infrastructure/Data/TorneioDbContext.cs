@@ -23,6 +23,7 @@ public class TorneioDbContext : DbContext
     public DbSet<FiscalEquipe> FiscaisEquipes { get; set; }
     public DbSet<Equipe> Equipes { get; set; }
     public DbSet<Membro> Membros { get; set; }
+    public DbSet<RegistroPublicoMembro> RegistrosPublicosMembros { get; set; }
     public DbSet<Item> Itens { get; set; }
     public DbSet<Patrocinador> Patrocinadores { get; set; }
     public DbSet<ParcelaTorneio> ParcelasTorneio { get; set; }
@@ -62,6 +63,9 @@ public class TorneioDbContext : DbContext
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Membro>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<RegistroPublicoMembro>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Item>()

@@ -4,5 +4,6 @@ public enum PerfilUsuario
 {
     AdminGeral,
     AdminTorneio,
-    Fiscal
+    Fiscal,
+    Membro
 }

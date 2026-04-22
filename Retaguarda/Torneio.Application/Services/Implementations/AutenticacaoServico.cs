@@ -11,6 +11,7 @@ public class AutenticacaoServico : IAutenticacaoServico
     private readonly IAdminGeralRepositorio _adminGeralRepositorio;
     private readonly IAdminTorneioRepositorio _adminTorneioRepositorio;
     private readonly IFiscalRepositorio _fiscalRepositorio;
+    private readonly IMembroRepositorio _membroRepositorio;
     private readonly ITorneioRepositorio _torneioRepositorio;
     private readonly IPasswordHasher _passwordHasher;
 
@@ -18,12 +19,14 @@ public class AutenticacaoServico : IAutenticacaoServico
         IAdminGeralRepositorio adminGeralRepositorio,
         IAdminTorneioRepositorio adminTorneioRepositorio,
         IFiscalRepositorio fiscalRepositorio,
+        IMembroRepositorio membroRepositorio,
         ITorneioRepositorio torneioRepositorio,
         IPasswordHasher passwordHasher)
     {
         _adminGeralRepositorio = adminGeralRepositorio;
         _adminTorneioRepositorio = adminTorneioRepositorio;
         _fiscalRepositorio = fiscalRepositorio;
+        _membroRepositorio = membroRepositorio;
         _torneioRepositorio = torneioRepositorio;
         _passwordHasher = passwordHasher;
     }
@@ -76,6 +79,25 @@ public class AutenticacaoServico : IAutenticacaoServico
             Nome = entidade.Nome,
             Usuario = entidade.Usuario,
             Perfil = PerfilUsuario.Fiscal,
+            TorneioId = torneioId,
+            Slug = torneio?.Slug
+        };
+    }
+
+    public async Task<UsuarioAutenticadoDto?> AutenticarMembro(string usuario, string senha, Guid torneioId)
+    {
+        var entidade = await _membroRepositorio.ObterPorUsuario(torneioId, usuario);
+        if (entidade is null || string.IsNullOrWhiteSpace(entidade.SenhaHash) || !_passwordHasher.Verificar(senha, entidade.SenhaHash))
+            return null;
+
+        var torneio = await _torneioRepositorio.ObterPorId(torneioId);
+
+        return new UsuarioAutenticadoDto
+        {
+            Id = entidade.Id,
+            Nome = entidade.Nome,
+            Usuario = entidade.Usuario ?? usuario,
+            Perfil = PerfilUsuario.Membro,
             TorneioId = torneioId,
             Slug = torneio?.Slug
         };
