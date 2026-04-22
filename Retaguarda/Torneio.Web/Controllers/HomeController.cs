@@ -119,6 +119,7 @@ public class HomeController : Controller
 
         var torneio = await _torneioServico.ObterPorSlug(slug);
         if (torneio is null) return NotFound();
+        if (!torneio.PermitirRegistroPublicoMembro) return NotFound();
 
         return View(new MembroLoginViewModel
         {
@@ -134,6 +135,7 @@ public class HomeController : Controller
     {
         var torneio = await _torneioServico.ObterPorSlug(slug);
         if (torneio is null) return NotFound();
+        if (!torneio.PermitirRegistroPublicoMembro) return NotFound();
 
         model.Slug = slug;
         model.NomeTorneio = torneio.NomeTorneio;

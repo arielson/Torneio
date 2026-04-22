@@ -87,6 +87,21 @@ class _RecuperarSenhaPescadorScreenState extends State<RecuperarSenhaPescadorScr
     final config = context.watch<ConfigProvider>().config;
     final labelMembro = config?.labelMembro ?? 'Pescador';
 
+    if (config != null && !config.permitirRegistroPublicoMembro) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Recuperar senha do $labelMembro')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'O acesso do ${labelMembro.toLowerCase()} nao esta habilitado neste torneio.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text('Recuperar senha do $labelMembro')),
       body: ListView(

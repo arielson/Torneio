@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants.dart';
+import '../../core/models/patrocinador.dart';
 import '../../core/providers/config_provider.dart';
+import '../../core/services/api_service.dart';
+import '../../widgets/patrocinadores_section.dart';
 
 class TorneioScreen extends StatefulWidget {
   const TorneioScreen({super.key});
@@ -13,6 +17,8 @@ class _TorneioScreenState extends State<TorneioScreen> {
   String? _slug;
   bool _inicializado = false;
   late ConfigProvider _configProvider;
+  final ApiService _api = ApiService();
+  List<Patrocinador> _patrocinadores = const [];
 
   @override
   void didChangeDependencies() {
@@ -23,9 +29,28 @@ class _TorneioScreenState extends State<TorneioScreen> {
       if (_slug != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _configProvider.carregarConfig(_slug!);
+          _carregarPatrocinadores(_slug!);
         });
       }
       _inicializado = true;
+    }
+  }
+
+  Future<void> _carregarPatrocinadores(String slug) async {
+    try {
+      final data = await _api.get(ApiConstants.patrocinadores(slug));
+      final lista = data is List
+          ? data
+              .map((e) => Patrocinador.fromJson(e as Map<String, dynamic>))
+              .where((p) => p.exibirNaTelaInicial)
+              .toList()
+          : <Patrocinador>[];
+      lista.sort((a, b) => a.nome.compareTo(b.nome));
+      if (!mounted) return;
+      setState(() => _patrocinadores = lista);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _patrocinadores = const []);
     }
   }
 
@@ -152,23 +177,27 @@ class _TorneioScreenState extends State<TorneioScreen> {
             if (config.permitirRegistroPublicoMembro) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
+                icon: const Icon(Icons.badge_outlined),
+                label: Text('Entrar como ${config.labelMembro.toLowerCase()}'),
+                onPressed: () => Navigator.pushNamed(context, '/login', arguments: 'Membro'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
                 icon: const Icon(Icons.person_add_alt_1_outlined),
                 label: Text('Registrar ${config.labelMembro.toLowerCase()}'),
                 onPressed: () => Navigator.pushNamed(context, '/registro-pescador'),
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.lock_reset_outlined),
+                label: Text('Recuperar senha do ${config.labelMembro.toLowerCase()}'),
+                onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
+              ),
             ],
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.badge_outlined),
-              label: Text('Entrar como ${config.labelMembro.toLowerCase()}'),
-              onPressed: () => Navigator.pushNamed(context, '/login', arguments: 'Membro'),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.lock_reset_outlined),
-              label: Text('Recuperar senha do ${config.labelMembro.toLowerCase()}'),
-              onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
-            ),
+            if (_patrocinadores.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              PatrocinadoresSection(patrocinadores: _patrocinadores),
+            ],
           ],
         ),
       ),

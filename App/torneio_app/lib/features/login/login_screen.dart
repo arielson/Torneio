@@ -90,6 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.watch<AuthProvider>();
     final labelFiscal = config?.labelSupervisor ?? 'Fiscal';
     final labelMembro = config?.labelMembro ?? 'Pescador';
+    final permiteAcessoMembro = config?.permitirRegistroPublicoMembro ?? false;
+
+    if (!permiteAcessoMembro && _perfil == _Perfil.membro) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _perfil = _Perfil.fiscal);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -122,11 +129,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: Text('Admin'),
                       icon: Icon(Icons.admin_panel_settings),
                     ),
-                    ButtonSegment(
-                      value: _Perfil.membro,
-                      label: Text(labelMembro),
-                      icon: const Icon(Icons.badge_outlined),
-                    ),
+                    if (permiteAcessoMembro)
+                      ButtonSegment(
+                        value: _Perfil.membro,
+                        label: Text(labelMembro),
+                        icon: const Icon(Icons.badge_outlined),
+                      ),
                   ],
                   selected: {_perfil},
                   onSelectionChanged: (s) => setState(() => _perfil = s.first),

@@ -8,11 +8,16 @@ namespace Torneio.Web.Controllers;
 public class PublicoController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
+    private readonly IPatrocinadorServico _patrocinadorServico;
 
-    public PublicoController(TenantContext tenantContext, ITorneioServico torneioServico)
+    public PublicoController(
+        TenantContext tenantContext,
+        ITorneioServico torneioServico,
+        IPatrocinadorServico patrocinadorServico)
         : base(tenantContext)
     {
         _torneioServico = torneioServico;
+        _patrocinadorServico = patrocinadorServico;
     }
 
     [HttpGet("")]
@@ -20,6 +25,7 @@ public class PublicoController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorSlug(slug);
         if (torneio is null) return NotFound();
+        ViewBag.Patrocinadores = await _patrocinadorServico.ListarPorTorneio(torneio.Id);
         return View(torneio);
     }
 }
