@@ -57,6 +57,7 @@ public class MembroController : TorneioBaseController
                 TorneioId = dto.TorneioId,
                 Nome = dto.Nome,
                 FotoUrl = dto.FotoUrl,
+                Celular = dto.Celular,
                 TamanhoCamisa = null,
             };
         }
@@ -74,6 +75,7 @@ public class MembroController : TorneioBaseController
                 TorneioId = TenantContext.TorneioId,
                 Nome = dto.Nome,
                 FotoUrl = fotoUrl,
+                Celular = dto.Celular,
                 TamanhoCamisa = dto.TamanhoCamisa,
             });
             TempData["Sucesso"] = "Membro criado com sucesso.";
@@ -101,7 +103,13 @@ public class MembroController : TorneioBaseController
         if (membro is null) return NotFound();
         ViewBag.Membro = membro;
         await SetTorneioViewBag();
-        return View(new AtualizarMembroDto { Nome = membro.Nome, FotoUrl = membro.FotoUrl, TamanhoCamisa = membro.TamanhoCamisa });
+        return View(new AtualizarMembroDto
+        {
+            Nome = membro.Nome,
+            FotoUrl = membro.FotoUrl,
+            Celular = membro.Celular,
+            TamanhoCamisa = membro.TamanhoCamisa
+        });
     }
 
     [HttpPost("{id:guid}/editar")]
@@ -116,6 +124,7 @@ public class MembroController : TorneioBaseController
             {
                 Nome = dto.Nome,
                 FotoUrl = dto.FotoUrl,
+                Celular = dto.Celular,
                 TamanhoCamisa = membroAtual?.TamanhoCamisa,
             };
         }
@@ -129,7 +138,13 @@ public class MembroController : TorneioBaseController
         try
         {
             var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/membros") ?? membroAtual?.FotoUrl;
-            dto = new AtualizarMembroDto { Nome = dto.Nome, FotoUrl = fotoUrl, TamanhoCamisa = dto.TamanhoCamisa };
+            dto = new AtualizarMembroDto
+            {
+                Nome = dto.Nome,
+                FotoUrl = fotoUrl,
+                Celular = dto.Celular,
+                TamanhoCamisa = dto.TamanhoCamisa
+            };
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Membro atualizado.";
             return RedirectToAction(nameof(Index), new { slug = Slug });

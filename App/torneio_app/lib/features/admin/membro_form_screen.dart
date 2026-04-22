@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
@@ -26,6 +27,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _api = ApiService();
   final _nomeController = TextEditingController();
+  final _celularController = TextEditingController();
   final _picker = ImagePicker();
 
   bool _salvando = false;
@@ -40,6 +42,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     final membro = widget.membro;
     if (membro != null) {
       _nomeController.text = membro.nome;
+      _celularController.text = _formatarCelular(membro.celular ?? '');
       _tamanhoCamisa = (membro.tamanhoCamisa?.trim().isEmpty ?? true)
           ? null
           : membro.tamanhoCamisa?.trim();
@@ -102,6 +105,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
           '${ApiConstants.membros(auth!.slug!)}/${widget.membro!.id}',
           fields: {
             'nome': _nomeController.text.trim(),
+            'celular': _celularController.text.trim(),
             'tamanhoCamisa': config.exibirModuloFinanceiro
                 ? (_tamanhoCamisa ?? '')
                 : (widget.membro?.tamanhoCamisa ?? ''),
@@ -114,6 +118,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
           ApiConstants.membros(auth!.slug!),
           fields: {
             'nome': _nomeController.text.trim(),
+            'celular': _celularController.text.trim(),
             'tamanhoCamisa': config.exibirModuloFinanceiro ? (_tamanhoCamisa ?? '') : '',
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
@@ -163,6 +168,17 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
               ),
               validator: (value) =>
                   (value == null || value.trim().isEmpty) ? 'Informe o nome.' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _celularController,
+              keyboardType: TextInputType.phone,
+              inputFormatters: const [_CelularInputFormatter()],
+              decoration: const InputDecoration(
+                labelText: 'Celular',
+                hintText: 'Opcional',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             if (exibirFinanceiro) ...[
@@ -215,6 +231,54 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
   @override
   void dispose() {
     _nomeController.dispose();
+    _celularController.dispose();
     super.dispose();
+  }
+
+  static String _formatarCelular(String valor) {
+    final digitos = valor.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitos.isEmpty) return '';
+
+    final buffer = StringBuffer('(');
+    final tamanhoDdd = digitos.length < 2 ? digitos.length : 2;
+    final ddd = digitos.substring(0, tamanhoDdd);
+    buffer.write(ddd);
+
+    if (digitos.length <= 2) {
+      return buffer.toString();
+    }
+
+    buffer.write(') ');
+    final fimParteInicial = digitos.length < 7 ? digitos.length : 7;
+    final parteInicial = digitos.substring(2, fimParteInicial);
+    buffer.write(parteInicial);
+
+    if (digitos.length <= 7) {
+      return buffer.toString();
+    }
+
+    buffer.write('-');
+    final fimParteFinal = digitos.length < 11 ? digitos.length : 11;
+    buffer.write(digitos.substring(7, fimParteFinal));
+    return buffer.toString();
+  }
+}
+
+class _CelularInputFormatter extends TextInputFormatter {
+  const _CelularInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitos = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final limitado = digitos.length > 11 ? digitos.substring(0, 11) : digitos;
+    final formatado = _MembroFormScreenState._formatarCelular(limitado);
+
+    return TextEditingValue(
+      text: formatado,
+      selection: TextSelection.collapsed(offset: formatado.length),
+    );
   }
 }

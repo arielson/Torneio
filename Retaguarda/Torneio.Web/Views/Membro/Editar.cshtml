@@ -34,6 +34,11 @@
             <input asp-for="Nome" class="form-control" />
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
+        <div class="mb-3">
+            <label asp-for="Celular" class="form-label">Celular</label>
+            <input asp-for="Celular" class="form-control" placeholder="Opcional" inputmode="numeric" maxlength="15" />
+            <span asp-validation-for="Celular" class="text-danger small"></span>
+        </div>
         @if (exibirFinanceiro)
         {
             <div class="mb-3">
@@ -64,4 +69,23 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const input = document.getElementById('Celular');
+            if (!input) return;
+
+            const formatarCelular = (valor) => {
+                const digitos = (valor || '').replace(/\D/g, '').slice(0, 11);
+                if (!digitos) return '';
+                if (digitos.length <= 2) return `(${digitos}`;
+                if (digitos.length <= 7) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+                return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+            };
+
+            input.value = formatarCelular(input.value);
+            input.addEventListener('input', function () {
+                this.value = formatarCelular(this.value);
+            });
+        })();
+    </script>
 }

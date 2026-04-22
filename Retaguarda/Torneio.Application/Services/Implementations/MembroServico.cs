@@ -45,7 +45,7 @@ public class MembroServico : IMembroServico
     {
         await _validador.ValidateAndThrowAsync(dto);
 
-        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl, dto.TamanhoCamisa);
+        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl, dto.Celular, dto.TamanhoCamisa);
         await _repositorio.Adicionar(entidade);
         await _financeiroServico.SincronizarParcelas(dto.TorneioId);
         return ParaDto(entidade);
@@ -61,6 +61,7 @@ public class MembroServico : IMembroServico
         entidade.AtualizarNome(dto.Nome);
         if (dto.FotoUrl is not null)
             entidade.AtualizarFoto(dto.FotoUrl);
+        entidade.AtualizarCelular(dto.Celular);
         entidade.AtualizarTamanhoCamisa(dto.TamanhoCamisa);
 
         await _repositorio.Atualizar(entidade);
@@ -84,6 +85,7 @@ public class MembroServico : IMembroServico
         TorneioId = e.TorneioId,
         Nome = e.Nome,
         FotoUrl = e.FotoUrl,
+        Celular = e.Celular,
         TamanhoCamisa = e.TamanhoCamisa
     };
 }

@@ -169,6 +169,7 @@ public class EquipeServico : IEquipeServico
         TorneioId = m.TorneioId,
         Nome = m.Nome,
         FotoUrl = m.FotoUrl,
+        Celular = m.Celular,
         TamanhoCamisa = m.TamanhoCamisa
     };
 }

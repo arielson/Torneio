@@ -9,6 +9,7 @@ public class CriarMembroValidator : AbstractValidator<CriarMembroDto>
     {
         RuleFor(x => x.TorneioId).NotEmpty();
         RuleFor(x => x.Nome).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Celular).MaximumLength(30);
         RuleFor(x => x.TamanhoCamisa).MaximumLength(20);
     }
 }

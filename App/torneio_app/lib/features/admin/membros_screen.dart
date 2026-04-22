@@ -176,9 +176,15 @@ class _MembrosAdminScreenState extends State<MembrosAdminScreen> {
                                   fallbackIcon: Icons.person,
                                 ),
                                 title: Text(membro.nome),
-                                subtitle: exibirFinanceiro && membro.tamanhoCamisa?.trim().isNotEmpty == true
-                                    ? Text('Camisa: ${membro.tamanhoCamisa}')
-                                    : null,
+                                subtitle: () {
+                                  final detalhes = <String>[
+                                    if (membro.celular?.trim().isNotEmpty == true) membro.celular!.trim(),
+                                    if (exibirFinanceiro && membro.tamanhoCamisa?.trim().isNotEmpty == true)
+                                      'Camisa: ${membro.tamanhoCamisa}',
+                                  ];
+                                  if (detalhes.isEmpty) return null;
+                                  return Text(detalhes.join(' • '));
+                                }(),
                                 trailing: Wrap(
                                   spacing: 8,
                                   children: [

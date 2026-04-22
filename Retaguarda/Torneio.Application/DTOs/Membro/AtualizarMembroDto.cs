@@ -8,5 +8,6 @@ public class AtualizarMembroDto
     public string Nome { get; init; } = null!;
 
     public string? FotoUrl { get; init; }
+    public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
 }

@@ -40,6 +40,7 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
+                        <th>Celular</th>
                         @if (exibirFinanceiro)
                         {
                             <th>Tamanho da camisa</th>
@@ -52,6 +53,7 @@
                     {
                         <tr>
                             <td class="fw-semibold">@m.Nome</td>
+                            <td>@(string.IsNullOrWhiteSpace(m.Celular) ? "-" : m.Celular)</td>
                             @if (exibirFinanceiro)
                             {
                                 <td>@(string.IsNullOrWhiteSpace(m.TamanhoCamisa) ? "-" : m.TamanhoCamisa)</td>

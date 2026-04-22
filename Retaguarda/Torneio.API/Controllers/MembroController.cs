@@ -46,6 +46,7 @@ public class MembroController : BaseController
                     TorneioId = g.First().TorneioId,
                     Nome = g.First().Nome,
                     FotoUrl = g.First().FotoUrl,
+                    Celular = g.First().Celular,
                     TamanhoCamisa = g.First().TamanhoCamisa
                 })
                 .ToList();
@@ -73,6 +74,7 @@ public class MembroController : BaseController
             TorneioId = _tenantContext.TorneioId,
             Nome = dto.Nome,
             FotoUrl = dto.FotoUrl,
+            Celular = dto.Celular,
             TamanhoCamisa = dto.TamanhoCamisa
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
@@ -89,6 +91,7 @@ public class MembroController : BaseController
             TorneioId = _tenantContext.TorneioId,
             Nome = dto.Nome,
             FotoUrl = fotoUrl,
+            Celular = dto.Celular,
             TamanhoCamisa = dto.TamanhoCamisa
         });
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
@@ -116,6 +119,7 @@ public class MembroController : BaseController
         {
             Nome = dto.Nome,
             FotoUrl = fotoUrl,
+            Celular = dto.Celular,
             TamanhoCamisa = dto.TamanhoCamisa
         });
         return NoContent();
@@ -142,6 +146,7 @@ public class CriarMembroFormDto
 {
     [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
+    public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
     public IFormFile? Foto { get; init; }
 }
@@ -150,6 +155,7 @@ public class AtualizarMembroFormDto
 {
     [Required(ErrorMessage = "O nome e obrigatorio.")]
     public string Nome { get; init; } = null!;
+    public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
     public IFormFile? Foto { get; init; }
 }
