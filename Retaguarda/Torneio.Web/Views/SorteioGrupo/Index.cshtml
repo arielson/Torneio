@@ -1,14 +1,10 @@
 @model IEnumerable<Torneio.Application.DTOs.Sorteio.SorteioGrupoDto>
 @using Torneio.Application.DTOs.Grupo
-@using Torneio.Application.DTOs.Equipe
-@using Torneio.Application.DTOs.Sorteio
 @{
-    var torneio      = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var torneio      = ViewBag.Torneio as TorneioDto;
     var pre          = ViewBag.PreCondicoes as SorteioGrupoPreCondicoesDto;
     var grupos       = ViewBag.Grupos  as List<GrupoDto>  ?? new();
     var equipes      = ViewBag.Equipes as List<EquipeDto> ?? new();
-    var nomesGrupos  = ViewBag.NomesGrupos  as List<string> ?? new();
-    var nomesEquipes = ViewBag.NomesEquipes as List<string> ?? new();
     var labelEquipe  = torneio?.LabelEquipe        ?? "Equipe";
     var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
     var isDev        = (bool)(ViewBag.IsDevelopment ?? false);
@@ -414,8 +410,7 @@ else
         const div = document.createElement('div');
         div.className = 'alert alert-danger alert-dismissible fade show mt-3';
         div.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-        document.querySelector('.container-fluid, .container, main')?.prepend(div)
-            ?? document.body.prepend(div);
+        document.querySelector('.container-fluid, .container, main')?.prepend(div) ?? document.body.prepend(div);
     }
 </script>
 }

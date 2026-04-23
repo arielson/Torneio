@@ -2,6 +2,8 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = $"Cobranca {Model.NumeroParcela} - {Model.NomeMembro}";
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
 }
 
 <div class="page-header">
@@ -10,7 +12,7 @@
     </div>
 </div>
 <a href="/@slug/financeiro/cobrancas" class="back-link">
-    <i class="bi bi-arrow-left"></i> Cobrancas
+    <i class="bi bi-arrow-left"></i> Cobranças
 </a>
 
 <div class="row g-3">
@@ -21,7 +23,7 @@
             </div>
             <div class="card-body-pad">
                 <dl class="row mb-0">
-                    <dt class="col-5">Pescador</dt><dd class="col-7">@Model.NomeMembro</dd>
+                    <dt class="col-5">@labelMembro</dt><dd class="col-7">@Model.NomeMembro</dd>
                     <dt class="col-5">Parcela</dt><dd class="col-7">@Model.NumeroParcela</dd>
                     <dt class="col-5">Valor</dt><dd class="col-7">R$ @Model.Valor.ToString("N2")</dd>
                     <dt class="col-5">Vencimento</dt><dd class="col-7">@Model.Vencimento.ToString("dd/MM/yyyy")</dd>
@@ -59,7 +61,7 @@
     <div class="col-lg-7">
         <div class="content-card mb-3">
             <div class="card-header-bar">
-                <h5><i class="bi bi-calendar-event me-2"></i>Dados da cobranca</h5>
+                <h5><i class="bi bi-calendar-event me-2"></i>Dados da cobrança</h5>
             </div>
             <div class="card-body-pad">
                 <form asp-controller="Financeiro" asp-action="EditarCobranca" asp-route-slug="@slug" asp-route-id="@Model.Id" method="post">
@@ -73,7 +75,7 @@
                         <textarea class="form-control" rows="3" name="Observacao">@Model.Observacao</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Salvar cobranca
+                        <i class="bi bi-save me-1"></i>Salvar cobrança
                     </button>
                 </form>
             </div>
@@ -100,7 +102,7 @@
                         <button type="submit" class="btn btn-success w-100">Salvar</button>
                     </div>
                 </form>
-                <div class="form-text mt-2">Ao desmarcar o pagamento, a data de pagamento e limpa para manter a consistencia do estado.</div>
+                <div class="form-text mt-2">Ao desmarcar o pagamento, a data de pagamento e limpa para manter a consistência do estado.</div>
             </div>
         </div>
 

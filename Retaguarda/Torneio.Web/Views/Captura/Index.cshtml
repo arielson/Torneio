@@ -2,7 +2,7 @@
 @using Torneio.Domain.Enums
 @model IEnumerable<CapturaDto>
 @{
-    var torneio            = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+    var torneio            = ViewBag.Torneio as TorneioDto;
     var labelEquipe        = torneio?.LabelEquipe  ?? "Equipe";
     var labelMembro        = torneio?.LabelMembro  ?? "Membro";
     var labelItem          = torneio?.LabelItem    ?? "Item";

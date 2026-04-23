@@ -2,13 +2,12 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = "Cobranças";
-    var membros = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>?)ViewBag.Membros ?? Enumerable.Empty<Torneio.Application.DTOs.Membro.MembroDto>()).OrderBy(x => x.Nome).ToList();
+    var membros = ((IEnumerable<MembroDto>?)ViewBag.Membros ?? Enumerable.Empty<MembroDto>()).OrderBy(x => x.Nome).ToList();
     var membroId = ViewBag.MembroId as Guid?;
     var inadimplentes = (bool?)ViewBag.Inadimplentes == true;
     var naoPagas = (bool?)ViewBag.NaoPagas == true;
     var tipo = ViewBag.Tipo?.ToString();
     var lista = Model.ToList();
-    var gerarTodos = new Torneio.Application.DTOs.Financeiro.GerenciarParcelasDto();
     string TipoLabel(string? tipoParcela) => tipoParcela switch
     {
         "Mensalidade" => "Parcela",
@@ -16,6 +15,9 @@
         "ProdutoExtra" => "Produto extra",
         _ => tipoParcela ?? "-"
     };
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
 }
 
 <div class="page-header">
@@ -36,10 +38,10 @@
     <div class="col-lg-4">
         <div class="content-card h-100">
             <div class="card-header-bar">
-                <h5><i class="bi bi-arrow-repeat me-2"></i>Geracao geral</h5>
+                <h5><i class="bi bi-arrow-repeat me-2"></i>Geração geral</h5>
             </div>
             <div class="card-body-pad">
-                <p class="text-muted small mb-3">Use esta opção quando quiser refazer as parcelas de todos os pescadores conforme a configuração atual.</p>
+                <p class="text-muted small mb-3">Use esta opção quando quiser refazer as parcelas de todos os @labelMembroPlural.ToLower() conforme a configuração atual.</p>
                 <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-outline-primary">Regenerar parcelas</button>
@@ -53,7 +55,7 @@
                 <h5><i class="bi bi-person-plus me-2"></i>Somente novos</h5>
             </div>
             <div class="card-body-pad">
-                <p class="text-muted small mb-3">Gera parcelas apenas para pescadores que ainda não possuem cobranças base geradas.</p>
+                <p class="text-muted small mb-3">Gera parcelas apenas para @labelMembroPlural.ToLower() que ainda não possuem cobranças base geradas.</p>
                 <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="SomenteNovos" value="true" />
@@ -65,12 +67,12 @@
     <div class="col-lg-4">
         <div class="content-card h-100">
             <div class="card-header-bar">
-                <h5><i class="bi bi-people me-2"></i>Pescadores selecionados</h5>
+                <h5><i class="bi bi-people me-2"></i>@labelMembroPlural selecionados</h5>
             </div>
             <div class="card-body-pad">
                 <form asp-action="GerarParcelas" asp-route-slug="@slug" method="post">
                     @Html.AntiForgeryToken()
-                    <label class="form-label">Escolha os pescadores</label>
+                    <label class="form-label">Escolha os @labelMembroPlural.ToLower()</label>
                     <select name="MembroIds" class="form-select" multiple size="6">
                         @foreach (var membro in membros)
                         {
@@ -92,7 +94,7 @@
     <div class="card-body-pad">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label">Pescador</label>
+                <label class="form-label">@labelMembro</label>
                 <select name="membroId" class="form-select">
                     <option value="">Todos</option>
                     @foreach (var membro in membros)
@@ -148,15 +150,15 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Pescador</th>
+                        <th>@labelMembro</th>
                         <th>Tipo</th>
-                        <th>Descricao</th>
+                        <th>Descrição</th>
                         <th>Parcela</th>
                         <th>Valor</th>
                         <th>Vencimento</th>
                         <th>Status</th>
                         <th>Comprovante</th>
-                        <th class="text-end">Acoes</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

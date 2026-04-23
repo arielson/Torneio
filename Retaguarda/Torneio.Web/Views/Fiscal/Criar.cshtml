@@ -6,6 +6,7 @@
     var label = torneio?.LabelSupervisor ?? "Fiscal";
     var labelPlural = torneio?.LabelSupervisorPlural ?? "Fiscais";
     var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
     ViewData["Title"] = $"Novo {label}";
 }
 
@@ -33,7 +34,7 @@
         </div>
         <div class="form-section-title">Acesso</div>
         <div class="mb-3">
-            <label asp-for="Usuario" class="form-label">Usuario</label>
+            <label asp-for="Usuario" class="form-label">Usuário</label>
             <input asp-for="Usuario" class="form-control" autocomplete="username" />
             <span asp-validation-for="Usuario" class="text-danger small"></span>
         </div>
@@ -44,13 +45,16 @@
         </div>
         <div class="form-section-title">@labelEquipePlural atendidas</div>
         <div class="mb-3">
-            @if (!equipes.Any())
+            @{
+                var equipeDtos = equipes.ToList();
+            }
+            @if (!equipeDtos.Any())
             {
-                <div class="text-muted small">Nenhuma embarcacao cadastrada no torneio.</div>
+                <div class="text-muted small">Nenhuma @labelEquipe.ToLower() cadastrada no torneio.</div>
             }
             else
             {
-                @foreach (var equipe in equipes.OrderBy(e => e.Nome))
+                @foreach (var equipe in equipeDtos.OrderBy(e => e.Nome))
                 {
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" name="EquipeIds" value="@equipe.Id" id="eq_@equipe.Id"

@@ -1,6 +1,4 @@
 @model Torneio.Application.DTOs.Financeiro.CriarDoacaoPatrocinadorDto
-@using Torneio.Application.DTOs.Patrocinador
-@using Torneio.Domain.Enums
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var patrocinadores = ((IEnumerable<PatrocinadorDto>)ViewBag.Patrocinadores).OrderBy(x => x.Nome).ToList();
@@ -35,9 +33,9 @@
             <div class="form-text">Opcional. Se selecionar, a doação será vinculada ao patrocinador cadastrado.</div>
         </div>
         <div class="mb-3">
-            <label asp-for="NomePatrocinador" class="form-label">Nome do patrocinador</label>
+            <label asp-for="NomePatrocinador" class="form-label">Nome do doador</label>
             <input asp-for="NomePatrocinador" class="form-control" />
-            <div class="form-text">Preencha quando a doação vier de um patrocinador não cadastrado. Informe o patrocinador ou o nome.</div>
+            <div class="form-text">Preencha quando a doação vier de um doador não cadastrado. Informe o nome.</div>
         </div>
         <div class="mb-3">
             <label asp-for="Tipo" class="form-label">Tipo</label>

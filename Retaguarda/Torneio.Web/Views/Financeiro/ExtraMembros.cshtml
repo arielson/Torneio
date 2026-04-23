@@ -6,18 +6,20 @@
     var aderidos = Model.Item1.ToList();
     var form = Model.Item2;
     ViewData["Title"] = "Vendas do produto extra";
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
 }
 
 <div class="page-header"><div class="page-header-left"><h1>@produto.Nome</h1></div></div>
 <a href="/@slug/financeiro/extras" class="back-link"><i class="bi bi-arrow-left"></i> Produtos extras</a>
 
 <div class="content-card mb-4">
-    <div class="card-header-bar"><h5><i class="bi bi-cart-plus me-2"></i>Registrar venda para pescador</h5></div>
+    <div class="card-header-bar"><h5><i class="bi bi-cart-plus me-2"></i>Registrar venda para @labelMembro.ToLower()</h5></div>
     <div class="card-body-pad">
         <form method="post" class="row g-3 align-items-end">
             @Html.AntiForgeryToken()
             <div class="col-md-4">
-                <label class="form-label">Pescador</label>
+                <label class="form-label">@labelMembro</label>
                 <select name="MembroId" class="form-select" required>
                     <option value="">Selecione</option>
                     @foreach (var membro in membros)
@@ -39,7 +41,7 @@
                 <input name="Observacao" class="form-control" />
             </div>
             <div class="col-md-12">
-                <div class="form-text">O valor total e calculado automaticamente com base em valor unitario x quantidade.</div>
+                <div class="form-text">O valor total e calculado automaticamente com base em valor unitário x quantidade.</div>
             </div>
             <div class="col-md-12">
                 <button type="submit" class="btn btn-primary w-100">Vender</button>
@@ -60,11 +62,11 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Pescador</th>
+                        <th>@labelMembro</th>
                         <th>Quantidade</th>
                         <th>Valor</th>
                         <th>Status</th>
-                        <th class="text-end">Acoes</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

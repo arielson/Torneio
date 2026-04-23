@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = Model.NomeTorneio;
     var storageBase = ViewBag.StorageBaseUrl as string ?? "";
-    var patrocinadores = ((IEnumerable<Torneio.Application.DTOs.Patrocinador.PatrocinadorDto>?)ViewBag.Patrocinadores ?? Enumerable.Empty<Torneio.Application.DTOs.Patrocinador.PatrocinadorDto>())
+    var patrocinadores = ((IEnumerable<PatrocinadorDto>?)ViewBag.Patrocinadores ?? Enumerable.Empty<PatrocinadorDto>())
         .Where(p => p.ExibirNaTelaInicial)
         .OrderBy(p => p.Nome)
         .ToList();

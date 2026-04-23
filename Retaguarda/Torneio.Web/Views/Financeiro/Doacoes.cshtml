@@ -7,11 +7,11 @@
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Doacoes</h1>
+        <h1>Doações</h1>
     </div>
     <div class="page-header-actions">
         <a href="/@slug/financeiro/doacoes/criar" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Nova doacao
+            <i class="bi bi-plus-lg me-1"></i>Nova doação
         </a>
     </div>
 </div>
@@ -21,11 +21,11 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-gift me-2"></i>Doacoes de patrocinadores</h5>
+        <h5><i class="bi bi-gift me-2"></i>Doações</h5>
     </div>
     @if (!lista.Any())
     {
-        <div class="card-body-pad text-muted">Nenhuma doacao registrada.</div>
+        <div class="card-body-pad text-muted">Nenhuma doação registrada.</div>
     }
     else
     {
@@ -33,13 +33,13 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Patrocinador</th>
+                        <th>Patrocinador/Doador</th>
                         <th>Tipo</th>
-                        <th>Descricao</th>
+                        <th>Descrição</th>
                         <th>Data</th>
                         <th>Quantidade</th>
                         <th>Valor</th>
-                        <th class="text-end">Acoes</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

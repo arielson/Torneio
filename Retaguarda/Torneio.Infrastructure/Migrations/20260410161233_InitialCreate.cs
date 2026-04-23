@@ -34,6 +34,7 @@ namespace Torneio.Infrastructure.Migrations
                     nome_torneio = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     logo_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ativo = table.Column<bool>(type: "boolean", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     label_equipe = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     label_membro = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     label_supervisor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -73,26 +74,6 @@ namespace Torneio.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "anos_torneio",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano = table.Column<int>(type: "integer", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_anos_torneio", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_anos_torneio_torneiros_torneio_id",
-                        column: x => x.torneio_id,
-                        principalTable: "torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "itens",
                 columns: table => new
                 {
@@ -120,7 +101,6 @@ namespace Torneio.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano_torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     foto_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     usuario = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -129,12 +109,6 @@ namespace Torneio.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_fiscais", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_fiscais_anos_torneio_ano_torneio_id",
-                        column: x => x.ano_torneio_id,
-                        principalTable: "anos_torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_fiscais_torneiros_torneio_id",
                         column: x => x.torneio_id,
@@ -149,19 +123,12 @@ namespace Torneio.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano_torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     foto_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_membros", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_membros_anos_torneio_ano_torneio_id",
-                        column: x => x.ano_torneio_id,
-                        principalTable: "anos_torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_membros_torneiros_torneio_id",
                         column: x => x.torneio_id,
@@ -176,7 +143,6 @@ namespace Torneio.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano_torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     foto_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     capitao = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
@@ -187,12 +153,6 @@ namespace Torneio.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_equipes", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_equipes_anos_torneio_ano_torneio_id",
-                        column: x => x.ano_torneio_id,
-                        principalTable: "anos_torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_equipes_fiscais_fiscal_id",
                         column: x => x.fiscal_id,
@@ -213,7 +173,6 @@ namespace Torneio.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano_torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
                     item_id = table.Column<Guid>(type: "uuid", nullable: false),
                     membro_id = table.Column<Guid>(type: "uuid", nullable: false),
                     equipe_id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -225,12 +184,6 @@ namespace Torneio.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_capturas", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_capturas_anos_torneio_ano_torneio_id",
-                        column: x => x.ano_torneio_id,
-                        principalTable: "anos_torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_capturas_equipes_equipe_id",
                         column: x => x.equipe_id,
@@ -287,7 +240,6 @@ namespace Torneio.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ano_torneio_id = table.Column<Guid>(type: "uuid", nullable: false),
                     equipe_id = table.Column<Guid>(type: "uuid", nullable: false),
                     membro_id = table.Column<Guid>(type: "uuid", nullable: false),
                     posicao = table.Column<int>(type: "integer", nullable: false)
@@ -295,12 +247,6 @@ namespace Torneio.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_sorteios_equipe", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_sorteios_equipe_anos_torneio_ano_torneio_id",
-                        column: x => x.ano_torneio_id,
-                        principalTable: "anos_torneio",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_sorteios_equipe_equipes_equipe_id",
                         column: x => x.equipe_id,
@@ -339,22 +285,6 @@ namespace Torneio.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_anos_torneio_torneio_id_ano",
-                table: "anos_torneio",
-                columns: new[] { "torneio_id", "ano" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_capturas_ano_torneio_id_equipe_id",
-                table: "capturas",
-                columns: new[] { "ano_torneio_id", "equipe_id" });
-
-            migrationBuilder.CreateIndex(
-                name: "ix_capturas_ano_torneio_id_membro_id",
-                table: "capturas",
-                columns: new[] { "ano_torneio_id", "membro_id" });
-
-            migrationBuilder.CreateIndex(
                 name: "ix_capturas_equipe_id",
                 table: "capturas",
                 column: "equipe_id");
@@ -375,19 +305,19 @@ namespace Torneio.Infrastructure.Migrations
                 column: "pendente_sync");
 
             migrationBuilder.CreateIndex(
-                name: "ix_capturas_torneio_id",
+                name: "ix_capturas_torneio_id_equipe_id",
                 table: "capturas",
-                column: "torneio_id");
+                columns: new[] { "torneio_id", "equipe_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_capturas_torneio_id_membro_id",
+                table: "capturas",
+                columns: new[] { "torneio_id", "membro_id" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_equipe_membro_membros_id",
                 table: "equipe_membro",
                 column: "membros_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_equipes_ano_torneio_id",
-                table: "equipes",
-                column: "ano_torneio_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_equipes_fiscal_id",
@@ -398,11 +328,6 @@ namespace Torneio.Infrastructure.Migrations
                 name: "ix_equipes_torneio_id",
                 table: "equipes",
                 column: "torneio_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_fiscais_ano_torneio_id",
-                table: "fiscais",
-                column: "ano_torneio_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_fiscais_torneio_id",
@@ -421,26 +346,9 @@ namespace Torneio.Infrastructure.Migrations
                 column: "torneio_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_membros_ano_torneio_id",
-                table: "membros",
-                column: "ano_torneio_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_membros_torneio_id",
                 table: "membros",
                 column: "torneio_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_sorteios_equipe_ano_torneio_id_equipe_id",
-                table: "sorteios_equipe",
-                columns: new[] { "ano_torneio_id", "equipe_id" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_sorteios_equipe_ano_torneio_id_posicao",
-                table: "sorteios_equipe",
-                columns: new[] { "ano_torneio_id", "posicao" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_sorteios_equipe_equipe_id",
@@ -453,9 +361,16 @@ namespace Torneio.Infrastructure.Migrations
                 column: "membro_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_sorteios_equipe_torneio_id",
+                name: "ix_sorteios_equipe_torneio_id_equipe_id",
                 table: "sorteios_equipe",
-                column: "torneio_id");
+                columns: new[] { "torneio_id", "equipe_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_sorteios_equipe_torneio_id_posicao",
+                table: "sorteios_equipe",
+                columns: new[] { "torneio_id", "posicao" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_torneio_slug",
@@ -493,9 +408,6 @@ namespace Torneio.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "fiscais");
-
-            migrationBuilder.DropTable(
-                name: "anos_torneio");
 
             migrationBuilder.DropTable(
                 name: "torneio");

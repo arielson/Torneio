@@ -74,6 +74,8 @@ public class FinanceiroController : TorneioBaseController
     [HttpGet("configuracao")]
     public async Task<IActionResult> Configuracao()
     {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         return View(await _financeiroServico.ObterConfiguracao(TenantContext.TorneioId));
     }
 
@@ -152,6 +154,8 @@ public class FinanceiroController : TorneioBaseController
         ViewBag.Inadimplentes = inadimplentes;
         ViewBag.NaoPagas = naoPagas;
         ViewBag.Tipo = tipo;
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         var parcelas = await _financeiroServico.ListarParcelas(TenantContext.TorneioId, membroId, inadimplentes, naoPagas, tipo);
         return View("Parcelas", parcelas);
     }
@@ -160,6 +164,8 @@ public class FinanceiroController : TorneioBaseController
     public async Task<IActionResult> EditarCobranca(Guid id)
     {
         var parcela = await _financeiroServico.ObterParcela(id);
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         return parcela is null ? NotFound() : View("EditarParcela", parcela);
     }
 
@@ -236,6 +242,8 @@ public class FinanceiroController : TorneioBaseController
     public async Task<IActionResult> Custos()
     {
         var custos = await _custoServico.Listar(TenantContext.TorneioId);
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         return View(custos);
     }
 
@@ -354,6 +362,8 @@ public class FinanceiroController : TorneioBaseController
             ? produtos.FirstOrDefault(x => x.Id == produtoId.Value)
             : null;
         ViewBag.Membros = await _membroServico.ListarTodos();
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
 
         var modelo = new CriarProdutoExtraMembroDto
         {
@@ -489,6 +499,8 @@ public class FinanceiroController : TorneioBaseController
 
         ViewBag.Produto = produto;
         ViewBag.Membros = await _membroServico.ListarTodos();
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         return View(new Tuple<IEnumerable<ProdutoExtraMembroDto>, CriarProdutoExtraMembroDto>(
             await _produtoExtraServico.ListarAderidos(id),
             new CriarProdutoExtraMembroDto

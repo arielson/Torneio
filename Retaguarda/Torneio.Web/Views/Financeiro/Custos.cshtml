@@ -3,6 +3,8 @@
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = "Custos";
     var lista = Model.ToList();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
 }
 
 <div class="page-header">
@@ -22,7 +24,7 @@
 <div class="content-card mb-4">
     <div class="card-body-pad">
         <div class="alert alert-info mb-0">
-            Os custos das embarcações são alimentados pelo cadastro de embarcações. Os demais custos do torneio são gerenciados nesta tela.
+            Os custos das @labelEquipePlural.ToLower() são alimentados pelo cadastro de @labelEquipePlural.ToLower(). Os demais custos do torneio são gerenciados nesta tela.
         </div>
     </div>
 </div>
@@ -42,13 +44,13 @@
                 <thead>
                     <tr>
                         <th>Categoria</th>
-                        <th>Descricao</th>
+                        <th>Descrição</th>
                         <th>Quantidade</th>
                         <th>Valor unitário</th>
                         <th>Valor total</th>
                         <th>Vencimento</th>
                         <th>Responsavel</th>
-                        <th class="text-end">Acoes</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

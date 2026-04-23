@@ -4,9 +4,12 @@
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var produtos = ((IEnumerable<ProdutoExtraTorneioDto>)ViewBag.Produtos).ToList();
     var produtoSelecionado = ViewBag.ProdutoSelecionado as ProdutoExtraTorneioDto;
-    var membros = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>)ViewBag.Membros).OrderBy(x => x.Nome).ToList();
+    var membros = ((IEnumerable<MembroDto>)ViewBag.Membros).OrderBy(x => x.Nome).ToList();
     var vendas = ((IEnumerable<ProdutoExtraMembroDto>)ViewBag.Vendas).ToList();
     ViewData["Title"] = "Registrar venda";
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
 }
 
 <div class="page-header">
@@ -43,7 +46,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Pescador</label>
+                    <label class="form-label">@labelMembro</label>
                     <select asp-for="MembroId" class="form-select" required>
                         <option value="">Selecione</option>
                         @foreach (var membro in membros)
@@ -61,7 +64,7 @@
                     <input asp-for="ValorCobrado" id="valorCobradoVenda" class="form-control" type="number" step="0.01" readonly />
                 </div>
                 <div class="col-md-9">
-                    <label asp-for="Observacao" class="form-label">Observacao</label>
+                    <label asp-for="Observacao" class="form-label">Observação</label>
                     <input asp-for="Observacao" class="form-control" />
                 </div>
                 <div class="col-md-3">
@@ -88,11 +91,11 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Pescador</th>
+                            <th>@labelMembro</th>
                             <th>Quantidade</th>
                             <th>Valor</th>
                             <th>Status</th>
-                            <th class="text-end">Acoes</th>
+                            <th class="text-end">Ações</th>
                         </tr>
                     </thead>
                     <tbody>

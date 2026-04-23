@@ -10,7 +10,7 @@
         ? tamanhosBase
         : tamanhosBase.Concat(new[] { Model.TamanhoCamisa ?? string.Empty }).Distinct().ToArray();
     var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
-    var exibirAcessoPescador = torneio?.PermitirRegistroPublicoMembro ?? false;
+    var exibirAcesso = torneio?.PermitirRegistroPublicoMembro ?? false;
     ViewData["Title"] = $"Editar {label} - {membro.Nome}";
 }
 
@@ -40,9 +40,9 @@
             <input asp-for="Celular" class="form-control" placeholder="Opcional" inputmode="numeric" maxlength="15" />
             <span asp-validation-for="Celular" class="text-danger small"></span>
         </div>
-        @if (exibirAcessoPescador)
+        @if (exibirAcesso)
         {
-            <div class="form-section-title">Acesso do pescador</div>
+            <div class="form-section-title">Acesso do @label.ToLower()</div>
             <div class="mb-3">
                 <label asp-for="Usuario" class="form-label">Usuario <small class="text-muted">(opcional)</small></label>
                 <input asp-for="Usuario" class="form-control" placeholder="Opcional" />
