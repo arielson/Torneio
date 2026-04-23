@@ -13,6 +13,10 @@ class PatrocinadoresSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (patrocinadores.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -21,32 +25,17 @@ class PatrocinadoresSection extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        if (patrocinadores.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Text(
-              'Nenhum patrocinador cadastrado.',
-              style: TextStyle(color: Colors.grey),
-            ),
-          )
-        else
-          SizedBox(
-            height: 172,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: patrocinadores.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (context, index) => _PatrocinadorCard(
-                patrocinador: patrocinadores[index],
-              ),
+        SizedBox(
+          height: 172,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: patrocinadores.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) => _PatrocinadorCard(
+              patrocinador: patrocinadores[index],
             ),
           ),
+        ),
       ],
     );
   }

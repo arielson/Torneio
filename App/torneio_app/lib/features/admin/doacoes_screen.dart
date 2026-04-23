@@ -201,6 +201,7 @@ class _DoacaoFormDialog extends StatefulWidget {
 class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
   final _api = ApiService();
   final _descricaoController = TextEditingController();
+  final _nomePatrocinadorController = TextEditingController();
   final _quantidadeController = TextEditingController();
   final _valorController = TextEditingController();
   final _observacaoController = TextEditingController();
@@ -220,6 +221,7 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
       _patrocinadorId = doacao.patrocinadorId;
       _tipo = doacao.tipo;
       _dataDoacao = doacao.dataDoacao;
+      _nomePatrocinadorController.text = doacao.nomePatrocinador;
       _descricaoController.text = doacao.descricao;
       _quantidadeController.text = doacao.quantidade?.toStringAsFixed(2) ?? '';
       _valorController.text = doacao.valor?.toStringAsFixed(2) ?? '';
@@ -250,11 +252,12 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
         ? null
         : double.tryParse(_valorController.text.replaceAll(',', '.'));
 
-    if (_patrocinadorId == null || _descricaoController.text.trim().isEmpty) {
+    if ((_patrocinadorId == null && _nomePatrocinadorController.text.trim().isEmpty) ||
+        _descricaoController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Selecione o patrocinador e informe a descri\u00e7\u00e3o da doa\u00e7\u00e3o.',
+            'Informe o patrocinador e a descri\u00e7\u00e3o da doa\u00e7\u00e3o.',
           ),
         ),
       );
@@ -281,7 +284,7 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
     try {
       final body = {
         'patrocinadorId': _patrocinadorId,
-        'nomePatrocinador': '',
+        'nomePatrocinador': _nomePatrocinadorController.text.trim(),
         'tipo': _tipo,
         'descricao': _descricaoController.text.trim(),
         'quantidade': quantidade,
@@ -315,6 +318,16 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
   }
 
   @override
+  void dispose() {
+    _descricaoController.dispose();
+    _nomePatrocinadorController.dispose();
+    _quantidadeController.dispose();
+    _valorController.dispose();
+    _observacaoController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final dataFormatada = DateFormat('dd/MM/yyyy').format(_dataDoacao);
     return AlertDialog(
@@ -325,7 +338,7 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
           children: [
             DropdownButtonFormField<String?>(
               initialValue: _patrocinadorId,
-              decoration: const InputDecoration(labelText: 'Patrocinador cadastrado'),
+              decoration: const InputDecoration(labelText: 'Patrocinador cadastrado (opcional)'),
               items: [
                 const DropdownMenuItem<String?>(
                   value: null,
@@ -336,6 +349,14 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
                 ),
               ],
               onChanged: (value) => setState(() => _patrocinadorId = value),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _nomePatrocinadorController,
+              decoration: const InputDecoration(
+                labelText: 'Nome do patrocinador',
+                helperText: 'Preencha se a doa\u00e7\u00e3o vier de um patrocinador n\u00e3o cadastrado.',
+              ),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
@@ -403,12 +424,4 @@ class _DoacaoFormDialogState extends State<_DoacaoFormDialog> {
     );
   }
 
-  @override
-  void dispose() {
-    _descricaoController.dispose();
-    _quantidadeController.dispose();
-    _valorController.dispose();
-    _observacaoController.dispose();
-    super.dispose();
-  }
 }

@@ -100,10 +100,12 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     final auth = context.read<AuthProvider>().usuario;
     final config = context.read<ConfigProvider>().config;
     if (auth?.slug == null || auth?.token == null || config == null) return;
+    final permiteAcessoPescador = config.permitirRegistroPublicoMembro;
 
     final usuario = _usuarioController.text.trim();
     final senha = _senhaController.text;
-    if ((usuario.isEmpty && senha.isNotEmpty) || (usuario.isNotEmpty && !_editando && senha.isEmpty)) {
+    if (permiteAcessoPescador &&
+        ((usuario.isEmpty && senha.isNotEmpty) || (usuario.isNotEmpty && !_editando && senha.isEmpty))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Informe usuario e senha juntos para habilitar o acesso do pescador.'), backgroundColor: Colors.red),
       );
@@ -122,8 +124,8 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
             'tamanhoCamisa': config.exibirModuloFinanceiro
                 ? (_tamanhoCamisa ?? '')
                 : (widget.membro?.tamanhoCamisa ?? ''),
-            'usuario': usuario,
-            'senha': senha,
+            'usuario': permiteAcessoPescador ? usuario : '',
+            'senha': permiteAcessoPescador ? senha : '',
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -135,8 +137,8 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
             'nome': _nomeController.text.trim(),
             'celular': _celularController.text.trim(),
             'tamanhoCamisa': config.exibirModuloFinanceiro ? (_tamanhoCamisa ?? '') : '',
-            'usuario': usuario,
-            'senha': senha,
+            'usuario': permiteAcessoPescador ? usuario : '',
+            'senha': permiteAcessoPescador ? senha : '',
           },
           files: _fotoPath != null ? {'foto': _fotoPath!} : null,
           token: auth.token,
@@ -162,6 +164,7 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
     final config = context.watch<ConfigProvider>().config;
     final label = config?.labelMembro ?? 'Membro';
     final exibirFinanceiro = config?.exibirModuloFinanceiro ?? true;
+    final exibirAcessoPescador = config?.permitirRegistroPublicoMembro ?? false;
     final fotoAtualUrl = AppConfig.resolverUrl(widget.membro?.fotoUrl);
     final tamanhosCamisa = {
       ..._tamanhosPadrao,
@@ -198,29 +201,31 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _usuarioController,
-              decoration: const InputDecoration(
-                labelText: 'Usuario',
-                hintText: 'Opcional',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _senhaController,
-              obscureText: !_senhaVisivel,
-              decoration: InputDecoration(
-                labelText: _editando ? 'Nova senha' : 'Senha',
-                hintText: _editando ? 'Deixe em branco para manter a atual' : 'Opcional',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  onPressed: () => setState(() => _senhaVisivel = !_senhaVisivel),
-                  icon: Icon(_senhaVisivel ? Icons.visibility_off : Icons.visibility),
+            if (exibirAcessoPescador) ...[
+              TextFormField(
+                controller: _usuarioController,
+                decoration: const InputDecoration(
+                  labelText: 'Usuario',
+                  hintText: 'Opcional',
+                  border: OutlineInputBorder(),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _senhaController,
+                obscureText: !_senhaVisivel,
+                decoration: InputDecoration(
+                  labelText: _editando ? 'Nova senha' : 'Senha',
+                  hintText: _editando ? 'Deixe em branco para manter a atual' : 'Opcional',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => _senhaVisivel = !_senhaVisivel),
+                    icon: Icon(_senhaVisivel ? Icons.visibility_off : Icons.visibility),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             if (exibirFinanceiro) ...[
               DropdownButtonFormField<String>(
                 initialValue: _tamanhoCamisa,
