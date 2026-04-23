@@ -1,6 +1,7 @@
 @model MembroLoginViewModel
 @{
-    ViewData["Title"] = $"Entrar como pescador - {Model.NomeTorneio}";
+    var labelMembro = string.IsNullOrWhiteSpace(Model.LabelMembro) ? "Membro" : Model.LabelMembro;
+    ViewData["Title"] = $"Entrar como {labelMembro.ToLower()} - {Model.NomeTorneio}";
     ViewData["IsAuthPage"] = true;
 }
 
@@ -9,12 +10,13 @@
         <i class="bi bi-person-badge-fill"></i>
     </div>
     <h2>@Model.NomeTorneio</h2>
-    <p class="auth-subtitle">Acesso do pescador para consultar suas cobranças</p>
+    <p class="auth-subtitle">Acesso do @labelMembro.ToLower() para consultar suas cobranças</p>
 
     <form asp-action="MembroLogin" asp-route-slug="@Model.Slug" method="post">
         <input type="hidden" asp-for="ReturnUrl" />
         <input type="hidden" asp-for="Slug" />
         <input type="hidden" asp-for="NomeTorneio" />
+        <input type="hidden" asp-for="LabelMembro" />
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
@@ -37,10 +39,10 @@
 
     <div class="text-center mt-3">
         <div class="mb-2">
-            <a href="/@Model.Slug/pescador/recuperar-senha" class="small">Esqueci minha senha</a>
+            <a href="/@Model.Slug/membro/recuperar-senha" class="small">Esqueci minha senha</a>
         </div>
         <div class="mb-2">
-            <a href="/@Model.Slug/registro-pescador" class="small">Quero me registrar</a>
+            <a href="/@Model.Slug/registro-membro" class="small">Quero me registrar</a>
         </div>
         <a href="/@Model.Slug" class="text-muted small">
             <i class="bi bi-arrow-left me-1"></i>Voltar ao torneio

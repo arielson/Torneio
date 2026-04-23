@@ -94,7 +94,7 @@
             document.getElementById('solicitarBtn')?.addEventListener('click', async () => {
                 limparMensagens();
                 try {
-                    const response = await fetch('/@Model.Slug/pescador/recuperar-senha/solicitar-codigo', {
+                    const response = await fetch('/@Model.Slug/membro/recuperar-senha/solicitar-codigo', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -115,7 +115,7 @@
             document.getElementById('confirmarBtn')?.addEventListener('click', async () => {
                 limparMensagens();
                 try {
-                    const response = await fetch('/@Model.Slug/pescador/recuperar-senha/confirmar', {
+                    const response = await fetch('/@Model.Slug/membro/recuperar-senha/confirmar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

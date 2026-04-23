@@ -72,9 +72,9 @@
     <a href="/@Model.Slug/login" class="btn btn-outline-primary">Entrar como administrador</a>
     @if (Model.PermitirRegistroPublicoMembro)
     {
-        <a href="/@Model.Slug/pescador/login" class="btn btn-outline-secondary ms-2">Entrar como pescador</a>
-        <a href="/@Model.Slug/pescador/recuperar-senha" class="btn btn-outline-dark ms-2">Recuperar senha do pescador</a>
-        <a href="/@Model.Slug/registro-pescador" class="btn btn-primary ms-2">Registrar pescador</a>
+        <a href="/@Model.Slug/membro/login" class="btn btn-outline-secondary ms-2">Entrar como @Model.LabelMembro.ToLower()</a>
+        <a href="/@Model.Slug/membro/recuperar-senha" class="btn btn-outline-dark ms-2">Recuperar senha do @Model.LabelMembro.ToLower()</a>
+        <a href="/@Model.Slug/registro-membro" class="btn btn-primary ms-2">Registrar @Model.LabelMembro.ToLower()</a>
     }
 </div>
 

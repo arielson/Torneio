@@ -13,5 +13,6 @@ public class MembroLoginViewModel
 
     public string? Slug { get; set; }
     public string? NomeTorneio { get; set; }
+    public string? LabelMembro { get; set; }
     public string? ReturnUrl { get; set; }
 }

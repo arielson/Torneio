@@ -111,7 +111,7 @@ public class HomeController : Controller
         return Redirect(model.ReturnUrl ?? $"/{slug}/admin");
     }
 
-    [HttpGet("{slug}/pescador/login")]
+    [HttpGet("{slug}/membro/login")]
     public async Task<IActionResult> MembroLogin(string slug, string? returnUrl)
     {
         if (User.Identity?.IsAuthenticated == true)
@@ -125,11 +125,12 @@ public class HomeController : Controller
         {
             Slug = slug,
             NomeTorneio = torneio.NomeTorneio,
+            LabelMembro = torneio.LabelMembro,
             ReturnUrl = returnUrl
         });
     }
 
-    [HttpPost("{slug}/pescador/login")]
+    [HttpPost("{slug}/membro/login")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MembroLogin(string slug, MembroLoginViewModel model)
     {
@@ -139,6 +140,7 @@ public class HomeController : Controller
 
         model.Slug = slug;
         model.NomeTorneio = torneio.NomeTorneio;
+        model.LabelMembro = torneio.LabelMembro;
 
         if (!ModelState.IsValid)
             return View(model);

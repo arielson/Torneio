@@ -7,7 +7,7 @@ using Torneio.Infrastructure.Services;
 namespace Torneio.Web.Controllers;
 
 [AllowAnonymous]
-[Route("{slug}/pescador/recuperar-senha")]
+[Route("{slug}/membro/recuperar-senha")]
 public class RecuperacaoSenhaMembroController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
@@ -42,7 +42,7 @@ public class RecuperacaoSenhaMembroController : TorneioBaseController
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId)
                 ?? throw new KeyNotFoundException("Torneio nao encontrado.");
             if (!torneio.PermitirRegistroPublicoMembro)
-                throw new InvalidOperationException("O acesso do pescador nao esta habilitado neste torneio.");
+                throw new InvalidOperationException($"O acesso do {torneio.LabelMembro.ToLower()} nao esta habilitado neste torneio.");
 
             var resultado = await _membroServico.SolicitarRecuperacaoSenha(
                 torneio.Id,
@@ -66,7 +66,7 @@ public class RecuperacaoSenhaMembroController : TorneioBaseController
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId)
                 ?? throw new KeyNotFoundException("Torneio nao encontrado.");
             if (!torneio.PermitirRegistroPublicoMembro)
-                throw new InvalidOperationException("O acesso do pescador nao esta habilitado neste torneio.");
+                throw new InvalidOperationException($"O acesso do {torneio.LabelMembro.ToLower()} nao esta habilitado neste torneio.");
 
             await _membroServico.RedefinirSenha(
                 torneio.Id,

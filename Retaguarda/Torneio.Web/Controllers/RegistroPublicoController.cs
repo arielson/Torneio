@@ -7,7 +7,7 @@ using Torneio.Infrastructure.Services;
 namespace Torneio.Web.Controllers;
 
 [AllowAnonymous]
-[Route("{slug}/registro-pescador")]
+[Route("{slug}/registro-membro")]
 public class RegistroPublicoController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
@@ -42,7 +42,7 @@ public class RegistroPublicoController : TorneioBaseController
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId)
                 ?? throw new KeyNotFoundException("Torneio nao encontrado.");
             if (!torneio.PermitirRegistroPublicoMembro)
-                throw new InvalidOperationException("O cadastro publico de pescador nao esta habilitado neste torneio.");
+                throw new InvalidOperationException($"O cadastro publico de {torneio.LabelMembro.ToLower()} nao esta habilitado neste torneio.");
 
             var resultado = await _registroServico.SolicitarCodigo(
                 torneio.Id,
@@ -66,7 +66,7 @@ public class RegistroPublicoController : TorneioBaseController
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId)
                 ?? throw new KeyNotFoundException("Torneio nao encontrado.");
             if (!torneio.PermitirRegistroPublicoMembro)
-                throw new InvalidOperationException("O cadastro publico de pescador nao esta habilitado neste torneio.");
+                throw new InvalidOperationException($"O cadastro publico de {torneio.LabelMembro.ToLower()} nao esta habilitado neste torneio.");
 
             var membro = await _registroServico.ConfirmarCodigo(
                 torneio.Id,
