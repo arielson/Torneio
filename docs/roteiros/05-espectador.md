@@ -1,36 +1,45 @@
 # Roteiro do Espectador
 
-## Objetivo do video
+## Objetivo do vídeo
 
-Apresentar a experiencia publica para quem acompanha a plataforma como espectador, sem permissao administrativa.
+Apresentar a camada pública da plataforma para quem acompanha os torneios sem permissão administrativa.
 
-## Cenario recomendado
+## Cenário recomendado
 
 - Manter banners ativos com destinos configurados.
-- Usar os tres torneios de exemplo para busca e comparacao.
-- Garantir pelo menos um torneio `Aberto`, outro `Liberado` e outro `Finalizado`.
-- Manter patrocinadores ativos para evidenciar a lista sempre visivel na tela inicial do torneio.
+- Usar três torneios com status diferentes.
+- Garantir patrocinadores ativos em pelo menos um torneio.
+- Manter um torneio com acesso público de membro habilitado e outro sem essa opção.
 
-## Sequencia sugerida de gravacao
+## Sequência sugerida de gravação
 
-1. Abrir o app publico e mostrar a lista inicial de torneios.
-2. Usar a busca por nome ou slug.
-3. Navegar pelos banners da plataforma e demonstrar os destinos.
-4. Destacar nome, logo, slug e status dos torneios.
-5. Abrir `Torneio BTS Sport Fishing 2026` e mostrar a tela de detalhes.
-6. Destacar a lista de patrocinadores sempre visivel e seus destinos.
-7. Mostrar as mensagens conforme o status do torneio.
-8. Abrir um torneio liberado para comparar a experiencia.
-9. Explicar os botoes publicos de login administrativo e, quando configurado, login, registro e recuperacao do pescador.
-10. Voltar para a lista, abrir outro torneio e reforcar a separacao por slug e identidade visual.
-11. Encerrar destacando a camada publica da plataforma.
+1. Abrir a tela inicial pública da plataforma.
+2. Mostrar a lista de torneios disponíveis.
+3. Destacar banners e seus destinos.
+4. Apresentar nome, logo e status dos torneios.
+5. Abrir um torneio no app público e mostrar:
+   - nome
+   - status
+   - patrocinadores
+   - ações públicas disponíveis
+6. Explicar que a tela pública do torneio não mostra informações técnicas como medida ou modo offline.
+7. Abrir a versão web pública do mesmo torneio e mostrar a consistência das informações.
+8. Em um torneio com acesso público de membro habilitado, mostrar os botões de:
+   - login do admin
+   - login do membro
+   - recuperação de senha do membro
+   - registro do membro
+9. Em outro torneio sem essa habilitação, mostrar que esses acessos do membro não aparecem.
+10. Abrir mais de um torneio e reforçar a separação por slug, identidade visual e patrocinadores.
+11. Finalizar destacando que a plataforma oferece uma experiência pública clara e segura.
 
-## Pontos de narracao importantes
+## Pontos de narração importantes
 
-- O espectador nao acessa menus administrativos nem dados sensiveis.
-- Os banners apoiam divulgacao e redirecionamento para canais oficiais.
-- O status comunica rapidamente o momento do torneio.
+- O espectador não acessa menus administrativos nem dados sensíveis.
+- Patrocinadores ficam visíveis na experiência pública quando existirem.
+- O status do torneio comunica rapidamente o momento do evento.
+- O acesso público do membro depende de configuração específica do torneio.
 
-## Resultado esperado do video
+## Resultado esperado do vídeo
 
-Ao final, o espectador deve perceber que a plataforma tambem oferece uma camada publica organizada, simples e adequada para descoberta e consulta de torneios.
+Ao final, o espectador deve perceber que a plataforma também entrega uma camada pública organizada para descoberta, consulta e relacionamento com o torneio.

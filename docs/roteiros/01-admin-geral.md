@@ -1,42 +1,56 @@
 # Roteiro Completo do Administrador Geral
 
-## Objetivo do video
+## Objetivo do vídeo
 
-Apresentar todas as responsabilidades do Administrador Geral, que controla a plataforma como um todo, sem entrar nos detalhes operacionais internos de cada torneio.
+Apresentar a governança da plataforma, com foco no controle global de torneios, acessos, banners e auditoria, sem entrar na operação diária de cada evento.
 
-## Cenario recomendado
+## Cenário recomendado
 
-- Usar pelo menos tres torneios cadastrados: `Torneio BTS Sport Fishing 2026`, `Amigos da Pesca 2026` e `Rei dos Mares 2026`.
-- Garantir que pelo menos um torneio esteja ativo e outro inativo.
-- Manter ao menos um admin geral e um admin de torneio cadastrados.
-- Deixar pelo menos um torneio com registro publico de pescador habilitado.
+- Usar pelo menos três torneios cadastrados: `Torneio BTS Sport Fishing 2026`, `Amigos da Pesca 2026` e `Rei dos Mares 2026`.
+- Manter ao menos um torneio ativo e outro inativo.
+- Deixar um torneio com `Modo de Sorteio = Nenhum` e outro com `Modo de Sorteio = GrupoEquipe`.
+- Manter ao menos um admin geral e admins de torneio já cadastrados.
+- Deixar um torneio com acesso público de membro habilitado e outro sem essa flag.
 
-## Sequencia sugerida de gravacao
+## Sequência sugerida de gravação
 
-1. Acessar a tela inicial da web e fazer login como Administrador Geral.
-2. Mostrar o painel geral com indicadores e explicar o papel de governanca da plataforma.
-3. Percorrer a lista de torneios destacando nome, slug, status e modo de sorteio.
-4. Entrar no cadastro de novo torneio e mostrar nome, slug, logo, tipo, nomenclaturas, modo de sorteio, fator multiplicador, quantidade de ganhadores, premiacao por embarcacao e/ou pescador, modulo financeiro e registro publico de pescador.
-5. Editar um torneio existente e mostrar que os parametros podem ser ajustados sem recriar o evento.
-6. Demonstrar ativacao e desativacao do torneio.
-7. Apenas exibir a opcao de exclusao, sem confirmar se a base estiver em uso.
-8. Acessar o painel interno de um torneio pelo atalho administrativo.
-9. Mostrar que o Administrador Geral tambem acessa a Reorganizacao emergencial.
-10. Abrir o modulo de Administradores Gerais, listar, criar e remover quando aplicavel.
-11. Entrar nos Administradores do Torneio de um evento especifico, listar, criar e remover.
-12. Acessar Banners e mostrar cadastro, imagem, associacao ao torneio, destinos suportados e ativacao.
-13. Abrir a pagina publica de um torneio e mostrar que as configuracoes se refletem na experiencia publica.
-14. Entrar em Logs de auditoria, aplicar filtros e mostrar a rastreabilidade.
-15. Mostrar a limpeza total dos logs e explicar que um novo log e gravado registrando a operacao.
-16. Finalizar com logout.
+1. Abrir a web e fazer login como Administrador Geral.
+2. Mostrar que o menu lateral do Admin Geral aparece somente quando este perfil está autenticado.
+3. Apresentar o painel geral e explicar a visão centralizada da plataforma.
+4. Percorrer a lista de torneios destacando nome, slug, status, tipo de torneio e modo de sorteio.
+5. Abrir o cadastro de novo torneio e mostrar:
+   - nome, slug e logo
+   - tipo de torneio
+   - terminologias
+   - modo de sorteio
+   - fator multiplicador
+   - quantidade de ganhadores
+   - premiação por embarcação e/ou membro
+   - exibição do módulo financeiro
+   - acesso público de membro com SMS
+6. Editar um torneio existente e explicar que as flags controlam menus e telas do web e do app.
+7. Demonstrar ativação e desativação do torneio.
+8. Exibir a entrada administrativa de um torneio pelo atalho do painel.
+9. Mostrar que o Administrador Geral também consegue acessar a Reorganização Emergencial do torneio.
+10. Abrir `Admins Gerais`, listar, criar, alterar senha e remover quando aplicável.
+11. Mostrar que o primeiro admin geral possui trava contra exclusão.
+12. Entrar em `Admins do Torneio`, listar, criar, alterar senha e remover.
+13. Abrir `Banners`, mostrar cadastro, imagem, destino e ativação.
+14. Exibir a tela pública de um torneio e explicar que:
+   - patrocinadores aparecem na tela pública
+   - o acesso de membro só aparece quando a flag pública estiver habilitada
+   - cada slug mantém o torneio isolado
+15. Entrar em `Logs de auditoria`, aplicar filtros e demonstrar a rastreabilidade.
+16. Mostrar a ação de limpar todos os logs e explicar que a própria limpeza gera um novo log de auditoria.
+17. Finalizar com logout.
 
-## Pontos de narracao importantes
+## Pontos de narração importantes
 
-- O Administrador Geral governa a plataforma, enquanto a operacao diaria acontece com o Admin do Torneio.
-- Os slugs separam ambientes de torneio sem mistura de dados.
-- As flags do torneio controlam o que aparece para administradores, fiscais, pescadores e publico.
-- Os logs sustentam rastreabilidade administrativa e operacional.
+- O Administrador Geral controla a plataforma, não a operação diária do torneio.
+- O slug separa o contexto de cada torneio e evita compartilhamento indevido de dados.
+- Flags do torneio alteram menus, telas e acessos no web, no app e na área pública.
+- A auditoria registra operações sensíveis, inclusive limpeza de logs e ações emergenciais.
 
-## Resultado esperado do video
+## Resultado esperado do vídeo
 
-Ao final, o espectador deve entender como novos torneios sao criados, configurados, ativados, auditados e delegados para administradores locais.
+Ao final, o espectador deve entender como a plataforma é administrada globalmente, como novos torneios são configurados e como o controle de acesso e auditoria sustenta a operação.

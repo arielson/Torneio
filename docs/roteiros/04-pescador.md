@@ -1,37 +1,46 @@
-# Roteiro Completo do Pescador
+# Roteiro Completo do Membro
 
-## Objetivo do video
+## Objetivo do vídeo
 
-Apresentar a jornada do pescador dentro da plataforma, da tela publica do torneio ao acesso as proprias cobrancas, com registro e recuperacao por SMS.
+Apresentar a jornada pública do membro dentro da plataforma, do acesso ao torneio até a consulta das próprias cobranças, incluindo registro e recuperação por SMS.
 
-## Cenario recomendado
+## Cenário recomendado
 
-- Usar um torneio com registro publico de pescador habilitado.
-- Manter configuracao financeira ativa para exibir cobrancas geradas.
-- Preparar um pescador sem credenciais e outro com credenciais ja definidas.
+- Usar um torneio com acesso público de membro habilitado.
+- Manter o módulo financeiro ativo para exibir cobranças geradas.
+- Preparar um membro sem credenciais e outro com credenciais já definidas.
 
-## Sequencia sugerida de gravacao
+## Sequência sugerida de gravação
 
-1. Abrir a tela publica do torneio e destacar patrocinadores e botoes do pescador.
-2. Entrar no fluxo de registro publico.
-3. Preencher dados, informar celular e validar o codigo recebido por SMS.
-4. Definir usuario e senha no proprio registro.
-5. Concluir o cadastro e explicar a geracao automatica das cobrancas quando houver configuracao financeira.
-6. Voltar para a tela publica e fazer login como pescador.
-7. Abrir a listagem `Minhas cobrancas` e mostrar tipo, vencimento, situacao, valor e comprovantes.
-8. Sair da conta e abrir Recuperacao de senha.
-9. Informar usuario e celular, validar novo codigo por SMS e definir nova senha.
-10. Fazer login novamente com a nova senha.
-11. Explicar que pescadores cadastrados internamente tambem podem ganhar credenciais depois, usando o fluxo publico quando permitido.
-12. Finalizar reforcando a autonomia do pescador para consultar as proprias cobrancas.
+1. Abrir a tela pública do torneio na web.
+2. Destacar patrocinadores e os botões públicos disponíveis.
+3. Explicar que o acesso do membro só aparece quando a configuração do torneio permite o acesso público com SMS.
+4. Entrar no fluxo de `Registro`.
+5. Preencher os dados, informar celular e solicitar o código por SMS.
+6. Confirmar o código recebido.
+7. Definir usuário e senha no próprio registro.
+8. Concluir o cadastro e explicar que cobranças podem ser geradas automaticamente conforme a configuração financeira do torneio.
+9. Voltar para a tela pública e fazer login como membro.
+10. Abrir `Minhas cobranças` e mostrar:
+   - tipo da cobrança
+   - vencimento
+   - situação
+   - valor
+   - comprovantes, quando existirem
+11. Sair da conta e abrir `Recuperar senha`.
+12. Informar usuário e celular.
+13. Confirmar o novo código por SMS e redefinir a senha.
+14. Fazer login novamente com a nova senha.
+15. Explicar que um membro cadastrado internamente também pode ganhar credenciais depois, quando o torneio permitir esse acesso público.
+16. Finalizar reforçando a autonomia do membro para consultar suas cobranças.
 
-## Pontos de narracao importantes
+## Pontos de narração importantes
 
-- O registro publico so aparece quando a configuracao do torneio permitir.
-- Usuario e senha do pescador sao opcionais no cadastro interno, mas necessarios para acesso individual.
-- O SMS funciona como segunda etapa de validacao.
-- As cobrancas so aparecem quando houver configuracao financeira aplicavel.
+- Na experiência pública, os textos usam a terminologia configurada do torneio.
+- O acesso público depende da flag do torneio; se a flag estiver desativada, login, registro e recuperação não aparecem.
+- O SMS funciona como segunda etapa de validação.
+- As cobranças só aparecem quando existir configuração financeira aplicável.
 
-## Resultado esperado do video
+## Resultado esperado do vídeo
 
-Ao final, o espectador deve entender que o pescador pode se registrar, recuperar senha e acompanhar suas cobrancas com seguranca e autonomia.
+Ao final, o espectador deve entender que o membro pode se registrar, recuperar senha e acompanhar suas cobranças com segurança e autonomia.
