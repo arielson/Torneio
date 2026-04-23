@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants.dart';
 import '../../core/flavor_config.dart';
 import '../../core/models/equipe.dart';
-import '../../core/models/patrocinador.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/captura_provider.dart';
 import '../../core/providers/config_provider.dart';
-import '../../core/services/api_service.dart';
 import '../../widgets/expandable_network_image.dart';
-import '../../widgets/patrocinadores_section.dart';
 import '../../widgets/sync_badge.dart';
 
 class HomeFiscalScreen extends StatefulWidget {
@@ -20,15 +16,11 @@ class HomeFiscalScreen extends StatefulWidget {
 }
 
 class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
-  final ApiService _api = ApiService();
-  List<Patrocinador> _patrocinadores = const [];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final capProv = context.read<CapturaProvider>();
-      _carregarPatrocinadores();
       if (capProv.equipes.isEmpty &&
           capProv.membros.isEmpty &&
           capProv.itens.isEmpty) {
@@ -45,36 +37,6 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
     if (auth.usuario == null || config == null) return;
 
     await capProv.carregarDadosEquipe(config.slug, auth.usuario!.token, '');
-    await _carregarPatrocinadores();
-  }
-
-  Future<void> _carregarPatrocinadores() async {
-    final auth = context.read<AuthProvider>();
-    final config = context.read<ConfigProvider>().config;
-    if (auth.usuario == null || config == null) return;
-
-    try {
-      final data = await _api.get(
-        ApiConstants.patrocinadores(config.slug),
-        token: auth.usuario!.token,
-      );
-
-      if (!mounted) return;
-
-      final lista = data is List
-          ? data
-              .map((e) => Patrocinador.fromJson(e as Map<String, dynamic>))
-              .where((p) => p.exibirNaTelaInicial)
-              .toList()
-          : <Patrocinador>[];
-
-      setState(() {
-        _patrocinadores = lista..sort((a, b) => a.nome.compareTo(b.nome));
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _patrocinadores = const []);
-    }
   }
 
   Future<void> _logout() async {
@@ -208,8 +170,6 @@ class _HomeFiscalScreenState extends State<HomeFiscalScreen> {
                           context,
                         ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                       ),
-                      const SizedBox(height: 20),
-                      PatrocinadoresSection(patrocinadores: _patrocinadores),
                       const SizedBox(height: 24),
 
                       // Embarcações

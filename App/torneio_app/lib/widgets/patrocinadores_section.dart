@@ -26,7 +26,7 @@ class PatrocinadoresSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 172,
+          height: 210,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: patrocinadores.length,
@@ -49,7 +49,7 @@ class _PatrocinadorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 220,
+      width: 240,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -66,30 +66,18 @@ class _PatrocinadorCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              ExpandableRectImage(
-                imageUrl: patrocinador.fotoUrl,
-                fallbackIcon: Icons.campaign_outlined,
-                width: 56,
-                height: 56,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  patrocinador.nome,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
+          Center(
+            child: ExpandableRectImage(
+              imageUrl: patrocinador.fotoUrl,
+              fallbackIcon: Icons.campaign_outlined,
+              width: 210,
+              height: 128,
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
           const SizedBox(height: 12),
           Wrap(
+            alignment: WrapAlignment.center,
             spacing: 8,
             runSpacing: 8,
             children: [

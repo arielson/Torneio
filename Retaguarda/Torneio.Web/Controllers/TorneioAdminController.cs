@@ -12,18 +12,15 @@ public class TorneioAdminController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _logAuditoriaServico;
-    private readonly IPatrocinadorServico _patrocinadorServico;
 
     public TorneioAdminController(
         TenantContext tenantContext,
         ITorneioServico torneioServico,
-        ILogAuditoriaServico logAuditoriaServico,
-        IPatrocinadorServico patrocinadorServico)
+        ILogAuditoriaServico logAuditoriaServico)
         : base(tenantContext)
     {
         _torneioServico = torneioServico;
         _logAuditoriaServico = logAuditoriaServico;
-        _patrocinadorServico = patrocinadorServico;
     }
 
     [HttpGet("")]
@@ -31,7 +28,6 @@ public class TorneioAdminController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
-        ViewBag.Patrocinadores = await _patrocinadorServico.ListarPorTorneio(TenantContext.TorneioId);
         return View(torneio);
     }
 
