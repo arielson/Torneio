@@ -107,6 +107,14 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-person"></i> @(torneioNav?.LabelMembroPlural ?? "Membros")
                             </a>
                         </li>
+                        @if (string.Equals(torneioNav?.ModoSorteio, "GrupoEquipe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/grupos") ? "active" : "")" href="/@effectiveSlug/grupos">
+                                    <i class="bi bi-people-fill"></i> Grupos
+                                </a>
+                            </li>
+                        }
                         <li>
                             <a class="nav-link @(IsActive($"/{effectiveSlug}/itens") ? "active" : "")" href="/@effectiveSlug/itens">
                                 <i class="bi bi-collection"></i> @(torneioNav?.LabelItemPlural ?? "Itens")

@@ -204,6 +204,13 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     color: Colors.teal,
                     onTap: () => _abrirSecao('/admin/membros'),
                   ),
+                  if (exibirGrupos)
+                    _NavItem(
+                      icon: Icons.people_outline,
+                      label: 'Grupos',
+                      color: Colors.deepOrange,
+                      onTap: () => _abrirSecao('/admin/grupos'),
+                    ),
                   _NavItem(
                     icon: Icons.inventory_2,
                     label: labelItemPlural,
@@ -216,13 +223,6 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     color: Colors.blue,
                     onTap: () => _abrirSecao('/admin/patrocinadores'),
                   ),
-                  if (exibirGrupos)
-                    _NavItem(
-                      icon: Icons.people_outline,
-                      label: 'Grupos',
-                      color: Colors.deepOrange,
-                      onTap: () => _abrirSecao('/admin/grupos'),
-                    ),
                 ],
               ),
               if (exibirFinanceiro) ...[

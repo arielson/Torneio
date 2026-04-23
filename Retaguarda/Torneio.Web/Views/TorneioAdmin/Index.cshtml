@@ -105,6 +105,18 @@
             </div>
         </a>
     </div>
+    @if (string.Equals(Model.ModoSorteio, "GrupoEquipe", StringComparison.OrdinalIgnoreCase))
+    {
+        <div class="col-md-3 col-sm-6">
+            <a href="/@slug/grupos" class="action-card">
+                <div class="action-icon red"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="action-label">Grupos</div>
+                    <div class="action-desc">Cadastrar e editar</div>
+                </div>
+            </a>
+        </div>
+    }
     <div class="col-md-3 col-sm-6">
         <a href="/@slug/itens" class="action-card">
             <div class="action-icon amber"><i class="bi bi-collection"></i></div>
