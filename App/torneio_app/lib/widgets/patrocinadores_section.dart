@@ -124,18 +124,17 @@ class _PatrocinadorCard extends StatelessWidget {
 
   Future<void> _abrirInstagram(String value) async {
     final bruto = value.trim();
-    final handle = bruto
+    final normalizado = bruto
         .replaceAll('https://instagram.com/', '')
         .replaceAll('https://www.instagram.com/', '')
+        .replaceAll('http://instagram.com/', '')
+        .replaceAll('http://www.instagram.com/', '')
         .replaceAll('@', '')
         .split('/')
         .first
         .trim();
-    final native = Uri.parse('instagram://user?username=$handle');
-    final web = Uri.parse('https://instagram.com/$handle');
-    if (!await launchUrl(native, mode: LaunchMode.externalApplication)) {
-      await launchUrl(web, mode: LaunchMode.externalApplication);
-    }
+    final web = Uri.parse('https://www.instagram.com/$normalizado/');
+    await launchUrl(web, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _abrirFacebook(String value) async {
@@ -170,10 +169,16 @@ class _DestinoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionChip(
-      avatar: Icon(icon, size: 16),
-      label: Text(label, style: TextStyle(
-        color: Colors.black,
-      )),
+      backgroundColor: const Color(0xFFF5F5F5),
+      side: BorderSide(color: Colors.grey.shade300),
+      avatar: Icon(icon, size: 16, color: Colors.black87),
+      label: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       onPressed: onTap,
       visualDensity: VisualDensity.compact,
     );
