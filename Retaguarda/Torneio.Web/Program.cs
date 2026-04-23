@@ -57,8 +57,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-app.MapStaticAssets();
 
 // Serve arquivos do storage em /media (fotos de equipes, membros, etc.)
 var storagePath = app.Configuration["Storage:BasePath"];
@@ -82,8 +82,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 using (var scope = app.Services.CreateScope())
 {
