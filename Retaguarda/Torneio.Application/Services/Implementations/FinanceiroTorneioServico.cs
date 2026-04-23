@@ -620,7 +620,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             EmbarcacoesConfirmadas = dados.Equipes.Count(x => x.StatusFinanceiro == StatusEmbarcacaoFinanceira.Confirmada),
             QuantidadeCustosLancados = quantidadeCustos,
             QuantidadeProdutosExtras = dados.Produtos.Count,
-            QuantidadeDoacoesPatrocinadores = dados.Doacoes.Count
+            QuantidadeDoacoes = dados.Doacoes.Count
         };
     }
 

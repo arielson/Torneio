@@ -60,6 +60,8 @@ public class FinanceiroController : TorneioBaseController
         {
             Indicadores = await _financeiroServico.ObterIndicadores(TenantContext.TorneioId)
         };
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Torneio = torneio;
         return View(vm);
     }
 
@@ -123,7 +125,7 @@ public class FinanceiroController : TorneioBaseController
             }
             else if (dto.MembroIds.Count > 0)
             {
-                await _financeiroServico.SincronizarParcelas(TenantContext.TorneioId, dto.MembroIds, false);
+                await _financeiroServico.SincronizarParcelas(TenantContext.TorneioId, dto.MembroIds);
                 TempData["Sucesso"] = "Parcelas regeneradas para os pescadores selecionados.";
                 await RegistrarLog("GerarParcelasSelecionadosWeb", $"Parcelas regeneradas para pescadores selecionados pela retaguarda web | Quantidade: {dto.MembroIds.Count}");
             }
@@ -606,9 +608,9 @@ public class FinanceiroController : TorneioBaseController
         {
             PatrocinadorId = doacao.PatrocinadorId,
             NomePatrocinador = doacao.NomePatrocinador,
-            Tipo = Enum.TryParse<Torneio.Domain.Enums.TipoDoacaoPatrocinador>(doacao.Tipo, out var tipo)
+            Tipo = Enum.TryParse<TipoDoacaoPatrocinador>(doacao.Tipo, out var tipo)
                 ? tipo
-                : Torneio.Domain.Enums.TipoDoacaoPatrocinador.Dinheiro,
+                : TipoDoacaoPatrocinador.Dinheiro,
             Descricao = doacao.Descricao,
             Quantidade = doacao.Quantidade,
             Valor = doacao.Valor,

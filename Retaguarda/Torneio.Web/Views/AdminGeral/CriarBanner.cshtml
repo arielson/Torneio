@@ -1,7 +1,4 @@
 @model CriarBannerDto
-@using Torneio.Application.DTOs.Banner
-@using Torneio.Application.DTOs.Torneio
-@using Torneio.Domain.Enums
 @{
     ViewData["Title"] = "Novo Banner";
     var torneios = ViewBag.Torneios as IEnumerable<TorneioDto> ?? [];

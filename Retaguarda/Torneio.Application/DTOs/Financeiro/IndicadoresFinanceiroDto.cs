@@ -18,6 +18,6 @@ public class IndicadoresFinanceiroDto
     public int QuantidadeCustosLancados { get; init; }
     public int QuantidadeProdutosExtras { get; init; }
     public decimal ReceitaExtrasPrevista { get; init; }
-    public int QuantidadeDoacoesPatrocinadores { get; init; }
+    public int QuantidadeDoacoes { get; init; }
     public decimal ReceitaDoacoesPatrocinadores { get; init; }
 }

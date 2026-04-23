@@ -20,7 +20,7 @@
         @if (exibirMembrosPorEquipe)
         {
             <a href="/@slug/equipes/reorganizacao-emergencial" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-exclamation-triangle me-1"></i>Reorganizacao Emergencial
+                <i class="bi bi-exclamation-triangle me-1"></i>Reorganização Emergencial
             </a>
         }
         <a href="/@slug/equipes/criar" class="btn btn-primary btn-sm">
@@ -36,7 +36,7 @@
     @if (exibirMembrosPorEquipe)
     {
         <div class="alert alert-warning m-3 mb-0">
-            Reorganizacao de @labelMembroPlural.ToLower() entre @labelPlural.ToLower() deve ser usada apenas em emergencia e sempre com confirmacao do admin do torneio.
+            Reorganização de @labelMembroPlural.ToLower() entre @labelPlural.ToLower() deve ser usada apenas em emergência e sempre com confirmação do admin do torneio.
         </div>
     }
     <div class="card-header-bar">
@@ -55,7 +55,7 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Capitao</th>
+                        <th>Capitão</th>
                         @if (exibirVagas)
                         {
                             <th>Vagas</th>
@@ -70,7 +70,7 @@
                             <th>Vencimento do custo</th>
                             <th>Status financeiro</th>
                         }
-                        <th class="text-end">Acoes</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

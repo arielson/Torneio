@@ -183,7 +183,7 @@
                            oninput="document.getElementById('CorPrimariaHex').value=this.value" />
                     <input id="CorPrimariaHex" class="form-control" placeholder="#1976D2" maxlength="7"
                            oninput="document.getElementById('CorPrimaria').value=this.value"
-                           value="@(Model?.CorPrimaria ?? "")" />
+                           value="@(Model.CorPrimaria ?? "")" />
                 </div>
                 <span asp-validation-for="CorPrimaria" class="text-danger small"></span>
             </div>

@@ -3,6 +3,9 @@
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = "Visão geral financeira";
     var indicadores = Model.Indicadores;
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
 }
 
 <div class="page-header">
@@ -20,8 +23,8 @@
     </div>
     <div class="card-body-pad">
         <div class="row g-3">
-            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Pescadores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeMembros</div></div></div>
-            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Embarcações</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeEquipes</div></div></div>
+            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">@labelMembroPlural</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeMembros</div></div></div>
+            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">@labelEquipePlural</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeEquipes</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Administradores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeAdministradores</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Custo total</div><div class="fs-5 fw-semibold">R$ @indicadores.CustoTotalTorneio.ToString("N2")</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Taxa de inscrição</div><div class="fs-5 fw-semibold">R$ @indicadores.TaxaInscricaoValor.ToString("N2")</div></div></div>
@@ -29,13 +32,13 @@
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Saldo projetado</div><div class="fs-5 fw-semibold @(indicadores.SaldoProjetado >= 0 ? "text-success" : "text-danger")">R$ @indicadores.SaldoProjetado.ToString("N2")</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Cobranças inadimplentes</div><div class="fs-4 fw-semibold text-danger">@indicadores.ParcelasInadimplentes</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Valor em aberto</div><div class="fs-5 fw-semibold text-warning">R$ @indicadores.ValorEmAberto.ToString("N2")</div></div></div>
-            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Embarcações confirmadas</div><div class="fs-4 fw-semibold">@indicadores.EmbarcacoesConfirmadas</div></div></div>
+            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">@labelEquipePlural confirmadas</div><div class="fs-4 fw-semibold">@indicadores.EmbarcacoesConfirmadas</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Quantidade de custos</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeCustosLancados</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita prevista</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaPrevista.ToString("N2")</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Cobranças parceladas</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeParcelas</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Produtos extras</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeProdutosExtras</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita extras</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaExtrasPrevista.ToString("N2")</div></div></div>
-            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Doações de patrocinadores</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeDoacoesPatrocinadores</div></div></div>
+            <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Doações</div><div class="fs-4 fw-semibold">@indicadores.QuantidadeDoacoes</div></div></div>
             <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="text-muted small">Receita com doações</div><div class="fs-5 fw-semibold">R$ @indicadores.ReceitaDoacoesPatrocinadores.ToString("N2")</div></div></div>
         </div>
     </div>

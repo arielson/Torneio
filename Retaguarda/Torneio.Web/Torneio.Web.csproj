@@ -21,4 +21,11 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Ano\Criar.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Ano\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Ano\Premios.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Ano\Replicar.cshtml" />
+  </ItemGroup>
+
 </Project>

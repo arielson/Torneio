@@ -32,14 +32,14 @@
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Capitao" class="form-label">Capitao</label>
+            <label asp-for="Capitao" class="form-label">Capitão</label>
             <input asp-for="Capitao" class="form-control" />
             <span asp-validation-for="Capitao" class="text-danger small"></span>
         </div>
         @if (exibirVagas)
         {
             <div class="mb-3">
-                <label asp-for="QtdVagas" class="form-label">Quantidade de Vagas</label>
+                <label asp-for="QtdVagas" class="form-label">Capacidade</label>
                 <input asp-for="QtdVagas" class="form-control" type="number" min="1" style="max-width:160px" />
                 <span asp-validation-for="QtdVagas" class="text-danger small"></span>
             </div>
@@ -50,7 +50,7 @@
         }
         @if (exibirFinanceiro)
         {
-            <div class="form-section-title">Financeiro da embarcacao</div>
+            <div class="form-section-title">Financeiro @label</div>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label asp-for="Custo" class="form-label">Custo</label>
@@ -80,7 +80,7 @@
         <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "fotoCapitao" }, { "label", "Foto do Capitao" }, { "fotoUrl", equipe.FotoCapitaoUrl } })' />
         <div class="d-flex gap-2 pt-2">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1"></i>Salvar Alteracoes
+                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
             </button>
             <a href="/@slug/equipes" class="btn btn-outline-secondary">Cancelar</a>
         </div>
