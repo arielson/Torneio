@@ -26,10 +26,12 @@ public class PatrocinadorController : BaseController
         _fileStorage = fileStorage;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Listar() =>
         Ok(await _servico.ListarPorTorneio(_tenantContext.TorneioId));
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
@@ -49,6 +51,7 @@ public class PatrocinadorController : BaseController
             Nome = dto.Nome,
             FotoUrl = fotoUrl ?? string.Empty,
             Instagram = dto.Instagram,
+            Facebook = dto.Facebook,
             Site = dto.Site,
             Zap = dto.Zap,
             ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
@@ -75,6 +78,7 @@ public class PatrocinadorController : BaseController
             Nome = dto.Nome,
             FotoUrl = fotoUrl,
             Instagram = dto.Instagram,
+            Facebook = dto.Facebook,
             Site = dto.Site,
             Zap = dto.Zap,
             ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
@@ -110,6 +114,7 @@ public class CriarPatrocinadorFormDto
     public IFormFile Foto { get; init; } = null!;
 
     public string? Instagram { get; init; }
+    public string? Facebook { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
     public bool ExibirNaTelaInicial { get; init; } = true;
@@ -123,6 +128,7 @@ public class AtualizarPatrocinadorFormDto
 
     public IFormFile? Foto { get; init; }
     public string? Instagram { get; init; }
+    public string? Facebook { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
     public bool ExibirNaTelaInicial { get; init; } = true;

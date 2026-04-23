@@ -25,6 +25,7 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
   final _picker = ImagePicker();
   final _nomeController = TextEditingController();
   final _instagramController = TextEditingController();
+  final _facebookController = TextEditingController();
   final _siteController = TextEditingController();
   final _zapController = TextEditingController();
   bool _exibirNaTelaInicial = true;
@@ -42,6 +43,7 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
     if (patrocinador != null) {
       _nomeController.text = patrocinador.nome;
       _instagramController.text = patrocinador.instagram ?? '';
+      _facebookController.text = patrocinador.facebook ?? '';
       _siteController.text = patrocinador.site ?? '';
       _zapController.text = patrocinador.zap ?? '';
       _exibirNaTelaInicial = patrocinador.exibirNaTelaInicial;
@@ -111,6 +113,7 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
     final fields = {
       'nome': _nomeController.text.trim(),
       'instagram': _instagramController.text.trim(),
+      'facebook': _facebookController.text.trim(),
       'site': _siteController.text.trim(),
       'zap': _zapController.text.trim(),
       'exibirNaTelaInicial': _exibirNaTelaInicial,
@@ -176,6 +179,14 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              controller: _facebookController,
+              decoration: const InputDecoration(
+                labelText: 'Facebook (opcional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
               controller: _siteController,
               decoration: const InputDecoration(
                 labelText: 'Site (opcional)',
@@ -232,6 +243,7 @@ class _PatrocinadorFormScreenState extends State<PatrocinadorFormScreen> {
   void dispose() {
     _nomeController.dispose();
     _instagramController.dispose();
+    _facebookController.dispose();
     _siteController.dispose();
     _zapController.dispose();
     super.dispose();

@@ -1,7 +1,7 @@
 /// Configuracao global do app.
 class AppConfig {
-  static const String apiBaseUrl = 'https://torviaapi.ari.net.br';
-  // static const String apiBaseUrl = 'http://192.168.1.4:5053';
+  // static const String apiBaseUrl = 'https://torviaapi.ari.net.br';
+  static const String apiBaseUrl = 'http://192.168.1.4:5053';
   static const String mediaBasePath = '/media';
 
   /// Converte URLs relativas em absolutas.

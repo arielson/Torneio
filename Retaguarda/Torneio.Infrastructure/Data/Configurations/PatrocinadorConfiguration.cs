@@ -13,6 +13,7 @@ public class PatrocinadorConfiguration : IEntityTypeConfiguration<Patrocinador>
         builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
         builder.Property(e => e.FotoUrl).IsRequired().HasMaxLength(500);
         builder.Property(e => e.Instagram).HasMaxLength(200);
+        builder.Property(e => e.Facebook).HasMaxLength(300);
         builder.Property(e => e.Site).HasMaxLength(300);
         builder.Property(e => e.Zap).HasMaxLength(50);
         builder.Property(e => e.ExibirNaTelaInicial).IsRequired().HasDefaultValue(true);

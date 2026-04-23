@@ -142,10 +142,6 @@ class _TorneioScreenState extends State<TorneioScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
-                    _InfoRow(icon: Icons.straighten, label: 'Medida', value: config.medidaCaptura),
-                    if (config.permitirCapturaOffline)
-                      const _InfoRow(icon: Icons.wifi_off, label: 'Offline', value: 'Suportado'),
                   ],
                 ),
               ),
@@ -200,28 +196,6 @@ class _TorneioScreenState extends State<TorneioScreen> {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _InfoRow({required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: Colors.grey),
-          const SizedBox(width: 6),
-          Text('$label: ', style: const TextStyle(color: Colors.grey)),
-          Text(value),
-        ],
       ),
     );
   }

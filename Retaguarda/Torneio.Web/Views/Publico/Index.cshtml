@@ -38,6 +38,18 @@
         return $"https://instagram.com/{handle}";
     }
 
+    private static string NormalizarFacebook(string valor)
+    {
+        var url = valor.Trim();
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return url;
+        url = url.Replace("facebook.com/", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("www.facebook.com/", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("@", "")
+            .Trim('/');
+        return $"https://facebook.com/{url}";
+    }
+
     private static string NormalizarZap(string valor)
     {
         var digitos = new string(valor.Where(char.IsDigit).ToArray());
@@ -97,6 +109,12 @@
                                 {
                                     <a href="@NormalizarInstagram(patrocinador.Instagram!)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-dark">
                                         <i class="bi bi-instagram me-1"></i>Instagram
+                                    </a>
+                                }
+                                @if (TemValor(patrocinador.Facebook))
+                                {
+                                    <a href="@NormalizarFacebook(patrocinador.Facebook!)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-facebook me-1"></i>Facebook
                                     </a>
                                 }
                                 @if (TemValor(patrocinador.Zap))

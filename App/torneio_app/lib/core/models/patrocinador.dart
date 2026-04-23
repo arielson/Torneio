@@ -5,6 +5,7 @@ class Patrocinador {
   final String nome;
   final String fotoUrl;
   final String? instagram;
+  final String? facebook;
   final String? site;
   final String? zap;
   final bool exibirNaTelaInicial;
@@ -15,6 +16,7 @@ class Patrocinador {
     required this.nome,
     required this.fotoUrl,
     this.instagram,
+    this.facebook,
     this.site,
     this.zap,
     this.exibirNaTelaInicial = true,
@@ -26,6 +28,7 @@ class Patrocinador {
     nome: json['nome'] as String,
     fotoUrl: AppConfig.resolverUrl(json['fotoUrl'] as String?) ?? '',
     instagram: json['instagram'] as String?,
+    facebook: json['facebook'] as String?,
     site: json['site'] as String?,
     zap: json['zap'] as String?,
     exibirNaTelaInicial: json['exibirNaTelaInicial'] as bool? ?? true,

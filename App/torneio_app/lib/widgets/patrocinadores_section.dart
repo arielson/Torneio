@@ -93,6 +93,12 @@ class _PatrocinadorCard extends StatelessWidget {
                   label: 'Instagram',
                   onTap: () => _abrirInstagram(patrocinador.instagram!),
                 ),
+              if (_temValor(patrocinador.facebook))
+                _DestinoChip(
+                  icon: Icons.facebook,
+                  label: 'Facebook',
+                  onTap: () => _abrirFacebook(patrocinador.facebook!),
+                ),
               if (_temValor(patrocinador.zap))
                 _DestinoChip(
                   icon: Icons.chat_bubble_outline,
@@ -132,6 +138,14 @@ class _PatrocinadorCard extends StatelessWidget {
     }
   }
 
+  Future<void> _abrirFacebook(String value) async {
+    final bruto = value.trim();
+    final url = bruto.startsWith('http://') || bruto.startsWith('https://')
+        ? bruto
+        : 'https://facebook.com/${bruto.replaceAll('facebook.com/', '').replaceAll('www.facebook.com/', '').replaceAll('@', '').split('/').first.trim()}';
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
   Future<void> _abrirZap(String value) async {
     final phone = value.replaceAll(RegExp(r'[^0-9]'), '');
     final native = Uri.parse('whatsapp://send?phone=$phone');
@@ -157,7 +171,9 @@ class _DestinoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return ActionChip(
       avatar: Icon(icon, size: 16),
-      label: Text(label),
+      label: Text(label, style: TextStyle(
+        color: Colors.black,
+      )),
       onPressed: onTap,
       visualDensity: VisualDensity.compact,
     );

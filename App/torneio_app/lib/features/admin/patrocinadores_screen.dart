@@ -145,6 +145,8 @@ class _PatrocinadoresAdminScreenState extends State<PatrocinadoresAdminScreen> {
                             final contatos = <String>[
                               if ((patrocinador.instagram ?? '').trim().isNotEmpty)
                                 'Instagram: ${patrocinador.instagram}',
+                              if ((patrocinador.facebook ?? '').trim().isNotEmpty)
+                                'Facebook: ${patrocinador.facebook}',
                               if ((patrocinador.site ?? '').trim().isNotEmpty)
                                 'Site: ${patrocinador.site}',
                               if ((patrocinador.zap ?? '').trim().isNotEmpty)

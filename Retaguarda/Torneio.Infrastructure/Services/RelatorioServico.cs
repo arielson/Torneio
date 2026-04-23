@@ -402,6 +402,8 @@ public class RelatorioServico : IRelatorioServico
                         inner.Item().Text($"Site: {patrocinador.Site}");
                     if (!string.IsNullOrWhiteSpace(patrocinador.Instagram))
                         inner.Item().Text($"Instagram: {patrocinador.Instagram}");
+                    if (!string.IsNullOrWhiteSpace(patrocinador.Facebook))
+                        inner.Item().Text($"Facebook: {patrocinador.Facebook}");
                     if (!string.IsNullOrWhiteSpace(patrocinador.Zap))
                         inner.Item().Text($"Zap: {patrocinador.Zap}");
                 });

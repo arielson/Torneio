@@ -11,6 +11,7 @@ public class CriarPatrocinadorValidator : AbstractValidator<CriarPatrocinadorDto
         RuleFor(x => x.Nome).NotEmpty().MaximumLength(200);
         RuleFor(x => x.FotoUrl).NotEmpty().MaximumLength(500);
         RuleFor(x => x.Instagram).MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Instagram));
+        RuleFor(x => x.Facebook).MaximumLength(300).When(x => !string.IsNullOrWhiteSpace(x.Facebook));
         RuleFor(x => x.Site).MaximumLength(300).When(x => !string.IsNullOrWhiteSpace(x.Site));
         RuleFor(x => x.Zap).MaximumLength(50).When(x => !string.IsNullOrWhiteSpace(x.Zap));
     }

@@ -63,6 +63,7 @@ public class PatrocinadorController : TorneioBaseController
                 Nome = dto.Nome,
                 FotoUrl = fotoUrl!,
                 Instagram = dto.Instagram,
+                Facebook = dto.Facebook,
                 Site = dto.Site,
                 Zap = dto.Zap,
                 ExibirNaTelaInicial = dto.ExibirNaTelaInicial,
@@ -76,7 +77,7 @@ public class PatrocinadorController : TorneioBaseController
                 NomeTorneio = torneio?.NomeTorneio,
                 Categoria = CategoriaLog.Patrocinadores,
                 Acao = "CriarPatrocinador",
-                Descricao = $"Patrocinador criado | Nome: {criado.Nome} | Instagram: {criado.Instagram ?? "-"} | Site: {criado.Site ?? "-"} | Zap: {criado.Zap ?? "-"}",
+                Descricao = $"Patrocinador criado | Nome: {criado.Nome} | Instagram: {criado.Instagram ?? "-"} | Facebook: {criado.Facebook ?? "-"} | Site: {criado.Site ?? "-"} | Zap: {criado.Zap ?? "-"}",
                 UsuarioNome = UsuarioNome,
                 UsuarioPerfil = UsuarioPerfil,
                 IpAddress = IpAddress
@@ -104,6 +105,7 @@ public class PatrocinadorController : TorneioBaseController
             Nome = patrocinador.Nome,
             FotoUrl = patrocinador.FotoUrl,
             Instagram = patrocinador.Instagram,
+            Facebook = patrocinador.Facebook,
             Site = patrocinador.Site,
             Zap = patrocinador.Zap
             ,
@@ -133,6 +135,7 @@ public class PatrocinadorController : TorneioBaseController
                 Nome = dto.Nome,
                 FotoUrl = fotoUrl,
                 Instagram = dto.Instagram,
+                Facebook = dto.Facebook,
                 Site = dto.Site,
                 Zap = dto.Zap,
                 ExibirNaTelaInicial = dto.ExibirNaTelaInicial,

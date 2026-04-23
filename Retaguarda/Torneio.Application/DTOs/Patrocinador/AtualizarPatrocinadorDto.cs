@@ -9,6 +9,7 @@ public class AtualizarPatrocinadorDto
 
     public string? FotoUrl { get; init; }
     public string? Instagram { get; init; }
+    public string? Facebook { get; init; }
     public string? Site { get; init; }
     public string? Zap { get; init; }
     public bool ExibirNaTelaInicial { get; init; } = true;
