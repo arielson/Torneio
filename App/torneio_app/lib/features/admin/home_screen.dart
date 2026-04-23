@@ -193,6 +193,12 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     onTap: () => _abrirSecao('/admin/equipes'),
                   ),
                   _NavItem(
+                    icon: Icons.badge,
+                    label: labelFiscalPlural,
+                    color: Colors.purple,
+                    onTap: () => _abrirSecao('/admin/fiscais'),
+                  ),
+                  _NavItem(
                     icon: Icons.person,
                     label: labelMembroPlural,
                     color: Colors.teal,
@@ -209,12 +215,6 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     label: 'Patrocinadores',
                     color: Colors.blue,
                     onTap: () => _abrirSecao('/admin/patrocinadores'),
-                  ),
-                  _NavItem(
-                    icon: Icons.badge,
-                    label: labelFiscalPlural,
-                    color: Colors.purple,
-                    onTap: () => _abrirSecao('/admin/fiscais'),
                   ),
                   if (exibirGrupos)
                     _NavItem(

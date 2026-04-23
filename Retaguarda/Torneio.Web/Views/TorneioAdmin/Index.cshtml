@@ -168,19 +168,19 @@
 <!-- Quick actions -->
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-sm-6">
-        <a href="/@slug/fiscais" class="action-card">
-            <div class="action-icon blue"><i class="bi bi-person-badge"></i></div>
+        <a href="/@slug/equipes" class="action-card">
+            <div class="action-icon green"><i class="bi bi-people"></i></div>
             <div>
-                <div class="action-label">@Model.LabelSupervisorPlural</div>
+                <div class="action-label">@Model.LabelEquipePlural</div>
                 <div class="action-desc">Cadastrar e editar</div>
             </div>
         </a>
     </div>
     <div class="col-md-3 col-sm-6">
-        <a href="/@slug/equipes" class="action-card">
-            <div class="action-icon green"><i class="bi bi-people"></i></div>
+        <a href="/@slug/fiscais" class="action-card">
+            <div class="action-icon blue"><i class="bi bi-person-badge"></i></div>
             <div>
-                <div class="action-label">@Model.LabelEquipePlural</div>
+                <div class="action-label">@Model.LabelSupervisorPlural</div>
                 <div class="action-desc">Cadastrar e editar</div>
             </div>
         </a>
@@ -263,4 +263,16 @@
             </div>
         </a>
     </div>
+    @if (exibirSorteio)
+    {
+        <div class="col-md-3 col-sm-6">
+            <a href="/@slug/equipes/reorganizacao-emergencial" class="action-card">
+                <div class="action-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+                <div>
+                    <div class="action-label">Reorganização Emergencial</div>
+                    <div class="action-desc">Uso somente em casos extremos</div>
+                </div>
+            </a>
+        </div>
+    }
 </div>

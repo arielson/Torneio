@@ -169,11 +169,6 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-camera"></i> @(torneioNav?.LabelCapturaPlural ?? "Capturas")
                             </a>
                         </li>
-                        <li>
-                            <a class="nav-link @(IsActive($"/{effectiveSlug}/equipes/reorganizacao-emergencial") ? "active" : "")" href="/@effectiveSlug/equipes/reorganizacao-emergencial">
-                                <i class="bi bi-exclamation-triangle"></i> Reorganizacao Emergencial
-                            </a>
-                        </li>
                         @if (exibirSorteio)
                         {
                             <li>
@@ -192,6 +187,14 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
                             </a>
                         </li>
+                        @if (exibirSorteio)
+                        {
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/equipes/reorganizacao-emergencial") ? "active" : "")" href="/@effectiveSlug/equipes/reorganizacao-emergencial">
+                                    <i class="bi bi-exclamation-triangle"></i> Reorganização Emergencial
+                                </a>
+                            </li>
+                        }
                         @if (isAdminGeral && torneioNav != null)
                         {
                             <hr class="sidebar-divider" />

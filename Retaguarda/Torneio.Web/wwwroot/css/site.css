@@ -462,6 +462,14 @@ body.admin-layout {
     flex-shrink: 0;
 }
 
+.action-card .action-icon.blue   { background: #eff6ff; color: #2563eb; }
+.action-card .action-icon.green  { background: #f0fdf4; color: #16a34a; }
+.action-card .action-icon.gray   { background: #f1f5f9; color: #475569; }
+.action-card .action-icon.amber  { background: #fffbeb; color: #d97706; }
+.action-card .action-icon.red    { background: #fef2f2; color: #dc2626; }
+.action-card .action-icon.purple { background: #faf5ff; color: #9333ea; }
+.action-card .action-icon.teal   { background: #f0fdfa; color: #0f766e; }
+
 .action-card .action-label {
     font-weight: 600;
     font-size: .9rem;
