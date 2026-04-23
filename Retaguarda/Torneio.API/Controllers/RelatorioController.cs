@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Enums;
 
 namespace Torneio.API.Controllers;
 
@@ -81,10 +82,23 @@ public class RelatorioController : BaseController
 
     [Authorize(Policy = "AdminTorneio")]
     [HttpGet("maiores-capturas")]
-    public async Task<IActionResult> MaioresCapturas([FromQuery] int quantidade = 1)
+    public async Task<IActionResult> MaioresCapturas(
+        [FromQuery] int quantidade = 1,
+        [FromServices] ITorneioServico torneioServico = null!)
     {
         try
         {
+            var torneioId = GetTorneioIdClaim();
+            if (torneioId is null)
+                return Unauthorized(new { erro = "Torneio não identificado no token." });
+
+            var torneio = await torneioServico.ObterPorId(torneioId.Value);
+            if (torneio is null)
+                return NotFound(new { erro = "Torneio não encontrado." });
+
+            if (torneio.TipoTorneio != TipoTorneio.Pesca)
+                return BadRequest(new { erro = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca." });
+
             var bytes = await _servico.GerarRelatorioMaioresCapturas(quantidade);
             return File(bytes, "application/pdf", $"maiores_capturas_{quantidade}.pdf");
         }

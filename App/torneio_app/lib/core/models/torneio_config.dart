@@ -27,6 +27,7 @@ class TorneioConfig {
   final int qtdGanhadores;
   final bool premiacaoPorEquipe;
   final bool premiacaoPorMembro;
+  final String tipoTorneio;
   final String? corPrimaria;
   final double valorPorMembro;
   final int quantidadeParcelas;
@@ -59,6 +60,7 @@ class TorneioConfig {
     required this.qtdGanhadores,
     required this.premiacaoPorEquipe,
     required this.premiacaoPorMembro,
+    required this.tipoTorneio,
     this.corPrimaria,
     this.valorPorMembro = 0,
     this.quantidadeParcelas = 0,
@@ -92,6 +94,7 @@ class TorneioConfig {
         qtdGanhadores: json['qtdGanhadores'] as int? ?? 3,
         premiacaoPorEquipe: json['premiacaoPorEquipe'] as bool? ?? true,
         premiacaoPorMembro: json['premiacaoPorMembro'] as bool? ?? false,
+        tipoTorneio: json['tipoTorneio'] as String? ?? 'Pesca',
         corPrimaria: json['corPrimaria'] as String?,
         valorPorMembro: (json['valorPorMembro'] as num?)?.toDouble() ?? 0,
         quantidadeParcelas: json['quantidadeParcelas'] as int? ?? 0,

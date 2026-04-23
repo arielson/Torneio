@@ -5,6 +5,17 @@
     ViewData["Title"] = "Relatorio das Maiores Capturas";
 }
 
+@if (!string.Equals(torneio.TipoTorneio.ToString(), "Pesca", StringComparison.OrdinalIgnoreCase))
+{
+    <div class="alert alert-warning">
+        O relatório de maiores capturas está disponível somente para torneios do tipo pesca.
+    </div>
+    <a href="/@slug/relatorios" class="back-link">
+        <i class="bi bi-arrow-left"></i> Relatórios
+    </a>
+    return;
+}
+
 <div class="page-header">
     <div class="page-header-left">
         <h1>Relatório das Maiores Capturas</h1>

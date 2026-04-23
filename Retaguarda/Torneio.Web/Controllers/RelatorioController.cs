@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Enums;
 using Torneio.Infrastructure.Services;
 using Torneio.Web.Models;
 
@@ -156,6 +157,11 @@ public class RelatorioController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
+        if (torneio.TipoTorneio != TipoTorneio.Pesca)
+        {
+            TempData["Erro"] = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca.";
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+        }
 
         ViewBag.Torneio = torneio;
         return View(new MaioresCapturasFiltroViewModel());
@@ -166,6 +172,14 @@ public class RelatorioController : TorneioBaseController
     {
         try
         {
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            if (torneio is null) return NotFound();
+            if (torneio.TipoTorneio != TipoTorneio.Pesca)
+            {
+                TempData["Erro"] = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca.";
+                return RedirectToAction(nameof(Index), new { slug = Slug });
+            }
+
             var bytes = await _relatorioServico.GerarRelatorioMaioresCapturas(quantidade);
             return File(bytes, "application/pdf", $"maiores_capturas_{quantidade}.pdf");
         }

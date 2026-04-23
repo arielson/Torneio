@@ -68,7 +68,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao emitir relatorio: $e')),
+        SnackBar(content: Text('Erro ao emitir relatório: $e')),
       );
     }
   }
@@ -79,6 +79,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
     final labelEquipe = config?.labelEquipe ?? 'Embarcação';
     final labelMembro = config?.labelMembro ?? 'Pescador';
     final qtdGanhadores = config?.qtdGanhadores ?? 3;
+    final exibirMaioresCapturas = config?.tipoTorneio == 'Pesca';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Relatórios')),
@@ -118,17 +119,18 @@ class RelatoriosAdminScreen extends StatelessWidget {
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/ganhadores'),
             ),
           ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.straighten_outlined),
-              title: const Text('Maiores capturas'),
-              subtitle: Text(
-                'Informe quantas maiores capturas deseja incluir no ranking do torneio.',
+          if (exibirMaioresCapturas)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.straighten_outlined),
+                title: const Text('Maiores capturas'),
+                subtitle: const Text(
+                  'Informe quantas maiores capturas deseja incluir no ranking do torneio.',
+                ),
+                trailing: const Icon(Icons.picture_as_pdf_outlined),
+                onTap: () => _emitirMaioresCapturas(context),
               ),
-              trailing: const Icon(Icons.picture_as_pdf_outlined),
-              onTap: () => _emitirMaioresCapturas(context),
             ),
-          ),
         ],
       ),
     );
