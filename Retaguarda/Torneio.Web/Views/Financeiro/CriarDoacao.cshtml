@@ -32,7 +32,12 @@
                     <option value="@patrocinador.Id">@patrocinador.Nome</option>
                 }
             </select>
-            <div class="form-text">A doação será vinculada ao patrocinador selecionado.</div>
+            <div class="form-text">Opcional. Se selecionar, a doação será vinculada ao patrocinador cadastrado.</div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="NomePatrocinador" class="form-label">Nome do patrocinador</label>
+            <input asp-for="NomePatrocinador" class="form-control" />
+            <div class="form-text">Preencha quando a doação vier de um patrocinador não cadastrado. Informe o patrocinador ou o nome.</div>
         </div>
         <div class="mb-3">
             <label asp-for="Tipo" class="form-label">Tipo</label>

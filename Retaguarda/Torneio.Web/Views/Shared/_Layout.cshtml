@@ -93,13 +93,13 @@ else if (usarLayoutAdmin)
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Cadastros</li>
                         <li>
-                            <a class="nav-link @(IsActive($"/{effectiveSlug}/fiscais") ? "active" : "")" href="/@effectiveSlug/fiscais">
-                                <i class="bi bi-person-badge"></i> @(torneioNav?.LabelSupervisorPlural ?? "Fiscais")
+                            <a class="nav-link @(IsEquipeSectionActive(effectiveSlug) ? "active" : "")" href="/@effectiveSlug/equipes">
+                                <i class="bi bi-people"></i> @(torneioNav?.LabelEquipePlural ?? "Equipes")
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link @(IsEquipeSectionActive(effectiveSlug) ? "active" : "")" href="/@effectiveSlug/equipes">
-                                <i class="bi bi-people"></i> @(torneioNav?.LabelEquipePlural ?? "Equipes")
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/fiscais") ? "active" : "")" href="/@effectiveSlug/fiscais">
+                                <i class="bi bi-person-badge"></i> @(torneioNav?.LabelSupervisorPlural ?? "Fiscais")
                             </a>
                         </li>
                         <li>
@@ -142,11 +142,6 @@ else if (usarLayoutAdmin)
                                 </a>
                             </li>
                             <li>
-                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/relatorios") ? "active" : "")" href="/@effectiveSlug/financeiro/relatorios">
-                                    <i class="bi bi-graph-up-arrow"></i> Relatórios
-                                </a>
-                            </li>
-                            <li>
                                 <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/extras") ? "active" : "")" href="/@effectiveSlug/financeiro/extras">
                                     <i class="bi bi-bag"></i> Produtos extras
                                 </a>
@@ -159,6 +154,11 @@ else if (usarLayoutAdmin)
                             <li>
                                 <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/checklist") ? "active" : "")" href="/@effectiveSlug/financeiro/checklist">
                                     <i class="bi bi-list-check"></i> Checklist
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link @(IsActive($"/{effectiveSlug}/financeiro/relatorios") ? "active" : "")" href="/@effectiveSlug/financeiro/relatorios">
+                                    <i class="bi bi-graph-up-arrow"></i> Relatórios
                                 </a>
                             </li>
                         }

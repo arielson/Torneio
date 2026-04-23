@@ -7,7 +7,6 @@ public class CriarDoacaoPatrocinadorDto
 {
     public Guid TorneioId { get; init; }
 
-    [Required(ErrorMessage = "Selecione o patrocinador.")]
     public Guid? PatrocinadorId { get; init; }
 
     public string NomePatrocinador { get; init; } = string.Empty;

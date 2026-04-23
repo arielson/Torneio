@@ -64,6 +64,20 @@ public class MembroController : TorneioBaseController
             };
         }
 
+        if (torneio is not null && !torneio.PermitirRegistroPublicoMembro)
+        {
+            dto = new CriarMembroDto
+            {
+                TorneioId = dto.TorneioId,
+                Nome = dto.Nome,
+                FotoUrl = dto.FotoUrl,
+                Celular = dto.Celular,
+                TamanhoCamisa = dto.TamanhoCamisa,
+                Usuario = null,
+                Senha = null,
+            };
+        }
+
         if (!ModelState.IsValid)
         {
             await SetTorneioViewBag();
@@ -134,6 +148,19 @@ public class MembroController : TorneioBaseController
                 TamanhoCamisa = membroAtual?.TamanhoCamisa,
                 Usuario = dto.Usuario,
                 Senha = dto.Senha,
+            };
+        }
+
+        if (torneio is not null && !torneio.PermitirRegistroPublicoMembro)
+        {
+            dto = new AtualizarMembroDto
+            {
+                Nome = dto.Nome,
+                FotoUrl = dto.FotoUrl,
+                Celular = dto.Celular,
+                TamanhoCamisa = dto.TamanhoCamisa,
+                Usuario = null,
+                Senha = null,
             };
         }
 

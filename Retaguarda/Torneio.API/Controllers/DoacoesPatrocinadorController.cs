@@ -39,7 +39,7 @@ public class DoacoesPatrocinadorController : BaseController
         {
             TorneioId = _tenantContext.TorneioId,
             PatrocinadorId = dto.PatrocinadorId,
-            NomePatrocinador = string.Empty,
+            NomePatrocinador = dto.NomePatrocinador,
             Tipo = dto.Tipo,
             Descricao = dto.Descricao,
             Quantidade = dto.Quantidade,

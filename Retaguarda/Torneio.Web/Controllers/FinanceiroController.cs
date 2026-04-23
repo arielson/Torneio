@@ -573,7 +573,7 @@ public class FinanceiroController : TorneioBaseController
             {
                 TorneioId = TenantContext.TorneioId,
                 PatrocinadorId = dto.PatrocinadorId,
-                NomePatrocinador = string.Empty,
+                NomePatrocinador = dto.NomePatrocinador,
                 Tipo = dto.Tipo,
                 Descricao = dto.Descricao,
                 Quantidade = dto.Quantidade,
@@ -605,7 +605,7 @@ public class FinanceiroController : TorneioBaseController
         return View(new AtualizarDoacaoPatrocinadorDto
         {
             PatrocinadorId = doacao.PatrocinadorId,
-            NomePatrocinador = string.Empty,
+            NomePatrocinador = doacao.NomePatrocinador,
             Tipo = Enum.TryParse<Torneio.Domain.Enums.TipoDoacaoPatrocinador>(doacao.Tipo, out var tipo)
                 ? tipo
                 : Torneio.Domain.Enums.TipoDoacaoPatrocinador.Dinheiro,

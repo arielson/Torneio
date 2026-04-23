@@ -5,7 +5,6 @@ namespace Torneio.Application.DTOs.Financeiro;
 
 public class AtualizarDoacaoPatrocinadorDto
 {
-    [Required(ErrorMessage = "Selecione o patrocinador.")]
     public Guid? PatrocinadorId { get; init; }
 
     public string NomePatrocinador { get; init; } = string.Empty;
