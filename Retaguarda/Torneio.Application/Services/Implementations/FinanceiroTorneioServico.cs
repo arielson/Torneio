@@ -18,6 +18,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
     private readonly IProdutoExtraTorneioRepositorio _produtoRepositorio;
     private readonly IProdutoExtraMembroRepositorio _produtoMembroRepositorio;
     private readonly IDoacaoPatrocinadorRepositorio _doacaoRepositorio;
+    private readonly IValorParcelaTorneioRepositorio _valorParcelaRepositorio;
 
     public FinanceiroTorneioServico(
         ITorneioRepositorio torneioRepositorio,
@@ -28,7 +29,8 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         ICustoTorneioRepositorio custoRepositorio,
         IProdutoExtraTorneioRepositorio produtoRepositorio,
         IProdutoExtraMembroRepositorio produtoMembroRepositorio,
-        IDoacaoPatrocinadorRepositorio doacaoRepositorio)
+        IDoacaoPatrocinadorRepositorio doacaoRepositorio,
+        IValorParcelaTorneioRepositorio valorParcelaRepositorio)
     {
         _torneioRepositorio = torneioRepositorio;
         _membroRepositorio = membroRepositorio;
@@ -39,12 +41,18 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         _produtoRepositorio = produtoRepositorio;
         _produtoMembroRepositorio = produtoMembroRepositorio;
         _doacaoRepositorio = doacaoRepositorio;
+        _valorParcelaRepositorio = valorParcelaRepositorio;
     }
 
     public async Task<TorneioFinanceiroConfigDto> ObterConfiguracao(Guid torneioId)
     {
         var torneio = await _torneioRepositorio.ObterPorId(torneioId)
             ?? throw new KeyNotFoundException($"Torneio '{torneioId}' nao encontrado.");
+
+        var valoresParcelas = (await _valorParcelaRepositorio.ListarPorTorneio(torneioId))
+            .OrderBy(x => x.NumeroParcela)
+            .Select(x => new ValorParcelaDto { NumeroParcela = x.NumeroParcela, Valor = x.Valor })
+            .ToList();
 
         return new TorneioFinanceiroConfigDto
         {
@@ -54,7 +62,8 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             DataPrimeiroVencimento = torneio.DataPrimeiroVencimento,
             TaxaInscricaoValor = torneio.TaxaInscricaoValor,
             DataVencimentoTaxaInscricao = torneio.DataVencimentoTaxaInscricao,
-            PossuiConfiguracaoAnterior = PossuiConfiguracaoAnterior(torneio)
+            PossuiConfiguracaoAnterior = PossuiConfiguracaoAnterior(torneio),
+            ValoresParcelas = valoresParcelas
         };
     }
 
@@ -63,7 +72,9 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         var torneio = await _torneioRepositorio.ObterPorId(torneioId)
             ?? throw new KeyNotFoundException($"Torneio '{torneioId}' nao encontrado.");
 
-        if (PossuiConfiguracaoAnterior(torneio) && ConfiguracaoFoiAlterada(torneio, dto) && !dto.ConfirmarSubstituicao)
+        var valoresExistentes = (await _valorParcelaRepositorio.ListarPorTorneio(torneioId)).ToList();
+
+        if (PossuiConfiguracaoAnterior(torneio) && ConfiguracaoFoiAlterada(torneio, dto, valoresExistentes) && !dto.ConfirmarSubstituicao)
             throw new InvalidOperationException("Ja existe uma configuracao financeira salva. Confirme a substituicao para limpar a configuracao anterior e criar uma nova.");
 
         torneio.AtualizarFinanceiro(
@@ -74,7 +85,27 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             dto.DataVencimentoTaxaInscricao);
 
         await _torneioRepositorio.Atualizar(torneio);
+        await SalvarValoresParcelas(torneioId, dto.QuantidadeParcelas, dto.ValoresParcelas, dto.ValorPorMembro);
         await SincronizarParcelas(torneioId);
+    }
+
+    private async Task SalvarValoresParcelas(Guid torneioId, int quantidadeParcelas, List<ValorParcelaDto> valoresDto, decimal valorPorMembro)
+    {
+        await _valorParcelaRepositorio.RemoverPorTorneio(torneioId);
+
+        if (quantidadeParcelas <= 0)
+            return;
+
+        // Se vieram valores do DTO com a quantidade correta, usa-os; senão calcula divisão uniforme
+        var valoresParaUsar = valoresDto.Count == quantidadeParcelas
+            ? valoresDto.OrderBy(x => x.NumeroParcela).Select(x => x.Valor).ToList()
+            : CalcularValoresParcelas(valorPorMembro, quantidadeParcelas);
+
+        for (var i = 0; i < quantidadeParcelas; i++)
+        {
+            var valor = ValorParcelaTorneio.Criar(torneioId, i + 1, valoresParaUsar[i]);
+            await _valorParcelaRepositorio.Adicionar(valor);
+        }
     }
 
     public async Task SincronizarParcelas(Guid torneioId)
@@ -98,6 +129,10 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         var adesoes = (await _produtoMembroRepositorio.ListarPorTorneio(torneioId))
             .Where(x => x.Ativo)
             .ToList();
+        var valoresParcelas = (await _valorParcelaRepositorio.ListarPorTorneio(torneioId))
+            .OrderBy(x => x.NumeroParcela)
+            .Select(x => x.Valor)
+            .ToList();
 
         if (membroIds is { Count: > 0 })
             membros = membros.Where(x => membroIds.Contains(x.Id)).ToList();
@@ -115,7 +150,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         var mapaExistentes = existentes.ToDictionary(ChaveParcela);
         var chavesDesejadas = new HashSet<string>();
 
-        await SincronizarMensalidades(torneio, membros, mapaExistentes, chavesDesejadas);
+        await SincronizarMensalidades(torneio, membros, mapaExistentes, chavesDesejadas, valoresParcelas);
         await SincronizarTaxaInscricao(torneio, membros, mapaExistentes, chavesDesejadas);
 
         var sincronizacaoCompleta = membroIds is null;
@@ -344,7 +379,8 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         TorneioEntity torneio,
         List<Membro> membros,
         Dictionary<string, ParcelaTorneio> mapaExistentes,
-        HashSet<string> chavesDesejadas)
+        HashSet<string> chavesDesejadas,
+        List<decimal> valoresParcelasConfigurados)
     {
         var existentesMensalidade = mapaExistentes.Values.Where(x => x.TipoParcela == TipoParcelaTorneio.Mensalidade).ToList();
 
@@ -359,7 +395,9 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         if (maiorParcelaPaga > torneio.QuantidadeParcelas)
             throw new InvalidOperationException("Nao e possivel reduzir a quantidade de parcelas abaixo da ultima mensalidade ja paga.");
 
-        var valores = CalcularValoresParcelas(torneio.ValorPorMembro, torneio.QuantidadeParcelas);
+        var valores = valoresParcelasConfigurados.Count == torneio.QuantidadeParcelas
+            ? valoresParcelasConfigurados
+            : CalcularValoresParcelas(torneio.ValorPorMembro, torneio.QuantidadeParcelas);
         var primeiroVencimento = torneio.DataPrimeiroVencimento ?? DateTime.UtcNow.Date;
 
         foreach (var membro in membros)
@@ -557,12 +595,22 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         || torneio.TaxaInscricaoValor > 0
         || torneio.DataVencimentoTaxaInscricao.HasValue;
 
-    private static bool ConfiguracaoFoiAlterada(TorneioEntity torneio, AtualizarTorneioFinanceiroDto dto) =>
-        torneio.ValorPorMembro != dto.ValorPorMembro
-        || torneio.QuantidadeParcelas != dto.QuantidadeParcelas
-        || torneio.DataPrimeiroVencimento?.Date != dto.DataPrimeiroVencimento?.Date
-        || torneio.TaxaInscricaoValor != dto.TaxaInscricaoValor
-        || torneio.DataVencimentoTaxaInscricao?.Date != dto.DataVencimentoTaxaInscricao?.Date;
+    private static bool ConfiguracaoFoiAlterada(TorneioEntity torneio, AtualizarTorneioFinanceiroDto dto, List<ValorParcelaTorneio> valoresExistentes)
+    {
+        if (torneio.ValorPorMembro != dto.ValorPorMembro
+            || torneio.QuantidadeParcelas != dto.QuantidadeParcelas
+            || torneio.DataPrimeiroVencimento?.Date != dto.DataPrimeiroVencimento?.Date
+            || torneio.TaxaInscricaoValor != dto.TaxaInscricaoValor
+            || torneio.DataVencimentoTaxaInscricao?.Date != dto.DataVencimentoTaxaInscricao?.Date)
+            return true;
+
+        if (dto.ValoresParcelas.Count != valoresExistentes.Count)
+            return true;
+
+        var existentesOrdenados = valoresExistentes.OrderBy(x => x.NumeroParcela).Select(x => x.Valor).ToList();
+        var dtoOrdenados = dto.ValoresParcelas.OrderBy(x => x.NumeroParcela).Select(x => x.Valor).ToList();
+        return existentesOrdenados.Zip(dtoOrdenados).Any(pair => pair.First != pair.Second);
+    }
 
     private async Task<FinanceiroDadosContexto> CarregarDadosFinanceiros(Guid torneioId)
     {

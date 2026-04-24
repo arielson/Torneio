@@ -9,4 +9,5 @@ public class TorneioFinanceiroConfigDto
     public decimal TaxaInscricaoValor { get; init; }
     public DateTime? DataVencimentoTaxaInscricao { get; init; }
     public bool PossuiConfiguracaoAnterior { get; init; }
+    public List<ValorParcelaDto> ValoresParcelas { get; init; } = [];
 }

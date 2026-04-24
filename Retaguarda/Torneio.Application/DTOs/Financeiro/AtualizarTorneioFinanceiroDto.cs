@@ -15,4 +15,5 @@ public class AtualizarTorneioFinanceiroDto
     public decimal TaxaInscricaoValor { get; init; }
     public DateTime? DataVencimentoTaxaInscricao { get; init; }
     public bool ConfirmarSubstituicao { get; init; }
+    public List<ValorParcelaDto> ValoresParcelas { get; init; } = [];
 }

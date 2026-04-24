@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IItemRepositorio, ItemRepositorio>();
         services.AddScoped<IPatrocinadorRepositorio, PatrocinadorRepositorio>();
         services.AddScoped<IParcelaTorneioRepositorio, ParcelaTorneioRepositorio>();
+        services.AddScoped<IValorParcelaTorneioRepositorio, ValorParcelaTorneioRepositorio>();
         services.AddScoped<IProdutoExtraTorneioRepositorio, ProdutoExtraTorneioRepositorio>();
         services.AddScoped<IProdutoExtraMembroRepositorio, ProdutoExtraMembroRepositorio>();
         services.AddScoped<IDoacaoPatrocinadorRepositorio, DoacaoPatrocinadorRepositorio>();

@@ -28,7 +28,7 @@
             }
             <div class="mb-3">
                 <label class="form-label" asp-for="ValorPorMembro">Valor total por @labelMembro.ToLower()</label>
-                <input class="form-control" asp-for="ValorPorMembro" name="ValorPorMembro" type="number" step="0.01" min="0" />
+                <input class="form-control" asp-for="ValorPorMembro" id="valorPorMembro" name="ValorPorMembro" type="number" step="0.01" min="0" />
             </div>
             <div class="mb-3">
                 <label class="form-label" asp-for="TaxaInscricaoValor">Taxa de inscrição opcional</label>
@@ -37,9 +37,16 @@
             </div>
             <div class="mb-3">
                 <label class="form-label" asp-for="QuantidadeParcelas">Quantidade de parcelas</label>
-                <input class="form-control" asp-for="QuantidadeParcelas" name="QuantidadeParcelas" type="number" min="0" max="999" />
+                <input class="form-control" asp-for="QuantidadeParcelas" id="quantidadeParcelas" name="QuantidadeParcelas" type="number" min="0" max="999" />
                 <div class="form-text">Se informar 0, nenhuma parcela sera gerada.</div>
             </div>
+
+            <div id="valoresParcelas" class="mb-3" style="display:none">
+                <label class="form-label">Valor de cada parcela</label>
+                <div class="form-text mb-2">Ajuste individualmente cada parcela. A soma não precisa ser igual ao valor total por @labelMembro.ToLower().</div>
+                <div id="listaValoresParcelas"></div>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label" asp-for="DataPrimeiroVencimento">Primeiro vencimento</label>
                 <input class="form-control" asp-for="DataPrimeiroVencimento" name="DataPrimeiroVencimento" type="date" />
@@ -63,6 +70,74 @@
             const form = document.querySelector('form[action$="/financeiro/configuracao"]');
             const confirmarInput = document.getElementById('confirmarSubstituicao');
             const possuiAnterior = @Model.PossuiConfiguracaoAnterior.ToString().ToLowerInvariant();
+
+            const inputQtd = document.getElementById('quantidadeParcelas');
+            const inputValor = document.getElementById('valorPorMembro');
+            const secaoValores = document.getElementById('valoresParcelas');
+            const listaEl = document.getElementById('listaValoresParcelas');
+
+            // Valores salvos previamente (vindos do banco)
+            const valoresSalvos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.ValoresParcelas.OrderBy(x => x.NumeroParcela)
+                    .Select(x => new { x.NumeroParcela, x.Valor })
+            ));
+
+            function divisaoUniforme(total, qtd) {
+                if (qtd <= 0) return [];
+                const base = Math.round((total / qtd) * 100) / 100;
+                const valores = Array(qtd).fill(base);
+                const soma = valores.reduce((a, b) => a + b, 0);
+                const diff = Math.round((total - soma) * 100) / 100;
+                if (valores.length > 0) valores[valores.length - 1] = Math.round((valores[valores.length - 1] + diff) * 100) / 100;
+                return valores;
+            }
+
+            function renderizarValores(qtd) {
+                listaEl.innerHTML = '';
+                // Remove inputs ocultos anteriores
+                document.querySelectorAll('input[name^="ValoresParcelas["]').forEach(el => el.remove());
+
+                if (qtd <= 0) {
+                    secaoValores.style.display = 'none';
+                    return;
+                }
+
+                secaoValores.style.display = '';
+                const total = parseFloat(inputValor.value) || 0;
+                const uniformes = divisaoUniforme(total, qtd);
+
+                for (let i = 0; i < qtd; i++) {
+                    const salvo = valoresSalvos.find(v => v.numeroParcela === i + 1);
+                    const valorInicial = (salvo !== undefined) ? salvo.valor : uniformes[i];
+
+                    const row = document.createElement('div');
+                    row.className = 'd-flex align-items-center gap-2 mb-2';
+                    row.innerHTML = `
+                        <span class="text-muted" style="width:90px;flex-shrink:0">Parcela ${i + 1}</span>
+                        <input type="number" step="0.01" min="0"
+                               class="form-control form-control-sm"
+                               style="max-width:150px"
+                               name="ValoresParcelas[${i}].Valor"
+                               value="${valorInicial.toFixed(2)}" />
+                        <input type="hidden" name="ValoresParcelas[${i}].NumeroParcela" value="${i + 1}" />
+                    `;
+                    listaEl.appendChild(row);
+                }
+            }
+
+            function onQtdChange() {
+                const qtd = parseInt(inputQtd.value, 10) || 0;
+                renderizarValores(qtd);
+            }
+
+            inputQtd.addEventListener('input', onQtdChange);
+            inputValor.addEventListener('change', () => {
+                const qtd = parseInt(inputQtd.value, 10) || 0;
+                if (qtd > 0) renderizarValores(qtd);
+            });
+
+            // Renderizar ao carregar
+            onQtdChange();
 
             if (!form || !confirmarInput || !possuiAnterior) return;
 

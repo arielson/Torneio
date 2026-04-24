@@ -1378,6 +1378,36 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("torneio", (string)null);
                 });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.ValorParcelaTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("NumeroParcela")
+                        .HasColumnType("integer")
+                        .HasColumnName("numero_parcela");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_valores_parcelas_torneio");
+
+                    b.HasIndex("TorneioId", "NumeroParcela")
+                        .IsUnique()
+                        .HasDatabaseName("ix_valores_parcelas_torneio_torneio_id_numero_parcela");
+
+                    b.ToTable("valores_parcelas_torneio", (string)null);
+                });
+
             modelBuilder.Entity("equipe_membro", b =>
                 {
                     b.Property<Guid>("EquipeId")
@@ -1628,6 +1658,16 @@ namespace Torneio.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_sorteios_grupo_torneiros_torneio_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ValorParcelaTorneio", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_valores_parcelas_torneio_torneio_torneio_id");
                 });
 
             modelBuilder.Entity("equipe_membro", b =>
