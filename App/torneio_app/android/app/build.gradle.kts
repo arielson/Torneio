@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.torneio_app"
+    namespace = "br.net.ari.torvia"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.torneio_app"
+        applicationId = "br.net.ari.torvia"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

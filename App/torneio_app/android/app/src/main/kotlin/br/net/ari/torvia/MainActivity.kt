@@ -1,4 +1,4 @@
-package com.example.torneio_app
+package br.net.ari.torvia
 
 import io.flutter.embedding.android.FlutterActivity
 
