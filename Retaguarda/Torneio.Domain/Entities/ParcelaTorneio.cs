@@ -23,6 +23,10 @@ public class ParcelaTorneio
     public string? ComprovanteUrl { get; private set; }
     public string? ComprovanteContentType { get; private set; }
 
+    public bool Bonificada { get; private set; }
+    public Guid? DoacaoPatrocinadorId { get; private set; }
+    public string? MotivoBonificacao { get; private set; }
+
     private ParcelaTorneio() { }
 
     public static ParcelaTorneio Criar(
@@ -82,6 +86,22 @@ public class ParcelaTorneio
     {
         Pago = false;
         DataPagamento = null;
+    }
+
+    public void MarcarComoBonificada(Guid? doacaoPatrocinadorId, string? motivo)
+    {
+        if (Pago)
+            throw new InvalidOperationException("Nao e possivel bonificar uma parcela ja paga.");
+        Bonificada = true;
+        DoacaoPatrocinadorId = doacaoPatrocinadorId;
+        MotivoBonificacao = string.IsNullOrWhiteSpace(motivo) ? null : motivo.Trim();
+    }
+
+    public void DesmarcarBonificacao()
+    {
+        Bonificada = false;
+        DoacaoPatrocinadorId = null;
+        MotivoBonificacao = null;
     }
 
     public void AtualizarComprovante(

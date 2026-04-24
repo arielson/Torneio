@@ -18,6 +18,8 @@ public interface IFinanceiroTorneioServico
     Task AtualizarParcela(Guid id, AtualizarParcelaTorneioDto dto);
     Task AtualizarPagamento(Guid id, AtualizarPagamentoParcelaDto dto);
     Task AtualizarComprovante(Guid id, string nomeArquivo, string url, string? contentType, string usuarioNome);
+    Task BonificarParcela(Guid id, BonificarParcelaDto dto);
+    Task DesmarcarBonificacao(Guid id);
     Task<IndicadoresFinanceiroDto> ObterIndicadores(Guid torneioId);
     Task<RelatorioFinanceiroDto> ObterRelatorio(Guid torneioId);
     Task ValidarRemocaoMembro(Guid membroId);

@@ -21,4 +21,7 @@ public class ParcelaTorneioDto
     public string? ComprovanteUsuarioNome { get; init; }
     public string? ComprovanteUrl { get; init; }
     public string? ComprovanteContentType { get; init; }
+    public bool Bonificada { get; init; }
+    public Guid? DoacaoPatrocinadorId { get; init; }
+    public string? MotivoBonificacao { get; init; }
 }

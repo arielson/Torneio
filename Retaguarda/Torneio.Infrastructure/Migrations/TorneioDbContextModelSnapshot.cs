@@ -816,6 +816,21 @@ namespace Torneio.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("vencimento_editado_manual");
 
+                    b.Property<bool>("Bonificada")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("bonificada");
+
+                    b.Property<Guid?>("DoacaoPatrocinadorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("doacao_patrocinador_id");
+
+                    b.Property<string>("MotivoBonificacao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_bonificacao");
+
                     b.HasKey("Id")
                         .HasName("pk_parcelas_torneio");
 

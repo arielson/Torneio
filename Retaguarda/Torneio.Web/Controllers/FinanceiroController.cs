@@ -166,6 +166,7 @@ public class FinanceiroController : TorneioBaseController
         var parcela = await _financeiroServico.ObterParcela(id);
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         ViewBag.Torneio = torneio;
+        ViewBag.Doacoes = await _doacaoPatrocinadorServico.Listar(TenantContext.TorneioId);
         return parcela is null ? NotFound() : View("EditarParcela", parcela);
     }
 
@@ -229,6 +230,44 @@ public class FinanceiroController : TorneioBaseController
             await RegistrarLog(
                 "UploadComprovanteParcelaWeb",
                 $"Comprovante anexado pela retaguarda web | Parcela: {id} | Arquivo: {arquivo.FileName}");
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(EditarCobranca), new { slug = Slug, id });
+    }
+
+    [HttpPost("cobrancas/{id:guid}/bonificar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BonificarCobranca(Guid id, BonificarParcelaDto dto)
+    {
+        try
+        {
+            await _financeiroServico.BonificarParcela(id, dto);
+            TempData["Sucesso"] = "Cobranca marcada como bonificada.";
+            await RegistrarLog(
+                "BonificarParcelaWeb",
+                $"Parcela bonificada pela retaguarda web | Parcela: {id} | Doacao: {dto.DoacaoPatrocinadorId?.ToString() ?? "-"} | Motivo: {dto.MotivoBonificacao ?? "-"}");
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(EditarCobranca), new { slug = Slug, id });
+    }
+
+    [HttpPost("cobrancas/{id:guid}/desmarcar-bonificacao")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DesmarcarBonificacaoCobranca(Guid id)
+    {
+        try
+        {
+            await _financeiroServico.DesmarcarBonificacao(id);
+            TempData["Sucesso"] = "Bonificacao removida.";
+            await RegistrarLog("DesmarcarBonificacaoParcelaWeb", $"Bonificacao de parcela removida pela retaguarda web | Parcela: {id}");
         }
         catch (Exception ex)
         {

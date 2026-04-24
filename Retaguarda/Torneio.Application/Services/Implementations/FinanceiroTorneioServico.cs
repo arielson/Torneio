@@ -192,7 +192,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         var dtos = parcelas.Select(x => ParaParcelaDto(x, membros)).ToList();
 
         if (somenteNaoPagas)
-            dtos = dtos.Where(x => !x.Pago).ToList();
+            dtos = dtos.Where(x => !x.Pago && !x.Bonificada).ToList();
 
         if (somenteInadimplentes)
             dtos = dtos.Where(x => x.Inadimplente).ToList();
@@ -249,6 +249,24 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         await _parcelaRepositorio.Atualizar(parcela);
     }
 
+    public async Task BonificarParcela(Guid id, BonificarParcelaDto dto)
+    {
+        var parcela = await _parcelaRepositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Parcela '{id}' nao encontrada.");
+
+        parcela.MarcarComoBonificada(dto.DoacaoPatrocinadorId, dto.MotivoBonificacao);
+        await _parcelaRepositorio.Atualizar(parcela);
+    }
+
+    public async Task DesmarcarBonificacao(Guid id)
+    {
+        var parcela = await _parcelaRepositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Parcela '{id}' nao encontrada.");
+
+        parcela.DesmarcarBonificacao();
+        await _parcelaRepositorio.Atualizar(parcela);
+    }
+
     public async Task<IndicadoresFinanceiroDto> ObterIndicadores(Guid torneioId)
     {
         var dados = await CarregarDadosFinanceiros(torneioId);
@@ -261,7 +279,8 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
         var membrosMap = dados.Membros.ToDictionary(x => x.Id, x => x.Nome);
         var indicadores = MontarIndicadores(dados);
 
-        var receitasPorTipo = dados.Parcelas
+        var parcelasReceita = dados.Parcelas.Where(x => !x.Bonificada).ToList();
+        var receitasPorTipo = parcelasReceita
             .GroupBy(x => x.TipoParcela)
             .Select(g => new ResumoFinanceiroPorTipoDto
             {
@@ -310,7 +329,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             .ToList();
 
         var eventos = new List<(DateTime Data, decimal Recebimento, decimal Pagamento)>();
-        eventos.AddRange(dados.Parcelas.Select(x => (x.Vencimento.Date, x.Valor, 0m)));
+        eventos.AddRange(parcelasReceita.Select(x => (x.Vencimento.Date, x.Valor, 0m)));
         eventos.AddRange(custosDetalhados
             .Where(x => x.Vencimento.HasValue)
             .Select(x => (x.Vencimento!.Value.Date, 0m, x.ValorTotal)));
@@ -345,7 +364,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             FluxoCaixaProjetado = fluxo,
             ReceitasPorTipo = receitasPorTipo,
             CustosPorCategoria = custosPorCategoria,
-            ProximosRecebimentosPendentes = dados.Parcelas
+            ProximosRecebimentosPendentes = parcelasReceita
                 .Where(x => !x.Pago)
                 .OrderBy(x => x.Vencimento)
                 .ThenBy(x => x.Descricao)
@@ -521,7 +540,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
     private static ParcelaTorneioDto ParaParcelaDto(ParcelaTorneio parcela, IReadOnlyDictionary<Guid, string> membros)
     {
         var nomeMembro = membros.TryGetValue(parcela.MembroId, out var nome) ? nome : string.Empty;
-        var inadimplente = !parcela.Pago && parcela.Vencimento.Date < DateTime.UtcNow.Date;
+        var inadimplente = !parcela.Pago && !parcela.Bonificada && parcela.Vencimento.Date < DateTime.UtcNow.Date;
         return new ParcelaTorneioDto
         {
             Id = parcela.Id,
@@ -542,7 +561,10 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             ComprovanteDataUpload = parcela.ComprovanteDataUpload,
             ComprovanteUsuarioNome = parcela.ComprovanteUsuarioNome,
             ComprovanteUrl = parcela.ComprovanteUrl,
-            ComprovanteContentType = parcela.ComprovanteContentType
+            ComprovanteContentType = parcela.ComprovanteContentType,
+            Bonificada = parcela.Bonificada,
+            DoacaoPatrocinadorId = parcela.DoacaoPatrocinadorId,
+            MotivoBonificacao = parcela.MotivoBonificacao
         };
     }
 
@@ -645,7 +667,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             .Where(x => x.Tipo == TipoDoacaoPatrocinador.Dinheiro)
             .Sum(x => x.Valor ?? 0);
         var receitaPrevista = arrecadacaoPrevista + receitaDoacoes;
-        var abertas = dados.Parcelas.Where(x => !x.Pago).ToList();
+        var abertas = dados.Parcelas.Where(x => !x.Pago && !x.Bonificada).ToList();
         var inadimplentes = abertas.Where(x => x.Vencimento.Date < DateTime.UtcNow.Date).ToList();
         var quantidadeCustos = dados.Custos.Count + dados.Equipes.Count(x => x.Custo > 0 && x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada);
 

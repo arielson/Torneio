@@ -1,9 +1,11 @@
 @model Torneio.Application.DTOs.Financeiro.ParcelaTorneioDto
+@using Torneio.Application.DTOs.Financeiro
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = $"Cobranca {Model.NumeroParcela} - {Model.NomeMembro}";
     var torneio = (TorneioDto)ViewBag.Torneio;
     var labelMembro = torneio?.LabelMembro ?? "Membro";
+    var doacoes = ((IEnumerable<DoacaoPatrocinadorDto>?)ViewBag.Doacoes ?? Enumerable.Empty<DoacaoPatrocinadorDto>()).OrderBy(x => x.NomePatrocinador).ToList();
 }
 
 <div class="page-header">
@@ -33,6 +35,10 @@
                         {
                             <span class="badge text-bg-success">Pago</span>
                         }
+                        else if (Model.Bonificada)
+                        {
+                            <span class="badge text-bg-info">Bonificada</span>
+                        }
                         else if (Model.Inadimplente)
                         {
                             <span class="badge text-bg-danger">Inadimplente</span>
@@ -42,6 +48,25 @@
                             <span class="badge text-bg-warning">Em aberto</span>
                         }
                     </dd>
+                    @if (Model.Bonificada)
+                    {
+                        <dt class="col-5">Bonificação</dt>
+                        <dd class="col-7">
+                            @if (!string.IsNullOrWhiteSpace(Model.MotivoBonificacao))
+                            {
+                                <span>@Model.MotivoBonificacao</span>
+                                <br />
+                            }
+                            @if (Model.DoacaoPatrocinadorId.HasValue)
+                            {
+                                var doacao = doacoes.FirstOrDefault(d => d.Id == Model.DoacaoPatrocinadorId);
+                                if (doacao is not null)
+                                {
+                                    <span class="text-muted small">Doação: @doacao.NomePatrocinador — @doacao.Descricao (@doacao.DataDoacao.ToString("dd/MM/yyyy"))</span>
+                                }
+                            }
+                        </dd>
+                    }
                     <dt class="col-5">Comprovante</dt>
                     <dd class="col-7">
                         @if (!string.IsNullOrWhiteSpace(Model.ComprovanteUrl))
@@ -106,7 +131,7 @@
             </div>
         </div>
 
-        <div class="content-card">
+        <div class="content-card mb-3">
             <div class="card-header-bar">
                 <h5><i class="bi bi-paperclip me-2"></i>Comprovante</h5>
             </div>
@@ -121,6 +146,54 @@
                         <i class="bi bi-upload me-1"></i>Enviar comprovante
                     </button>
                 </form>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-gift me-2"></i>Bonificação por doação</h5>
+            </div>
+            <div class="card-body-pad">
+                @if (Model.Bonificada)
+                {
+                    <p class="text-muted small mb-3">Esta cobrança está marcada como bonificada. Ela não entra como receita nas apurações financeiras.</p>
+                    <form asp-controller="Financeiro" asp-action="DesmarcarBonificacaoCobranca" asp-route-slug="@slug" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('Remover a bonificação desta cobrança?')">
+                            <i class="bi bi-x-circle me-1"></i>Remover bonificação
+                        </button>
+                    </form>
+                }
+                else if (Model.Pago)
+                {
+                    <p class="text-muted small mb-0">Não é possível bonificar uma cobrança já paga.</p>
+                }
+                else
+                {
+                    <p class="text-muted small mb-3">Marque como bonificada quando a cobrança for coberta por uma doação de patrocinador. A parcela não entrará como receita nas apurações.</p>
+                    <form asp-controller="Financeiro" asp-action="BonificarCobranca" asp-route-slug="@slug" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label">Doação vinculada <span class="text-muted fw-normal">(opcional)</span></label>
+                            <select class="form-select" name="DoacaoPatrocinadorId">
+                                <option value="">Nenhuma doação vinculada</option>
+                                @foreach (var doacao in doacoes)
+                                {
+                                    <option value="@doacao.Id">@doacao.NomePatrocinador — @doacao.Descricao (@doacao.DataDoacao.ToString("dd/MM/yyyy"))</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Motivo <span class="text-muted fw-normal">(opcional)</span></label>
+                            <input class="form-control" type="text" name="MotivoBonificacao" maxlength="500"
+                                   placeholder="Ex.: Empresa do participante doou equipamentos ao torneio" />
+                        </div>
+                        <button type="submit" class="btn btn-info text-white">
+                            <i class="bi bi-gift me-1"></i>Marcar como bonificada
+                        </button>
+                    </form>
+                }
             </div>
         </div>
     </div>

@@ -17,6 +17,9 @@ public class ParcelaTorneioConfiguration : IEntityTypeConfiguration<ParcelaTorne
         builder.Property(x => x.ComprovanteUsuarioNome).HasMaxLength(200);
         builder.Property(x => x.ComprovanteUrl).HasMaxLength(500);
         builder.Property(x => x.ComprovanteContentType).HasMaxLength(120);
+        builder.Property(x => x.Bonificada).IsRequired().HasDefaultValue(false);
+        builder.Property(x => x.DoacaoPatrocinadorId).HasColumnType("uuid");
+        builder.Property(x => x.MotivoBonificacao).HasMaxLength(500);
         builder.HasIndex(x => new { x.TorneioId, x.MembroId, x.TipoParcela, x.NumeroParcela, x.ReferenciaId }).IsUnique();
     }
 }
