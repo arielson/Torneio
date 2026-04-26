@@ -1,4 +1,5 @@
 @model TorneioDto
+@using Torneio.Web.Models
 @{
     ViewData["Title"] = Model.NomeTorneio;
     var storageBase = ViewBag.StorageBaseUrl as string ?? "";
@@ -13,6 +14,18 @@
         "Finalizado" => "bg-secondary",
         _            => "bg-warning text-dark"
     };
+
+    var exibirRanking        = Model.Status is "Liberado" or "Finalizado";
+    var exibirRankingEquipe  = exibirRanking && Model.PremiacaoPorEquipe;
+    var exibirRankingMembro  = exibirRanking;
+    var rankingEquipes  = ViewBag.RankingEquipes  as List<RankingEquipeVm> ?? new();
+    var rankingMembros  = ViewBag.RankingMembros  as List<RankingMembroVm> ?? new();
+    var usarFator       = (bool)(ViewBag.UsarFator ?? false);
+    var medida          = (string)(ViewBag.MedidaCaptura ?? "cm");
+    var labelEquipePlural  = (string)(ViewBag.LabelEquipePlural ?? "Equipes");
+    var labelMembroPlural  = (string)(ViewBag.LabelMembroPlural ?? "Pescadores");
+    var labelItem          = (string)(ViewBag.LabelItem  ?? "Item");
+    var labelCaptura       = (string)(ViewBag.LabelCaptura ?? "Captura");
 }
 
 @functions {
@@ -77,6 +90,209 @@
         <a href="/@Model.Slug/registro-membro" class="btn btn-primary ms-2">Registrar @Model.LabelMembro.ToLower()</a>
     }
 </div>
+
+@if (exibirRanking)
+{
+    <div class="row g-4 mt-1">
+
+        @* Ranking por equipe *@
+        @if (exibirRankingEquipe)
+        {
+        <div class="col-lg-5">
+            <div class="content-card h-100">
+                <div class="card-header-bar">
+                    <h5><i class="bi bi-trophy me-2 text-warning"></i>Ranking por @labelEquipePlural</h5>
+                </div>
+                @if (!rankingEquipes.Any())
+                {
+                    <div class="card-body-pad text-muted">Nenhuma captura registrada ainda.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:44px">#</th>
+                                    <th style="width:44px"></th>
+                                    <th>@labelEquipePlural</th>
+                                    <th class="text-end">Pontos</th>
+                                    <th class="text-end">@labelCaptura&#x28;s&#x29;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in rankingEquipes)
+                                {
+                                    var medalha = r.Posicao switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => $"{r.Posicao}º" };
+                                    var fotoEq  = string.IsNullOrWhiteSpace(r.FotoUrl) ? null
+                                        : (r.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? r.FotoUrl : $"{storageBase}/{r.FotoUrl.TrimStart('/')}");
+                                    <tr class="@(r.Posicao <= 3 ? "fw-semibold" : "")">
+                                        <td class="text-center fs-5">@medalha</td>
+                                        <td>
+                                            @if (fotoEq != null)
+                                            {
+                                                <img src="@fotoEq" alt="@r.NomeEquipe"
+                                                     class="rounded foto-thumb"
+                                                     style="width:34px;height:34px;object-fit:cover;cursor:pointer;"
+                                                     data-src="@fotoEq" data-nome="@r.NomeEquipe"
+                                                     onerror="this.style.visibility='hidden'" />
+                                            }
+                                            else
+                                            {
+                                                <span class="d-inline-flex align-items-center justify-content-center rounded bg-secondary text-white"
+                                                      style="width:34px;height:34px;font-size:.8rem">
+                                                    <i class="bi bi-people"></i>
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>@r.NomeEquipe</td>
+                                        <td class="text-end">@r.TotalPontos.ToString("0.##")</td>
+                                        <td class="text-end text-muted small">@r.QtdCapturas</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+        }
+
+        @* Ranking por membro *@
+        <div class="@(exibirRankingEquipe ? "col-lg-7" : "col-12")">
+            <div class="content-card h-100">
+                <div class="card-header-bar">
+                    <h5><i class="bi bi-person-lines-fill me-2 text-primary"></i>Ranking por @labelMembroPlural</h5>
+                </div>
+                @if (!rankingMembros.Any())
+                {
+                    <div class="card-body-pad text-muted">Nenhuma captura registrada ainda.</div>
+                }
+                else
+                {
+                    <div class="accordion accordion-flush" id="accordionMembros">
+                        @foreach (var r in rankingMembros)
+                        {
+                            var medalha   = r.Posicao switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => $"{r.Posicao}º" };
+                            var accordId  = $"membro-{r.Posicao}";
+                            var fotoMb    = string.IsNullOrWhiteSpace(r.FotoUrl) ? null
+                                : (r.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? r.FotoUrl : $"{storageBase}/{r.FotoUrl.TrimStart('/')}");
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-2 @(r.Posicao <= 3 ? "fw-semibold" : "")"
+                                            type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#@accordId" aria-expanded="false">
+                                        <span class="me-2 fs-6" style="min-width:28px">@medalha</span>
+                                        @if (fotoMb != null)
+                                        {
+                                            <img src="@fotoMb" alt="@r.NomeMembro"
+                                                 class="rounded-circle me-2 foto-thumb"
+                                                 style="width:30px;height:30px;object-fit:cover;cursor:pointer;"
+                                                 data-src="@fotoMb" data-nome="@r.NomeMembro"
+                                                 onerror="this.style.visibility='hidden'" />
+                                        }
+                                        else
+                                        {
+                                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white me-2"
+                                                  style="width:30px;height:30px;font-size:.75rem;flex-shrink:0">
+                                                <i class="bi bi-person"></i>
+                                            </span>
+                                        }
+                                        <span class="flex-fill">@r.NomeMembro <span class="text-muted fw-normal small ms-1">@r.NomeEquipe</span></span>
+                                        <span class="badge bg-primary ms-2">@r.TotalPontos.ToString("0.##") pts</span>
+                                    </button>
+                                </h2>
+                                <div id="@accordId" class="accordion-collapse collapse" data-bs-parent="#accordionMembros">
+                                    <div class="accordion-body p-0">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>@labelItem</th>
+                                                    <th>Medida (@medida)</th>
+                                                    @if (usarFator)
+                                                    {
+                                                        <th>Fator</th>
+                                                    }
+                                                    <th>Pontos</th>
+                                                    <th>Data/Hora</th>
+                                                    <th>Foto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var cap in r.Capturas)
+                                                {
+                                                    var fotoCapUrl = string.IsNullOrWhiteSpace(cap.FotoUrl) ? null
+                                                        : (cap.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? cap.FotoUrl : $"{storageBase}/{cap.FotoUrl.TrimStart('/')}");
+                                                    <tr>
+                                                        <td class="fw-semibold">@cap.NomeItem</td>
+                                                        <td>@cap.TamanhoMedida.ToString("0.##")</td>
+                                                        @if (usarFator)
+                                                        {
+                                                            <td class="text-muted">@(cap.FatorMultiplicador > 1m ? cap.FatorMultiplicador.ToString("0.##") : "—")</td>
+                                                        }
+                                                        <td class="fw-semibold">@cap.Pontuacao.ToString("0.##")</td>
+                                                        <td class="text-muted small">@cap.DataHora.ToString("dd/MM HH:mm")</td>
+                                                        <td>
+                                                            @if (fotoCapUrl != null)
+                                                            {
+                                                                <img src="@fotoCapUrl" alt="foto"
+                                                                     class="foto-thumb"
+                                                                     style="width:32px;height:32px;object-fit:cover;border-radius:5px;cursor:pointer;"
+                                                                     data-src="@fotoCapUrl"
+                                                                     data-nome="@r.NomeMembro - @cap.NomeItem"
+                                                                     onerror="this.style.visibility='hidden'" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">—</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal zoom foto -->
+    <div class="modal fade" id="modalFotoPublico" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 bg-transparent shadow-none">
+                <div class="modal-body p-0 text-center">
+                    <img id="modalFotoPublicoImg" src="" alt="" class="img-fluid rounded" style="max-height:80vh;" />
+                    <p id="modalFotoPublicoNome" class="text-white mt-2 fw-semibold fs-5 mb-0"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+        (() => {
+            const modal     = new bootstrap.Modal(document.getElementById('modalFotoPublico'));
+            const modalImg  = document.getElementById('modalFotoPublicoImg');
+            const modalNome = document.getElementById('modalFotoPublicoNome');
+            document.querySelectorAll('.foto-thumb').forEach(img => {
+                img.addEventListener('click', e => {
+                    e.stopPropagation();
+                    modalImg.src = img.dataset.src;
+                    modalImg.alt = img.dataset.nome;
+                    modalNome.textContent = img.dataset.nome;
+                    modal.show();
+                });
+            });
+        })();
+        </script>
+    }
+}
 
 @if (patrocinadores.Any())
 {

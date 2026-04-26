@@ -1,5 +1,4 @@
 @using Torneio.Application.DTOs.Captura
-@using Torneio.Domain.Enums
 @model IEnumerable<CapturaDto>
 @{
     var torneio            = ViewBag.Torneio as TorneioDto;
@@ -172,7 +171,7 @@ else
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modalAlterarTamanho"
                                                 data-id="@c.Id"
-                                                data-nome="@c.NomeMembro â€” @c.NomeItem"
+                                                data-nome=”@c.NomeMembro - @c.NomeItem”
                                                 data-medida="@c.TamanhoMedida.ToString(System.Globalization.CultureInfo.InvariantCulture)">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
