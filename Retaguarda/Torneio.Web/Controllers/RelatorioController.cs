@@ -157,7 +157,7 @@ public class RelatorioController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
-        if (torneio.TipoTorneio != TipoTorneio.Pesca)
+        if (torneio.TipoTorneio != nameof(TipoTorneio.Pesca))
         {
             TempData["Erro"] = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca.";
             return RedirectToAction(nameof(Index), new { slug = Slug });
@@ -174,7 +174,7 @@ public class RelatorioController : TorneioBaseController
         {
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
             if (torneio is null) return NotFound();
-            if (torneio.TipoTorneio != TipoTorneio.Pesca)
+            if (torneio.TipoTorneio != nameof(TipoTorneio.Pesca))
             {
                 TempData["Erro"] = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca.";
                 return RedirectToAction(nameof(Index), new { slug = Slug });

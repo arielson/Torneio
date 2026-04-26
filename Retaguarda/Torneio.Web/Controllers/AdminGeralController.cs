@@ -158,6 +158,7 @@ public class AdminGeralController : Controller
             QtdGanhadores = torneio.QtdGanhadores,
             PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,
             PremiacaoPorMembro = torneio.PremiacaoPorMembro,
+            ApenasMaiorCapturaPorPescador = torneio.ApenasMaiorCapturaPorPescador,
             CorPrimaria = torneio.CorPrimaria,
         };
         return View(dto);

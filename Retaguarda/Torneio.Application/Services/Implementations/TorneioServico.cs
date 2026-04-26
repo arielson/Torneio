@@ -328,7 +328,7 @@ public class TorneioServico : ITorneioServico
         PremiacaoPorEquipe = e.PremiacaoPorEquipe,
         PremiacaoPorMembro = e.PremiacaoPorMembro,
         ApenasMaiorCapturaPorPescador = e.ApenasMaiorCapturaPorPescador,
-        TipoTorneio = e.TipoTorneio,
+        TipoTorneio = e.TipoTorneio.ToString(),
         CriadoEm = e.CriadoEm,
         CorPrimaria = e.CorPrimaria,
     };

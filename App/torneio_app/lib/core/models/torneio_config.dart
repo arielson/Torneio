@@ -97,7 +97,7 @@ class TorneioConfig {
         premiacaoPorEquipe: json['premiacaoPorEquipe'] as bool? ?? true,
         premiacaoPorMembro: json['premiacaoPorMembro'] as bool? ?? false,
         apenasMaiorCapturaPorPescador: json['apenasMaiorCapturaPorPescador'] as bool? ?? false,
-        tipoTorneio: json['tipoTorneio'] as String? ?? 'Pesca',
+        tipoTorneio: json['tipoTorneio']?.toString() ?? 'Pesca',
         corPrimaria: json['corPrimaria'] as String?,
         valorPorMembro: (json['valorPorMembro'] as num?)?.toDouble() ?? 0,
         quantidadeParcelas: json['quantidadeParcelas'] as int? ?? 0,

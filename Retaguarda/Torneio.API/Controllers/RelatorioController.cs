@@ -105,7 +105,7 @@ public class RelatorioController : BaseController
             if (torneio is null)
                 return NotFound(new { erro = "Torneio não encontrado." });
 
-            if (torneio.TipoTorneio != TipoTorneio.Pesca)
+            if (torneio.TipoTorneio != nameof(TipoTorneio.Pesca))
                 return BadRequest(new { erro = "O relatório de maiores capturas está disponível somente para torneios do tipo pesca." });
 
             var bytes = await _servico.GerarRelatorioMaioresCapturas(quantidade);

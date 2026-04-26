@@ -33,7 +33,7 @@ public class TorneioDto
     public bool PremiacaoPorEquipe { get; init; }
     public bool PremiacaoPorMembro { get; init; }
     public bool ApenasMaiorCapturaPorPescador { get; init; }
-    public TipoTorneio TipoTorneio { get; init; }
+    public string TipoTorneio { get; init; } = null!;
     public DateTime CriadoEm { get; init; }
     public string? CorPrimaria { get; init; }
 }

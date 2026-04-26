@@ -324,6 +324,7 @@ class _RankingSection extends StatelessWidget {
               medida: medida,
               usarFator: usarFator,
               labelItem: config.labelItem as String,
+              storageBase: storageBase,
             );
           }),
         ],
@@ -371,9 +372,16 @@ class _Avatar extends StatelessWidget {
     if (fotoUrl.isNotEmpty) {
       return CircleAvatar(
         radius: 18,
-        backgroundImage: NetworkImage(fotoUrl),
-        onBackgroundImageError: (e, _) {},
-        child: null,
+        backgroundColor: Colors.grey.shade300,
+        child: ClipOval(
+          child: Image.network(
+            fotoUrl,
+            width: 36, height: 36,
+            fit: BoxFit.cover,
+            errorBuilder: (ctx, err, st) =>
+                Icon(icon, size: 18, color: Colors.grey.shade600),
+          ),
+        ),
       );
     }
     return CircleAvatar(
@@ -394,6 +402,7 @@ class _MembroTile extends StatefulWidget {
   final String medida;
   final bool usarFator;
   final String labelItem;
+  final String storageBase;
 
   const _MembroTile({
     required this.posicao,
@@ -405,6 +414,7 @@ class _MembroTile extends StatefulWidget {
     required this.medida,
     required this.usarFator,
     required this.labelItem,
+    required this.storageBase,
   });
 
   @override
@@ -414,6 +424,12 @@ class _MembroTile extends StatefulWidget {
 class _MembroTileState extends State<_MembroTile> {
   bool _expandido = false;
 
+  String _resolverFoto(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    return '${widget.storageBase}/${url.replaceAll(RegExp(r'^/+'), '')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -421,7 +437,9 @@ class _MembroTileState extends State<_MembroTile> {
       child: Column(
         children: [
           ListTile(
-            onTap: () => setState(() => _expandido = !_expandido),
+            onTap: widget.capturas.isNotEmpty
+                ? () => setState(() => _expandido = !_expandido)
+                : null,
             leading: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -439,80 +457,131 @@ class _MembroTileState extends State<_MembroTile> {
                   '${widget.totalPontos.toStringAsFixed(2)} pts',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(width: 4),
-                Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 20),
+                if (widget.capturas.isNotEmpty) ...[
+                  const SizedBox(width: 4),
+                  Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 20),
+                ],
               ],
             ),
           ),
           if (_expandido && widget.capturas.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Table(
-                columnWidths: {
-                  0: const FlexColumnWidth(2),
-                  1: const FlexColumnWidth(1),
-                  if (widget.usarFator) 2: const FlexColumnWidth(1),
-                  widget.usarFator ? 3 : 2: const FlexColumnWidth(1),
-                },
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(color: Colors.grey.shade100),
-                    children: [
-                      _TH(widget.labelItem),
-                      _TH('Medida (${widget.medida})'),
-                      if (widget.usarFator) _TH('Fator'),
-                      _TH('Pts'),
-                    ],
-                  ),
-                  ...widget.capturas.map((c) => TableRow(children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                          child: Text(c['nomeItem'] as String? ?? '', style: const TextStyle(fontSize: 13)),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                          child: Text(
-                            (c['tamanhoMedida'] as num?)?.toStringAsFixed(2) ?? '-',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                        if (widget.usarFator)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                            child: Text(
-                              (c['fatorMultiplicador'] as num? ?? 1) > 1
-                                  ? (c['fatorMultiplicador'] as num).toStringAsFixed(2)
-                                  : '—',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+              child: Column(
+                children: widget.capturas.map((c) {
+                  final capFotoUrl = _resolverFoto(c['fotoUrl'] as String?);
+                  final fator = (c['fatorMultiplicador'] as num? ?? 1).toDouble();
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        // Foto da captura
+                        GestureDetector(
+                          onTap: capFotoUrl.isNotEmpty
+                              ? () => _abrirFoto(context, capFotoUrl)
+                              : null,
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: Colors.grey.shade200,
                             ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                          child: Text(
-                            (c['pontuacao'] as num?)?.toStringAsFixed(2) ?? '-',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            child: capFotoUrl.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      capFotoUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (ctx, e, st) => Icon(
+                                        Icons.image_not_supported_outlined,
+                                        color: Colors.grey.shade400,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(Icons.photo_camera_outlined,
+                                    color: Colors.grey.shade400, size: 24),
                           ),
                         ),
-                      ])),
-                ],
+                        const SizedBox(width: 10),
+                        // Detalhes
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                c['nomeItem'] as String? ?? '',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${(c['tamanhoMedida'] as num?)?.toStringAsFixed(2) ?? '-'} ${widget.medida}'
+                                '${widget.usarFator && fator > 1 ? '  ×${fator.toStringAsFixed(2)}' : ''}',
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                              ),
+                              if (c['dataHora'] != null)
+                                Text(
+                                  c['dataHora'] as String,
+                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                ),
+                            ],
+                          ),
+                        ),
+                        // Pontuação
+                        Text(
+                          '${(c['pontuacao'] as num?)?.toStringAsFixed(2) ?? '-'} pts',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
             ),
         ],
       ),
     );
   }
+
+  void _abrirFoto(BuildContext context, String url) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (ctx, e, st) => const Center(
+                  child: Icon(Icons.broken_image, color: Colors.white, size: 64),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8, right: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _TH extends StatelessWidget {
-  final String text;
-  const _TH(this.text);
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-      );
-}
 
 class _StatusBanner extends StatelessWidget {
   final IconData icon;

@@ -3,7 +3,7 @@
     ViewData["Title"] = "Editar Torneio";
     var torneioId    = (Guid)ViewBag.TorneioId;
     var modosSorteio = (ModoSorteio[])ViewBag.ModosSorteio;
-    var tipoTorneio  = ViewBag.TipoTorneio is TipoTorneio t ? t : TipoTorneio.Pesca;
+    var tipoTorneio  = Enum.TryParse<TipoTorneio>(ViewBag.TipoTorneio as string, out var _tp) ? _tp : TipoTorneio.Pesca;
 }
 
 <div class="page-header">
