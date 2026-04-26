@@ -80,6 +80,7 @@ if (!string.IsNullOrEmpty(storagePath))
 
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
+app.UseMiddleware<TrocarSenhaMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(

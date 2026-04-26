@@ -7,4 +7,5 @@ public class LoginResponseDto
     public string? Slug { get; init; }
     public string Nome { get; init; } = null!;
     public DateTime ExpiraEm { get; init; }
+    public bool TrocarSenha { get; init; }
 }

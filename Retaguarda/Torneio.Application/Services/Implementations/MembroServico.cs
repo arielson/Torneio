@@ -62,7 +62,8 @@ public class MembroServico : IMembroServico
             ? null
             : _passwordHasher.Hash(dto.Senha);
 
-        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl, dto.Celular, dto.TamanhoCamisa, dto.Usuario, senhaHash);
+        var entidade = Membro.Criar(dto.TorneioId, dto.Nome, dto.FotoUrl, dto.Celular, dto.TamanhoCamisa, dto.Usuario, senhaHash,
+            deveAlterarSenha: senhaHash != null);
         await _repositorio.Adicionar(entidade);
         await _financeiroServico.SincronizarParcelas(dto.TorneioId);
         return ParaDto(entidade);

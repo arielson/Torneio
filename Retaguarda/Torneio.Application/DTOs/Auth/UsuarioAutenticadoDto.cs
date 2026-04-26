@@ -10,4 +10,5 @@ public class UsuarioAutenticadoDto
     public PerfilUsuario Perfil { get; init; }
     public Guid? TorneioId { get; init; }
     public string? Slug { get; init; }
+    public bool DeveAlterarSenha { get; init; }
 }

@@ -61,7 +61,8 @@ public class AutenticacaoServico : IAutenticacaoServico
             Usuario = entidade.Usuario,
             Perfil = PerfilUsuario.AdminTorneio,
             TorneioId = torneioId,
-            Slug = torneio?.Slug
+            Slug = torneio?.Slug,
+            DeveAlterarSenha = entidade.DeveAlterarSenha
         };
     }
 
@@ -80,8 +81,48 @@ public class AutenticacaoServico : IAutenticacaoServico
             Usuario = entidade.Usuario,
             Perfil = PerfilUsuario.Fiscal,
             TorneioId = torneioId,
-            Slug = torneio?.Slug
+            Slug = torneio?.Slug,
+            DeveAlterarSenha = entidade.DeveAlterarSenha
         };
+    }
+
+    public async Task TrocarSenha(Guid usuarioId, string perfil, string senhaAtual, string novaSenha, Guid? torneioId)
+    {
+        switch (perfil.ToLowerInvariant())
+        {
+            case "admintorneio":
+            {
+                var entidade = await _adminTorneioRepositorio.ObterPorId(usuarioId)
+                    ?? throw new InvalidOperationException("Usuário não encontrado.");
+                if (!_passwordHasher.Verificar(senhaAtual, entidade.SenhaHash))
+                    throw new InvalidOperationException("Senha atual incorreta.");
+                entidade.AtualizarSenha(_passwordHasher.Hash(novaSenha));
+                await _adminTorneioRepositorio.Atualizar(entidade);
+                break;
+            }
+            case "fiscal":
+            {
+                var entidade = await _fiscalRepositorio.ObterPorId(usuarioId)
+                    ?? throw new InvalidOperationException("Usuário não encontrado.");
+                if (!_passwordHasher.Verificar(senhaAtual, entidade.SenhaHash))
+                    throw new InvalidOperationException("Senha atual incorreta.");
+                entidade.AtualizarSenha(_passwordHasher.Hash(novaSenha));
+                await _fiscalRepositorio.Atualizar(entidade);
+                break;
+            }
+            case "membro":
+            {
+                var entidade = await _membroRepositorio.ObterPorId(usuarioId)
+                    ?? throw new InvalidOperationException("Usuário não encontrado.");
+                if (string.IsNullOrWhiteSpace(entidade.SenhaHash) || !_passwordHasher.Verificar(senhaAtual, entidade.SenhaHash))
+                    throw new InvalidOperationException("Senha atual incorreta.");
+                entidade.AtualizarCredenciais(null, _passwordHasher.Hash(novaSenha));
+                await _membroRepositorio.Atualizar(entidade);
+                break;
+            }
+            default:
+                throw new InvalidOperationException($"Perfil '{perfil}' não suporta troca de senha obrigatória.");
+        }
     }
 
     public async Task<UsuarioAutenticadoDto?> AutenticarMembro(string usuario, string senha, Guid torneioId)
@@ -99,7 +140,8 @@ public class AutenticacaoServico : IAutenticacaoServico
             Usuario = entidade.Usuario ?? usuario,
             Perfil = PerfilUsuario.Membro,
             TorneioId = torneioId,
-            Slug = torneio?.Slug
+            Slug = torneio?.Slug,
+            DeveAlterarSenha = entidade.DeveAlterarSenha
         };
     }
 }

@@ -8,6 +8,7 @@ public class Fiscal
     public string? FotoUrl { get; private set; }
     public string Usuario { get; private set; } = null!;
     public string SenhaHash { get; private set; } = null!;
+    public bool DeveAlterarSenha { get; private set; }
 
     private readonly List<FiscalEquipe> _equipes = new();
     public IReadOnlyCollection<FiscalEquipe> Equipes => _equipes.AsReadOnly();
@@ -28,11 +29,16 @@ public class Fiscal
             Nome = nome,
             Usuario = usuario,
             SenhaHash = senhaHash,
-            FotoUrl = fotoUrl
+            FotoUrl = fotoUrl,
+            DeveAlterarSenha = true
         };
     }
 
-    public void AtualizarSenha(string novaSenhaHash) => SenhaHash = novaSenhaHash;
+    public void AtualizarSenha(string novaSenhaHash)
+    {
+        SenhaHash = novaSenhaHash;
+        DeveAlterarSenha = false;
+    }
 
     public void AtualizarFoto(string fotoUrl) => FotoUrl = fotoUrl;
 

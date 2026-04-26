@@ -13,6 +13,7 @@ public class AdminTorneioConfiguration : IEntityTypeConfiguration<AdminTorneio>
         builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
         builder.Property(e => e.Usuario).IsRequired().HasMaxLength(100);
         builder.Property(e => e.SenhaHash).IsRequired().HasMaxLength(200);
+        builder.Property(e => e.DeveAlterarSenha).IsRequired().HasDefaultValue(false);
 
         builder.HasIndex(e => new { e.Usuario, e.TorneioId }).IsUnique();
 

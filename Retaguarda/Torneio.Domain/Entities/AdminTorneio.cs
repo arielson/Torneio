@@ -8,6 +8,7 @@ public class AdminTorneio
     public string Nome { get; private set; } = null!;
     public string Usuario { get; private set; } = null!;
     public string SenhaHash { get; private set; } = null!;
+    public bool DeveAlterarSenha { get; private set; }
 
     private AdminTorneio() { }
 
@@ -25,11 +26,16 @@ public class AdminTorneio
             TorneioId = torneioId,
             Nome = nome,
             Usuario = usuario,
-            SenhaHash = senhaHash
+            SenhaHash = senhaHash,
+            DeveAlterarSenha = true
         };
     }
 
-    public void AtualizarSenha(string novaSenhaHash) => SenhaHash = novaSenhaHash;
+    public void AtualizarSenha(string novaSenhaHash)
+    {
+        SenhaHash = novaSenhaHash;
+        DeveAlterarSenha = false;
+    }
 
     public void AtualizarNome(string nome) => Nome = nome;
 }

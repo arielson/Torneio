@@ -105,6 +105,8 @@ public class HomeController : Controller
             new("torneio_id", torneio.Id.ToString()),
             new("slug", slug),
         };
+        if (usuario.DeveAlterarSenha)
+            claims.Add(new Claim("deve_alterar_senha", "true"));
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TorneioCookie"));
         await HttpContext.SignInAsync("TorneioCookie", principal);
@@ -160,6 +162,8 @@ public class HomeController : Controller
             new("torneio_id", torneio.Id.ToString()),
             new("slug", slug),
         };
+        if (usuario.DeveAlterarSenha)
+            claims.Add(new Claim("deve_alterar_senha", "true"));
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TorneioCookie"));
         await HttpContext.SignInAsync("TorneioCookie", principal);

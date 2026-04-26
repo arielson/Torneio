@@ -1,0 +1,56 @@
+@model TrocarSenhaViewModel
+@{
+    ViewData["Title"] = "Alterar Senha";
+    ViewData["IsAuthPage"] = true;
+}
+
+<div class="auth-card">
+    <div class="auth-logo text-warning">
+        <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <h2>Altere sua senha</h2>
+    <p class="auth-subtitle">Por segurança, defina uma senha pessoal antes de continuar.</p>
+
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="mb-3">
+            <label asp-for="SenhaAtual" class="form-label">Senha atual</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                <input asp-for="SenhaAtual" class="form-control border-start-0 ps-0" autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            <span asp-validation-for="SenhaAtual" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NovaSenha" class="form-label">Nova senha</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
+                <input asp-for="NovaSenha" class="form-control border-start-0 ps-0" autocomplete="new-password" placeholder="mínimo 6 caracteres" />
+            </div>
+            <span asp-validation-for="NovaSenha" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="ConfirmarSenha" class="form-label">Confirmar nova senha</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-key-fill text-muted"></i></span>
+                <input asp-for="ConfirmarSenha" class="form-control border-start-0 ps-0" autocomplete="new-password" placeholder="repita a nova senha" />
+            </div>
+            <span asp-validation-for="ConfirmarSenha" class="text-danger small"></span>
+        </div>
+
+        <button type="submit" class="btn btn-warning w-100 fw-semibold">
+            <i class="bi bi-check-circle me-2"></i>Definir nova senha
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

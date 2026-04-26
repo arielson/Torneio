@@ -16,6 +16,7 @@ public class MembroConfiguration : IEntityTypeConfiguration<Membro>
         builder.Property(e => e.TamanhoCamisa).HasMaxLength(20);
         builder.Property(e => e.Usuario).HasMaxLength(100);
         builder.Property(e => e.SenhaHash).HasMaxLength(500);
+        builder.Property(e => e.DeveAlterarSenha).IsRequired().HasDefaultValue(false);
 
         builder.HasIndex(e => new { e.TorneioId, e.Usuario }).IsUnique();
 

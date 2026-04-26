@@ -33,6 +33,9 @@ public class TokenServico
         if (!string.IsNullOrEmpty(usuario.Slug))
             claims.Add(new("slug", usuario.Slug));
 
+        if (usuario.DeveAlterarSenha)
+            claims.Add(new("deve_alterar_senha", "true"));
+
         var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
 
