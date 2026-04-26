@@ -36,6 +36,7 @@ public class TorneioEntityConfiguration : IEntityTypeConfiguration<TorneioEntity
         builder.Property(e => e.QtdGanhadores).IsRequired().HasDefaultValue(3);
         builder.Property(e => e.PremiacaoPorEquipe).IsRequired().HasDefaultValue(true);
         builder.Property(e => e.PremiacaoPorMembro).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.ApenasMaiorCapturaPorPescador).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.TipoTorneio).IsRequired();
         builder.Property(e => e.CriadoEm).IsRequired();
         builder.Property(e => e.CorPrimaria).HasMaxLength(7);

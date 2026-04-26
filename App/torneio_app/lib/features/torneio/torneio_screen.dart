@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
+import '../../core/flavor_config.dart';
 import '../../core/models/patrocinador.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
@@ -20,6 +21,10 @@ class _TorneioScreenState extends State<TorneioScreen> {
   final ApiService _api = ApiService();
   List<Patrocinador> _patrocinadores = const [];
 
+  // Ranking state
+  bool _rankingCarregando = false;
+  Map<String, dynamic>? _rankingData;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -27,9 +32,13 @@ class _TorneioScreenState extends State<TorneioScreen> {
       _configProvider = context.read<ConfigProvider>();
       _slug = ModalRoute.of(context)?.settings.arguments as String?;
       if (_slug != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _configProvider.carregarConfig(_slug!);
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await _configProvider.carregarConfig(_slug!);
           _carregarPatrocinadores(_slug!);
+          final cfg = _configProvider.config;
+          if (cfg != null && (cfg.status == 'Liberado' || cfg.status == 'Finalizado')) {
+            _carregarRanking(_slug!);
+          }
         });
       }
       _inicializado = true;
@@ -54,6 +63,22 @@ class _TorneioScreenState extends State<TorneioScreen> {
     }
   }
 
+  Future<void> _carregarRanking(String slug) async {
+    if (!mounted) return;
+    setState(() => _rankingCarregando = true);
+    try {
+      final data = await _api.get(ApiConstants.rankingPublico(slug));
+      if (!mounted) return;
+      setState(() {
+        _rankingData = data as Map<String, dynamic>?;
+        _rankingCarregando = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _rankingCarregando = false);
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,7 +98,8 @@ class _TorneioScreenState extends State<TorneioScreen> {
     final configProv = context.watch<ConfigProvider>();
     final config = configProv.config;
 
-    if (configProv.carregando) {
+    // Show spinner while loading OR while config hasn't been attempted yet
+    if (configProv.carregando || (config == null && configProv.erro == null)) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
@@ -86,7 +112,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
-              const Text('Torneio nao encontrado.'),
+              Text(configProv.erro ?? 'Torneio não encontrado.'),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => Navigator.pop(context),
@@ -99,6 +125,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
     }
 
     final cor = _corStatus(config.status);
+    final exibirRanking = config.status == 'Liberado' || config.status == 'Finalizado';
 
     return Scaffold(
       appBar: AppBar(
@@ -124,35 +151,30 @@ class _TorneioScreenState extends State<TorneioScreen> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            config.nomeTorneio,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Chip(
-                          label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
-                          backgroundColor: cor.withAlpha(30),
-                          side: BorderSide(color: cor.withAlpha(80)),
-                        ),
-                      ],
+                    Expanded(
+                      child: Text(
+                        config.nomeTorneio,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Chip(
+                      label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
+                      backgroundColor: cor.withAlpha(30),
+                      side: BorderSide(color: cor.withAlpha(80)),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Status message
             if (config.status == 'Aberto')
               _StatusBanner(
                 icon: Icons.lock_clock,
-                message: 'Este torneio ainda nao esta aberto ao publico.',
+                message: 'Este torneio ainda não está aberto ao público.',
                 color: Colors.orange,
               )
             else if (config.status == 'Finalizado')
@@ -190,6 +212,24 @@ class _TorneioScreenState extends State<TorneioScreen> {
                 onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
               ),
             ],
+
+            // ── Ranking ────────────────────────────────────────────────────
+            if (exibirRanking) ...[
+              const SizedBox(height: 24),
+              if (_rankingCarregando)
+                const Center(child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ))
+              else if (_rankingData != null && (_rankingData!['disponivel'] as bool? ?? false))
+                _RankingSection(
+                  data: _rankingData!,
+                  config: config,
+                  storageBase: AppConfig.mediaBasePath,
+                ),
+            ],
+
+            // ── Patrocinadores ─────────────────────────────────────────────
             if (_patrocinadores.isNotEmpty) ...[
               const SizedBox(height: 24),
               PatrocinadoresSection(patrocinadores: _patrocinadores),
@@ -199,6 +239,279 @@ class _TorneioScreenState extends State<TorneioScreen> {
       ),
     );
   }
+}
+
+// ── Ranking section widget ────────────────────────────────────────────────────
+
+class _RankingSection extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final dynamic config;
+  final String storageBase;
+
+  const _RankingSection({required this.data, required this.config, required this.storageBase});
+
+  String _resolverFoto(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    return '$storageBase/${url.replaceAll(RegExp(r'^/+'), '')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final premiacaoPorEquipe = data['premiacaoPorEquipe'] as bool? ?? false;
+    final premiacaoPorMembro = data['premiacaoPorMembro'] as bool? ?? false;
+    final equipes = (data['equipesGanhadoras'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final membros = (data['membrosGanhadores'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final medida = data['medidaCaptura'] as String? ?? 'cm';
+    final usarFator = data['usarFatorMultiplicador'] as bool? ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (premiacaoPorEquipe && equipes.isNotEmpty) ...[
+          _SectionTitle(
+            icon: Icons.emoji_events,
+            color: Colors.amber.shade700,
+            title: 'Ranking por ${config.labelEquipePlural}',
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: equipes.asMap().entries.map((entry) {
+                final r = entry.value;
+                final pos = r['posicao'] as int? ?? (entry.key + 1);
+                final fotoUrl = _resolverFoto(r['fotoUrl'] as String?);
+                return ListTile(
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Medalha(pos),
+                      const SizedBox(width: 8),
+                      _Avatar(fotoUrl: fotoUrl, icon: Icons.directions_boat),
+                    ],
+                  ),
+                  title: Text(r['nomeEquipe'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text('${r['qtdCapturas']} ${config.labelCaptura.toLowerCase()}(s)'),
+                  trailing: Text(
+                    '${(r['totalPontos'] as num?)?.toStringAsFixed(2) ?? '0'} pts',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (premiacaoPorMembro && membros.isNotEmpty) ...[
+          _SectionTitle(
+            icon: Icons.person_pin,
+            color: Colors.blue.shade700,
+            title: 'Ranking por ${config.labelMembroPlural}',
+          ),
+          const SizedBox(height: 8),
+          ...membros.asMap().entries.map((entry) {
+            final r = entry.value;
+            final pos = r['posicao'] as int? ?? (entry.key + 1);
+            final fotoUrl = _resolverFoto(r['fotoUrl'] as String?);
+            final capturas = (r['capturas'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            return _MembroTile(
+              posicao: pos,
+              nome: r['nomeMembro'] as String? ?? '',
+              nomeEquipe: r['nomeEquipe'] as String? ?? '',
+              totalPontos: (r['totalPontos'] as num?)?.toDouble() ?? 0,
+              fotoUrl: fotoUrl,
+              capturas: capturas,
+              medida: medida,
+              usarFator: usarFator,
+              labelItem: config.labelItem as String,
+            );
+          }),
+        ],
+      ],
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  const _SectionTitle({required this.icon, required this.color, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 22),
+        const SizedBox(width: 8),
+        Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+}
+
+class _Medalha extends StatelessWidget {
+  final int posicao;
+  const _Medalha(this.posicao);
+
+  @override
+  Widget build(BuildContext context) {
+    final text = switch (posicao) { 1 => '🥇', 2 => '🥈', 3 => '🥉', _ => '$posicao°' };
+    return Text(text, style: const TextStyle(fontSize: 20));
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  final String fotoUrl;
+  final IconData icon;
+  const _Avatar({required this.fotoUrl, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    if (fotoUrl.isNotEmpty) {
+      return CircleAvatar(
+        radius: 18,
+        backgroundImage: NetworkImage(fotoUrl),
+        onBackgroundImageError: (e, _) {},
+        child: null,
+      );
+    }
+    return CircleAvatar(
+      radius: 18,
+      backgroundColor: Colors.grey.shade300,
+      child: Icon(icon, size: 18, color: Colors.grey.shade600),
+    );
+  }
+}
+
+class _MembroTile extends StatefulWidget {
+  final int posicao;
+  final String nome;
+  final String nomeEquipe;
+  final double totalPontos;
+  final String fotoUrl;
+  final List<Map<String, dynamic>> capturas;
+  final String medida;
+  final bool usarFator;
+  final String labelItem;
+
+  const _MembroTile({
+    required this.posicao,
+    required this.nome,
+    required this.nomeEquipe,
+    required this.totalPontos,
+    required this.fotoUrl,
+    required this.capturas,
+    required this.medida,
+    required this.usarFator,
+    required this.labelItem,
+  });
+
+  @override
+  State<_MembroTile> createState() => _MembroTileState();
+}
+
+class _MembroTileState extends State<_MembroTile> {
+  bool _expandido = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        children: [
+          ListTile(
+            onTap: () => setState(() => _expandido = !_expandido),
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _Medalha(widget.posicao),
+                const SizedBox(width: 8),
+                _Avatar(fotoUrl: widget.fotoUrl, icon: Icons.person),
+              ],
+            ),
+            title: Text(widget.nome, style: const TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text(widget.nomeEquipe, style: const TextStyle(fontSize: 12)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${widget.totalPontos.toStringAsFixed(2)} pts',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 4),
+                Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 20),
+              ],
+            ),
+          ),
+          if (_expandido && widget.capturas.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Table(
+                columnWidths: {
+                  0: const FlexColumnWidth(2),
+                  1: const FlexColumnWidth(1),
+                  if (widget.usarFator) 2: const FlexColumnWidth(1),
+                  widget.usarFator ? 3 : 2: const FlexColumnWidth(1),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                children: [
+                  TableRow(
+                    decoration: BoxDecoration(color: Colors.grey.shade100),
+                    children: [
+                      _TH(widget.labelItem),
+                      _TH('Medida (${widget.medida})'),
+                      if (widget.usarFator) _TH('Fator'),
+                      _TH('Pts'),
+                    ],
+                  ),
+                  ...widget.capturas.map((c) => TableRow(children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(c['nomeItem'] as String? ?? '', style: const TextStyle(fontSize: 13)),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(
+                            (c['tamanhoMedida'] as num?)?.toStringAsFixed(2) ?? '-',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                        if (widget.usarFator)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                            child: Text(
+                              (c['fatorMultiplicador'] as num? ?? 1) > 1
+                                  ? (c['fatorMultiplicador'] as num).toStringAsFixed(2)
+                                  : '—',
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(
+                            (c['pontuacao'] as num?)?.toStringAsFixed(2) ?? '-',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ])),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TH extends StatelessWidget {
+  final String text;
+  const _TH(this.text);
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      );
 }
 
 class _StatusBanner extends StatelessWidget {

@@ -40,9 +40,17 @@ public class PublicoController : TorneioBaseController
 
         if (torneio.Status is "Liberado" or "Finalizado")
         {
-            var capturas = (await _capturaServico.ListarTodos())
+            var todasCapturas = (await _capturaServico.ListarTodos())
                 .Where(c => !c.Invalidada)
                 .ToList();
+
+            // Se ativado, cada pescador contribui apenas com sua maior captura
+            var capturas = torneio.ApenasMaiorCapturaPorPescador
+                ? todasCapturas
+                    .GroupBy(c => c.MembroId)
+                    .Select(g => g.OrderByDescending(c => c.Pontuacao).First())
+                    .ToList()
+                : todasCapturas;
 
             var equipes  = (await _equipeServico.ListarTodos()).ToDictionary(e => e.Id);
             var membros  = (await _membroServico.ListarTodos()).ToDictionary(m => m.Id);

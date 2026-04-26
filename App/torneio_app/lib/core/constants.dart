@@ -47,6 +47,7 @@ class ApiConstants {
   static String financeiroDoacoes(String slug) => '$_base/api/$slug/financeiro/doacoes';
   static String financeiroCustos(String slug) => '$_base/api/$slug/financeiro/custos';
   static String financeiroChecklist(String slug) => '$_base/api/$slug/financeiro/checklist';
+  static String rankingPublico(String slug) => '$_base/api/$slug/ranking';
   static String relatoriosGanhadores(String slug) => '$_base/api/$slug/relatorios/ganhadores';
   static String relatorioMaioresCapturasPdf(String slug, int quantidade) =>
       '$_base/api/$slug/relatorios/maiores-capturas?quantidade=$quantidade';

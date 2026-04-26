@@ -55,6 +55,7 @@ public class AtualizarTorneioDto
 
     public bool PremiacaoPorEquipe { get; init; } = true;
     public bool PremiacaoPorMembro { get; init; } = false;
+    public bool ApenasMaiorCapturaPorPescador { get; init; } = false;
 
     [System.ComponentModel.DataAnnotations.RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "Cor inválida. Use o formato #RRGGBB.")]
     public string? CorPrimaria { get; init; }

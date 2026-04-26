@@ -160,9 +160,16 @@
             <input asp-for="PremiacaoPorEquipe" class="form-check-input" type="checkbox" />
             <label asp-for="PremiacaoPorEquipe" class="form-check-label">Premiar por @Model.LabelEquipePlural <small class="text-muted">(ranking de equipes)</small></label>
         </div>
-        <div class="form-check mb-3">
+        <div class="form-check mb-2">
             <input asp-for="PremiacaoPorMembro" class="form-check-input" type="checkbox" />
             <label asp-for="PremiacaoPorMembro" class="form-check-label">Premiar por @Model.LabelMembroPlural <small class="text-muted">(ranking individual)</small></label>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="ApenasMaiorCapturaPorPescador" class="form-check-input" type="checkbox" />
+            <label asp-for="ApenasMaiorCapturaPorPescador" class="form-check-label">
+                Apenas a maior captura por @Model.LabelMembro.ToLower() no ranking
+                <small class="text-muted d-block">Quando ativado, cada @Model.LabelMembro.ToLower() contribui somente com sua melhor captura. Uma nova captura maior substitui a anterior.</small>
+            </label>
         </div>
 
         <div class="form-section-title">Tema Visual</div>

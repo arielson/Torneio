@@ -33,7 +33,16 @@ public class RelatorioController : BaseController
         if (torneio is null)
             return NotFound(new { erro = "Torneio não encontrado." });
 
-        var capturas = (await capturaServico.ListarTodos()).ToList();
+        var todasCapturas = (await capturaServico.ListarTodos())
+            .Where(c => !c.Invalidada).ToList();
+
+        // Aplica regra de maior captura por pescador quando configurado
+        var capturas = torneio.ApenasMaiorCapturaPorPescador
+            ? todasCapturas
+                .GroupBy(c => c.MembroId)
+                .Select(g => g.OrderByDescending(c => c.Pontuacao).First())
+                .ToList()
+            : todasCapturas;
 
         IEnumerable<object> equipesGanhadoras = [];
         IEnumerable<object> membrosGanhadores = [];

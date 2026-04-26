@@ -93,6 +93,7 @@ public class TorneioServico : ITorneioServico
             dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro,
             dto.PermitirRegistroPublicoMembro,
             dto.QtdGanhadores, dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
+            dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
 
         await _repositorio.Adicionar(entidade);
@@ -117,6 +118,7 @@ public class TorneioServico : ITorneioServico
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
             dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.PermitirRegistroPublicoMembro, dto.QtdGanhadores,
             dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
+            dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
 
         await _repositorio.Atualizar(entidade);
@@ -229,6 +231,7 @@ public class TorneioServico : ITorneioServico
             origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline, origem.ExibirModuloFinanceiro,
             origem.PermitirRegistroPublicoMembro,
             origem.QtdGanhadores, origem.PremiacaoPorEquipe, origem.PremiacaoPorMembro,
+            origem.ApenasMaiorCapturaPorPescador,
             origem.LogoUrl, origem.CorPrimaria);
 
         await _repositorio.Adicionar(novoTorneio);
@@ -324,6 +327,7 @@ public class TorneioServico : ITorneioServico
         QtdGanhadores = e.QtdGanhadores,
         PremiacaoPorEquipe = e.PremiacaoPorEquipe,
         PremiacaoPorMembro = e.PremiacaoPorMembro,
+        ApenasMaiorCapturaPorPescador = e.ApenasMaiorCapturaPorPescador,
         TipoTorneio = e.TipoTorneio,
         CriadoEm = e.CriadoEm,
         CorPrimaria = e.CorPrimaria,

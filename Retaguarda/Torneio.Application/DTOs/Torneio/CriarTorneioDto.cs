@@ -37,6 +37,7 @@ public class CriarTorneioDto
 
     public bool PremiacaoPorEquipe { get; init; } = true;
     public bool PremiacaoPorMembro { get; init; } = true;
+    public bool ApenasMaiorCapturaPorPescador { get; init; } = false;
 
     [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "Cor inválida. Use o formato #RRGGBB.")]
     public string? CorPrimaria { get; init; }

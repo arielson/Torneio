@@ -47,6 +47,9 @@ public class TorneioEntity
     public bool PremiacaoPorEquipe { get; private set; } = true;
     public bool PremiacaoPorMembro { get; private set; } = false;
 
+    // Regra: cada pescador contabiliza apenas sua maior captura no ranking
+    public bool ApenasMaiorCapturaPorPescador { get; private set; } = false;
+
     // Tipo (define terminologia fixa)
     public TipoTorneio TipoTorneio { get; private set; } = TipoTorneio.Pesca;
 
@@ -80,6 +83,7 @@ public class TorneioEntity
         int qtdGanhadores = 3,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
+        bool apenasMaiorCapturaPorPescador = false,
         string? logoUrl = null,
         string? corPrimaria = null,
         decimal valorPorMembro = 0,
@@ -116,6 +120,7 @@ public class TorneioEntity
             QtdGanhadores = qtdGanhadores,
             PremiacaoPorEquipe = premiacaoPorEquipe,
             PremiacaoPorMembro = premiacaoPorMembro,
+            ApenasMaiorCapturaPorPescador = apenasMaiorCapturaPorPescador,
             CorPrimaria = corPrimaria,
             ValorPorMembro = valorPorMembro,
             QuantidadeParcelas = quantidadeParcelas,
@@ -172,6 +177,7 @@ public class TorneioEntity
         int qtdGanhadores,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
+        bool apenasMaiorCapturaPorPescador = false,
         string? logoUrl = null,
         string? corPrimaria = null,
         decimal? valorPorMembro = null,
@@ -198,6 +204,7 @@ public class TorneioEntity
         QtdGanhadores = qtdGanhadores;
         PremiacaoPorEquipe = premiacaoPorEquipe;
         PremiacaoPorMembro = premiacaoPorMembro;
+        ApenasMaiorCapturaPorPescador = apenasMaiorCapturaPorPescador;
         if (logoUrl != null) LogoUrl = logoUrl;
         CorPrimaria = corPrimaria;
         if (valorPorMembro.HasValue) ValorPorMembro = valorPorMembro.Value;
