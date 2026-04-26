@@ -225,7 +225,6 @@ class _TorneioScreenState extends State<TorneioScreen> {
                 _RankingSection(
                   data: _rankingData!,
                   config: config,
-                  storageBase: AppConfig.mediaBasePath,
                 ),
             ],
 
@@ -246,15 +245,10 @@ class _TorneioScreenState extends State<TorneioScreen> {
 class _RankingSection extends StatelessWidget {
   final Map<String, dynamic> data;
   final dynamic config;
-  final String storageBase;
 
-  const _RankingSection({required this.data, required this.config, required this.storageBase});
+  const _RankingSection({required this.data, required this.config});
 
-  String _resolverFoto(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http')) return url;
-    return '$storageBase/${url.replaceAll(RegExp(r'^/+'), '')}';
-  }
+  String _resolverFoto(String? url) => AppConfig.resolverUrl(url) ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +318,6 @@ class _RankingSection extends StatelessWidget {
               medida: medida,
               usarFator: usarFator,
               labelItem: config.labelItem as String,
-              storageBase: storageBase,
             );
           }),
         ],
@@ -402,7 +395,6 @@ class _MembroTile extends StatefulWidget {
   final String medida;
   final bool usarFator;
   final String labelItem;
-  final String storageBase;
 
   const _MembroTile({
     required this.posicao,
@@ -414,7 +406,6 @@ class _MembroTile extends StatefulWidget {
     required this.medida,
     required this.usarFator,
     required this.labelItem,
-    required this.storageBase,
   });
 
   @override
@@ -424,11 +415,7 @@ class _MembroTile extends StatefulWidget {
 class _MembroTileState extends State<_MembroTile> {
   bool _expandido = false;
 
-  String _resolverFoto(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http')) return url;
-    return '${widget.storageBase}/${url.replaceAll(RegExp(r'^/+'), '')}';
-  }
+  String _resolverFoto(String? url) => AppConfig.resolverUrl(url) ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -445,7 +432,12 @@ class _MembroTileState extends State<_MembroTile> {
               children: [
                 _Medalha(widget.posicao),
                 const SizedBox(width: 8),
-                _Avatar(fotoUrl: widget.fotoUrl, icon: Icons.person),
+                GestureDetector(
+                  onTap: widget.fotoUrl.isNotEmpty
+                      ? () => _abrirFoto(context, widget.fotoUrl)
+                      : null,
+                  child: _Avatar(fotoUrl: widget.fotoUrl, icon: Icons.person),
+                ),
               ],
             ),
             title: Text(widget.nome, style: const TextStyle(fontWeight: FontWeight.w600)),
