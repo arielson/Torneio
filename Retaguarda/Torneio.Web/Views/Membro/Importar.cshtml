@@ -76,6 +76,17 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalFotoImport" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent shadow-none">
+            <div class="modal-body p-0 text-center">
+                <img id="modalFotoImportImg" src="" alt="" class="img-fluid rounded" style="max-height:80vh;" />
+                <p id="modalFotoImportNome" class="text-white mt-2 fw-semibold fs-5 mb-0"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
     (() => {
@@ -216,8 +227,10 @@
                 const img = document.createElement('img');
                 img.src = p.fotoUrl;
                 img.alt = p.nome;
-                img.className = 'rounded-circle';
-                img.style.cssText = 'width:36px;height:36px;object-fit:cover;';
+                img.className = 'rounded-circle foto-thumb-import';
+                img.style.cssText = 'width:36px;height:36px;object-fit:cover;cursor:pointer;';
+                img.dataset.src  = p.fotoUrl;
+                img.dataset.nome = p.nome;
                 img.onerror = () => { img.style.display = 'none'; };
                 tdFoto.appendChild(img);
             } else {
@@ -261,6 +274,20 @@
                 loadingMsg.textContent = `Preparando ${lista.length} pescador(es)...`;
 
                 lista.forEach(p => tabelaBody.appendChild(buildRow(p)));
+
+                // Zoom de foto
+                const modalFotoEl = document.getElementById('modalFotoImport');
+                const modalFoto   = new bootstrap.Modal(modalFotoEl);
+                const modalImg    = document.getElementById('modalFotoImportImg');
+                const modalNome   = document.getElementById('modalFotoImportNome');
+                tabelaBody.querySelectorAll('.foto-thumb-import').forEach(img => {
+                    img.addEventListener('click', () => {
+                        modalImg.src = img.dataset.src;
+                        modalImg.alt = img.dataset.nome;
+                        modalNome.textContent = img.dataset.nome;
+                        modalFoto.show();
+                    });
+                });
 
                 await precarregarImagens(lista.map(p => p.fotoUrl));
 

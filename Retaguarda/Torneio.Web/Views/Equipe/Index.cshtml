@@ -10,6 +10,7 @@
     var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
+    var storageBase = ViewBag.StorageBaseUrl as string ?? "";
 }
 
 <div class="page-header">
@@ -54,6 +55,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th style="width:48px"></th>
                         <th>Nome</th>
                         <th>Capitão</th>
                         @if (exibirVagas)
@@ -76,9 +78,40 @@
                 <tbody>
                     @foreach (var e in lista)
                     {
+                        var fotoEquipe = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
+                            : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
+                        var fotoCapitao = string.IsNullOrWhiteSpace(e.FotoCapitaoUrl) ? null
+                            : (e.FotoCapitaoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoCapitaoUrl : $"{storageBase}/{e.FotoCapitaoUrl.TrimStart('/')}");
                         <tr>
+                            <td>
+                                @if (fotoEquipe != null)
+                                {
+                                    <img src="@fotoEquipe" alt="@e.Nome"
+                                         class="rounded foto-thumb"
+                                         style="width:36px;height:36px;object-fit:cover;cursor:pointer;"
+                                         data-src="@fotoEquipe" data-nome="@e.Nome"
+                                         onerror="this.replaceWith(document.getElementById('avatar-tpl').content.cloneNode(true))" />
+                                }
+                                else
+                                {
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded bg-secondary text-white"
+                                          style="width:36px;height:36px;font-size:.85rem">
+                                        <i class="bi bi-people"></i>
+                                    </span>
+                                }
+                            </td>
                             <td class="fw-semibold">@e.Nome</td>
-                            <td>@e.Capitao</td>
+                            <td>
+                                @if (fotoCapitao != null)
+                                {
+                                    <img src="@fotoCapitao" alt="@e.Capitao"
+                                         class="rounded-circle foto-thumb me-1"
+                                         style="width:28px;height:28px;object-fit:cover;cursor:pointer;vertical-align:middle;"
+                                         data-src="@fotoCapitao" data-nome="@e.Capitao"
+                                         onerror="this.style.display='none'" />
+                                }
+                                @e.Capitao
+                            </td>
                             @if (exibirVagas)
                             {
                                 <td>@e.QtdVagas</td>
@@ -123,3 +156,39 @@
         </div>
     }
 </div>
+
+<template id="avatar-tpl">
+    <span class="d-inline-flex align-items-center justify-content-center rounded bg-secondary text-white"
+          style="width:36px;height:36px;font-size:.85rem">
+        <i class="bi bi-people"></i>
+    </span>
+</template>
+
+<div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent shadow-none">
+            <div class="modal-body p-0 text-center">
+                <img id="modalFotoImg" src="" alt="" class="img-fluid rounded" style="max-height:80vh;" />
+                <p id="modalFotoNome" class="text-white mt-2 fw-semibold fs-5 mb-0"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (() => {
+        const modal     = new bootstrap.Modal(document.getElementById('modalFoto'));
+        const modalImg  = document.getElementById('modalFotoImg');
+        const modalNome = document.getElementById('modalFotoNome');
+        document.querySelectorAll('.foto-thumb').forEach(img => {
+            img.addEventListener('click', () => {
+                modalImg.src = img.dataset.src;
+                modalImg.alt = img.dataset.nome;
+                modalNome.textContent = img.dataset.nome;
+                modal.show();
+            });
+        });
+    })();
+    </script>
+}
