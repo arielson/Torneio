@@ -159,6 +159,7 @@ public class PatrocinadorController : TorneioBaseController
     {
         var patrocinador = await _servico.ObterPorId(id);
         await _servico.Remover(id);
+        await RemoverFotoAsync(patrocinador?.FotoUrl);
 
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto

@@ -115,9 +115,11 @@ public class TorneioAdminController : TorneioBaseController
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
+    [Authorize(Policy = "AdminGeral")]
     [HttpGet("clonar")]
     public IActionResult Clonar() => View();
 
+    [Authorize(Policy = "AdminGeral")]
     [HttpPost("clonar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Clonar(string novoSlug, string novoNome)

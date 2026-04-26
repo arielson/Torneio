@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using Torneio.Application;
 using Torneio.Infrastructure;
 using Torneio.Infrastructure.Seed;
@@ -47,6 +48,7 @@ builder.Services.AddControllersWithViews(options =>
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<FormOptions>(o => o.ValueCountLimit = 1_048_576);
 
 var app = builder.Build();
 

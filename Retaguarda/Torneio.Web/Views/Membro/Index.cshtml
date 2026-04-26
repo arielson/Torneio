@@ -7,6 +7,7 @@
     var exibirFinanceiro = torneio?.ExibirModuloFinanceiro ?? true;
     ViewData["Title"] = labelPlural;
     var lista = Model.ToList();
+    var storageBase = ViewBag.StorageBaseUrl as string ?? "";
 }
 
 <div class="page-header">
@@ -14,6 +15,19 @@
         <h1>@labelPlural</h1>
     </div>
     <div class="page-header-actions">
+        @if (User.HasClaim("perfil", "AdminGeral"))
+        {
+            <a href="/@slug/membros/importar" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-cloud-download me-1"></i>Importar do PescaPro
+            </a>
+            <form asp-controller="Membro" asp-action="LimparTodos" asp-route-slug="@slug" method="post" class="d-inline"
+                  onsubmit="return confirm('Remover TODOS os @labelPlural.ToLower() deste torneio? Esta ação não pode ser desfeita.')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i>Limpar todos
+                </button>
+            </form>
+        }
         <a href="/@slug/membros/criar" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i>Novo @label
         </a>
@@ -25,7 +39,7 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-person me-2"></i>@labelPlural cadastrados</h5>
+        <h5><i class="bi bi-person me-2"></i>@labelPlural cadastrados <span class="badge text-bg-secondary ms-1">@lista.Count</span></h5>
     </div>
     @if (!lista.Any())
     {
@@ -36,9 +50,10 @@
     else
     {
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover align-middle">
                 <thead>
                     <tr>
+                        <th style="width:48px"></th>
                         <th>Nome</th>
                         <th>Celular</th>
                         @if (exibirFinanceiro)
@@ -51,7 +66,29 @@
                 <tbody>
                     @foreach (var m in lista)
                     {
+                        var fotoUrl = string.IsNullOrWhiteSpace(m.FotoUrl)
+                            ? null
+                            : (m.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? m.FotoUrl : $"{storageBase}/{m.FotoUrl.TrimStart('/')}");
                         <tr>
+                            <td>
+                                @if (fotoUrl != null)
+                                {
+                                    <img src="@fotoUrl"
+                                         alt="@m.Nome"
+                                         class="rounded-circle foto-membro"
+                                         style="width:36px;height:36px;object-fit:cover;cursor:pointer;"
+                                         data-nome="@m.Nome"
+                                         data-src="@fotoUrl"
+                                         onerror="this.replaceWith(document.getElementById('avatar-tpl').content.cloneNode(true))" />
+                                }
+                                else
+                                {
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+                                          style="width:36px;height:36px;font-size:.85rem">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                }
+                            </td>
                             <td class="fw-semibold">@m.Nome</td>
                             <td>@(string.IsNullOrWhiteSpace(m.Celular) ? "-" : m.Celular)</td>
                             @if (exibirFinanceiro)
@@ -78,3 +115,40 @@
         </div>
     }
 </div>
+
+<template id="avatar-tpl">
+    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+          style="width:36px;height:36px;font-size:.85rem">
+        <i class="bi bi-person"></i>
+    </span>
+</template>
+
+<div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent shadow-none">
+            <div class="modal-body p-0 text-center">
+                <img id="modalFotoImg" src="" alt="" class="img-fluid rounded" style="max-height:80vh;" />
+                <p id="modalFotoNome" class="text-white mt-2 fw-semibold fs-5 mb-0"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (() => {
+        const modal     = new bootstrap.Modal(document.getElementById('modalFoto'));
+        const modalImg  = document.getElementById('modalFotoImg');
+        const modalNome = document.getElementById('modalFotoNome');
+
+        document.querySelectorAll('.foto-membro').forEach(img => {
+            img.addEventListener('click', () => {
+                modalImg.src      = img.dataset.src;
+                modalImg.alt      = img.dataset.nome;
+                modalNome.textContent = img.dataset.nome;
+                modal.show();
+            });
+        });
+    })();
+    </script>
+}

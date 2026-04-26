@@ -35,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
+        // HttpClient para integrações externas
+        services.AddHttpClient("PescaPro");
+
         // Serviços de aplicação implementados na Infrastructure
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITenantResolver, TenantResolver>();
@@ -43,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<ISorteioGrupoServico, SorteioGrupoServico>();
         services.AddScoped<IRelatorioServico, RelatorioServico>();
         services.AddScoped<ISmsVerificacaoServico, TwilioSmsVerificacaoServico>();
+        services.AddScoped<IPescaProImportacaoServico, PescaProImportacaoServico>();
 
         // Repositórios
         services.AddScoped<ITorneioRepositorio, TorneioRepositorio>();
@@ -83,6 +87,7 @@ public static class DependencyInjection
                 : Path.GetFullPath(options.BasePath, contentRootPath);
         });
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
+        services.Configure<PescaProOptions>(configuration.GetSection(PescaProOptions.Section));
 
         return services;
     }

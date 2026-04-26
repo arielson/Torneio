@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Log;
 using Torneio.Application.DTOs.Membro;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
 
 namespace Torneio.Web.Controllers;
@@ -14,13 +15,17 @@ public class MembroController : TorneioBaseController
     private readonly IMembroServico _servico;
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _log;
+    private readonly IPescaProImportacaoServico _pescaPro;
+    private readonly IFileStorage _fileStorage;
 
-    public MembroController(TenantContext tenantContext, IMembroServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log)
+    public MembroController(TenantContext tenantContext, IMembroServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log, IPescaProImportacaoServico pescaPro, IFileStorage fileStorage)
         : base(tenantContext)
     {
         _servico = servico;
         _torneioServico = torneioServico;
         _log = log;
+        _pescaPro = pescaPro;
+        _fileStorage = fileStorage;
     }
 
     private async Task SetTorneioViewBag()
@@ -195,12 +200,122 @@ public class MembroController : TorneioBaseController
         }
     }
 
+    [Authorize(Policy = "AdminGeral")]
+    [HttpGet("importar")]
+    public async Task<IActionResult> Importar()
+    {
+        await SetTorneioViewBag();
+
+        if (!_pescaPro.Configurado)
+        {
+            TempData["Erro"] = "Integracao PescaPro nao configurada. Defina PescaPro:ApiUrl e PescaPro:ApiKey no appsettings.json.";
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+        }
+
+        return View();
+    }
+
+    [Authorize(Policy = "AdminGeral")]
+    [HttpGet("importar/dados")]
+    public async Task<IActionResult> ImportarDados()
+    {
+        try
+        {
+            var pescadores = await _pescaPro.ListarPescadores();
+            var membrosExistentes = (await _servico.ListarTodos())
+                .Select(m => m.Nome.Trim().ToLowerInvariant())
+                .ToHashSet();
+
+            var resultado = pescadores
+                .OrderBy(p => p.Nome, StringComparer.CurrentCultureIgnoreCase)
+                .Select(p => new
+                {
+                    id = p.Id,
+                    nome = p.Nome,
+                    celular = p.Celular,
+                    fotoUrl = p.FotoUrl,
+                    jaExiste = membrosExistentes.Contains(p.Nome.Trim().ToLowerInvariant())
+                });
+
+            return Json(resultado);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { erro = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "AdminGeral")]
+    [HttpPost("importar")]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> Importar([FromBody] List<PescadorImportacaoItemDto> pescadores)
+    {
+        if (pescadores == null || pescadores.Count == 0)
+            return BadRequest(new { erro = "Nenhum pescador selecionado." });
+
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        var importados = 0;
+
+        foreach (var p in pescadores)
+        {
+            try
+            {
+                var fotoLocal = await BaixarFotoExternaAsync(p.FotoUrl, "fotos/membros");
+                await _servico.Criar(new CriarMembroDto
+                {
+                    TorneioId = TenantContext.TorneioId,
+                    Nome = p.Nome,
+                    Celular = p.Celular,
+                    FotoUrl = fotoLocal
+                });
+                importados++;
+            }
+            catch
+            {
+                // ignora duplicatas ou erros individuais e continua importando os demais
+            }
+        }
+
+        var nomes = string.Join(", ", pescadores.Select(p => p.Nome));
+        if (nomes.Length > 900) nomes = nomes[..900] + "...";
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Membros, Acao = "ImportarMembrosPescaPro",
+            Descricao = $"{importados}/{pescadores.Count} importados do PescaPro. Nomes: {nomes}",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
+
+        return Ok(new { importados, mensagem = $"{importados} pescador(es) importado(s) com sucesso." });
+    }
+
+    [Authorize(Policy = "AdminGeral")]
+    [HttpPost("limpar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LimparTodos()
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        var (total, fotos) = await _servico.RemoverTodos();
+        foreach (var foto in fotos)
+            await _fileStorage.RemoverAsync(foto);
+        TempData["Sucesso"] = $"{total} pescador(es) removido(s).";
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Membros, Acao = "LimparMembros",
+            Descricao = $"Todos os pescadores removidos ({total} total).",
+            UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+        });
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
     [HttpPost("{id:guid}/remover")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)
     {
         var membro = await _servico.ObterPorId(id);
         await _servico.Remover(id);
+        await RemoverFotoAsync(membro?.FotoUrl);
         TempData["Sucesso"] = "Membro removido.";
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto

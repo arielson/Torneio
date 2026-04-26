@@ -1,0 +1,287 @@
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var labelMembro = torneio?.LabelMembro ?? "Membro";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
+    ViewData["Title"] = $"Importar {labelMembroPlural}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Importar @labelMembroPlural do PescaPro</h1>
+    </div>
+</div>
+<a href="/@slug/membros" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelMembroPlural
+</a>
+
+<div id="loadingState" class="content-card mb-3">
+    <div class="card-body-pad d-flex flex-column align-items-center justify-content-center py-5 gap-3">
+        <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="text-muted mb-0" id="loadingMsg">Buscando pescadores no PescaPro...</p>
+    </div>
+</div>
+
+<div id="erroState" class="content-card mb-3" style="display:none">
+    <div class="card-body-pad text-danger" id="erroMsg"></div>
+</div>
+
+<div id="mainState" style="display:none">
+    <div class="content-card mb-3">
+        <div class="card-header-bar d-flex justify-content-between align-items-center">
+            <h5 class="mb-0" id="cabecalhoContagem">
+                <i class="bi bi-cloud-download me-2"></i>
+            </h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSelecionarTodos">
+                    <i class="bi bi-check-all me-1"></i>Selecionar todos
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnDesmarcarTodos">
+                    <i class="bi bi-x-lg me-1"></i>Desmarcar todos
+                </button>
+            </div>
+        </div>
+
+        <div id="semPescadores" class="card-body-pad text-muted" style="display:none">
+            Nenhum pescador disponível para importação.
+        </div>
+
+        <div id="tabelaWrapper" style="display:none">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:40px">
+                                <input type="checkbox" id="checkTodos" class="form-check-input" />
+                            </th>
+                            <th style="width:48px"></th>
+                            <th>Nome</th>
+                            <th>Celular</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBody"></tbody>
+                </table>
+            </div>
+
+            <div class="card-body-pad border-top d-flex justify-content-between align-items-center">
+                <span class="text-muted small" id="contadorSelecionados">0 selecionado(s)</span>
+                <button type="button" class="btn btn-primary" id="btnImportar" disabled>
+                    <i class="bi bi-download me-1"></i>Importar selecionados
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (() => {
+        const slug         = '@slug';
+        const loadingState = document.getElementById('loadingState');
+        const loadingMsg    = document.getElementById('loadingMsg');
+        const erroState     = document.getElementById('erroState');
+        const erroMsg       = document.getElementById('erroMsg');
+        const mainState     = document.getElementById('mainState');
+        const cabecalho     = document.getElementById('cabecalhoContagem');
+        const tabelaBody    = document.getElementById('tabelaBody');
+        const tabelaWrapper = document.getElementById('tabelaWrapper');
+        const semPescadores = document.getElementById('semPescadores');
+        const checkTodos    = document.getElementById('checkTodos');
+        const contador      = document.getElementById('contadorSelecionados');
+        const btnImportar   = document.getElementById('btnImportar');
+
+        function checkboxes() {
+            return [...document.querySelectorAll('.chk-pescador:not([disabled])')];
+        }
+
+        function atualizarContador() {
+            const sel   = checkboxes().filter(c => c.checked);
+            const total = checkboxes().length;
+            contador.textContent = `${sel.length} selecionado(s)`;
+            btnImportar.disabled = sel.length === 0;
+            checkTodos.indeterminate = sel.length > 0 && sel.length < total;
+            checkTodos.checked = total > 0 && sel.length === total;
+        }
+
+        checkTodos.addEventListener('change', () => {
+            checkboxes().forEach(c => { c.checked = checkTodos.checked; });
+            atualizarContador();
+        });
+
+        document.getElementById('btnSelecionarTodos').addEventListener('click', () => {
+            checkboxes().forEach(c => { c.checked = true; });
+            atualizarContador();
+        });
+
+        document.getElementById('btnDesmarcarTodos').addEventListener('click', () => {
+            checkboxes().forEach(c => { c.checked = false; });
+            atualizarContador();
+        });
+
+        btnImportar.addEventListener('click', async () => {
+            const selecionados = checkboxes().filter(c => c.checked);
+            if (selecionados.length === 0) return;
+
+            const total = selecionados.length;
+            const LOTE = 50;
+            let importados = 0;
+
+            btnImportar.disabled = true;
+            document.getElementById('btnSelecionarTodos').disabled = true;
+            document.getElementById('btnDesmarcarTodos').disabled = true;
+
+            const atualizarProgresso = () => {
+                btnImportar.innerHTML =
+                    `<span class="spinner-border spinner-border-sm me-1"></span>` +
+                    `Importando... ${importados} de ${total}`;
+                contador.textContent = `${importados} de ${total} importado(s)`;
+            };
+            atualizarProgresso();
+
+            try {
+                for (let i = 0; i < selecionados.length; i += LOTE) {
+                    const lote = selecionados.slice(i, i + LOTE).map(chk => ({
+                        pescaProId: chk.dataset.id,
+                        nome:       chk.dataset.nome,
+                        celular:    chk.dataset.celular || null,
+                        fotoUrl:    chk.dataset.fotoUrl || null
+                    }));
+
+                    const resp = await fetch(`/${slug}/membros/importar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(lote)
+                    });
+
+                    if (!resp.ok) {
+                        const body = await resp.json().catch(() => ({ erro: `HTTP ${resp.status}` }));
+                        throw new Error(body.erro ?? `HTTP ${resp.status}`);
+                    }
+
+                    const result = await resp.json();
+                    importados += result.importados;
+                    atualizarProgresso();
+                }
+
+                window.location.href = `/${slug}/membros`;
+            } catch (err) {
+                btnImportar.disabled = false;
+                btnImportar.innerHTML = '<i class="bi bi-download me-1"></i>Importar selecionados';
+                document.getElementById('btnSelecionarTodos').disabled = false;
+                document.getElementById('btnDesmarcarTodos').disabled = false;
+                erroMsg.textContent = `Erro ao importar: ${err.message}`;
+                erroState.style.display = '';
+            }
+        });
+
+        function precarregarImagens(urls) {
+            const unicas = [...new Set(urls.filter(Boolean))];
+            if (unicas.length === 0) return Promise.resolve();
+            let carregadas = 0;
+            const total = unicas.length;
+            return new Promise(resolve => {
+                unicas.forEach(url => {
+                    const img = new Image();
+                    img.onload = img.onerror = () => {
+                        carregadas++;
+                        loadingMsg.textContent = `Carregando imagens... ${carregadas}/${total}`;
+                        if (carregadas === total) resolve();
+                    };
+                    img.src = url;
+                });
+            });
+        }
+
+        function buildRow(p) {
+            const tr = document.createElement('tr');
+            if (p.jaExiste) tr.classList.add('table-secondary');
+
+            const tdChk = document.createElement('td');
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.className = 'form-check-input chk-pescador';
+            chk.dataset.id      = p.id;
+            chk.dataset.nome    = p.nome;
+            chk.dataset.celular = p.celular ?? '';
+            chk.dataset.fotoUrl = p.fotoUrl ?? '';
+            if (p.jaExiste) chk.disabled = true;
+            chk.addEventListener('change', atualizarContador);
+            tdChk.appendChild(chk);
+
+            const tdFoto = document.createElement('td');
+            if (p.fotoUrl) {
+                const img = document.createElement('img');
+                img.src = p.fotoUrl;
+                img.alt = p.nome;
+                img.className = 'rounded-circle';
+                img.style.cssText = 'width:36px;height:36px;object-fit:cover;';
+                img.onerror = () => { img.style.display = 'none'; };
+                tdFoto.appendChild(img);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'd-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white';
+                span.style.cssText = 'width:36px;height:36px;font-size:.8rem';
+                span.innerHTML = '<i class="bi bi-person"></i>';
+                tdFoto.appendChild(span);
+            }
+
+            const tdNome = document.createElement('td');
+            tdNome.className = 'fw-semibold align-middle';
+            tdNome.textContent = p.nome;
+
+            const tdCelular = document.createElement('td');
+            tdCelular.className = 'align-middle';
+            tdCelular.textContent = p.celular || '-';
+
+            const tdSit = document.createElement('td');
+            tdSit.className = 'align-middle';
+            const badge = document.createElement('span');
+            badge.className = p.jaExiste ? 'badge text-bg-secondary' : 'badge text-bg-success';
+            badge.textContent = p.jaExiste ? 'Já cadastrado' : 'Novo';
+            tdSit.appendChild(badge);
+
+            tr.append(tdChk, tdFoto, tdNome, tdCelular, tdSit);
+            return tr;
+        }
+
+        async function carregar() {
+            try {
+                const resp = await fetch(`/${slug}/membros/importar/dados`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!resp.ok) {
+                    const body = await resp.json().catch(() => ({ erro: `HTTP ${resp.status}` }));
+                    throw new Error(body.erro ?? `HTTP ${resp.status}`);
+                }
+
+                const lista = await resp.json();
+                loadingMsg.textContent = `Preparando ${lista.length} pescador(es)...`;
+
+                lista.forEach(p => tabelaBody.appendChild(buildRow(p)));
+
+                await precarregarImagens(lista.map(p => p.fotoUrl));
+
+                cabecalho.innerHTML = `<i class="bi bi-cloud-download me-2"></i>${lista.length} pescador(es) encontrado(s) no PescaPro`;
+                loadingState.style.display = 'none';
+                mainState.style.display = '';
+
+                if (lista.length === 0) {
+                    semPescadores.style.display = '';
+                } else {
+                    tabelaWrapper.style.display = '';
+                    atualizarContador();
+                }
+            } catch (err) {
+                loadingState.style.display = 'none';
+                erroMsg.textContent = `Erro ao carregar pescadores: ${err.message}`;
+                erroState.style.display = '';
+            }
+        }
+
+        carregar();
+    })();
+    </script>
+}

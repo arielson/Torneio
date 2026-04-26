@@ -174,6 +174,7 @@ public class FiscalController : TorneioBaseController
     {
         var fiscal = await _servico.ObterPorId(id);
         await _servico.Remover(id);
+        await RemoverFotoAsync(fiscal?.FotoUrl);
         TempData["Sucesso"] = "Fiscal removido.";
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto

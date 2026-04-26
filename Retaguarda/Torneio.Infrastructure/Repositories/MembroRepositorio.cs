@@ -33,6 +33,31 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
             NormalizarCelular(m.Celular) == celularNormalizado);
     }
 
+    public async Task<(int total, List<string> fotosParaRemover)> RemoverTodos(Guid torneioId)
+    {
+        var membros = await _dbSet.Where(m => m.TorneioId == torneioId).ToListAsync();
+        if (membros.Count == 0) return (0, []);
+
+        var membroIds = membros.Select(m => m.Id).ToHashSet();
+        var capturas = await _context.Capturas
+            .Where(c => c.TorneioId == torneioId && membroIds.Contains(c.MembroId))
+            .ToListAsync();
+
+        var fotos = membros
+            .Select(m => m.FotoUrl)
+            .Concat(capturas.Select(c => c.FotoUrl))
+            .Where(f => !string.IsNullOrWhiteSpace(f) && !f!.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            .Cast<string>()
+            .ToList();
+
+        if (capturas.Count > 0)
+            _context.Capturas.RemoveRange(capturas);
+
+        _dbSet.RemoveRange(membros);
+        await _context.SaveChangesAsync();
+        return (membros.Count, fotos);
+    }
+
     public async Task<Membro?> ObterPorUsuario(Guid torneioId, string usuario) =>
         await _dbSet.IgnoreQueryFilters()
             .FirstOrDefaultAsync(m =>

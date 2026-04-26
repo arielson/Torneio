@@ -49,7 +49,7 @@ public class MembroServico : IMembroServico
     public async Task<IEnumerable<MembroDto>> ListarTodos()
     {
         var lista = await _repositorio.ListarPorTorneio(_tenantContext.TorneioId);
-        return lista.Select(ParaDto);
+        return lista.OrderBy(m => m.Nome, StringComparer.CurrentCultureIgnoreCase).Select(ParaDto);
     }
 
     public async Task<MembroDto> Criar(CriarMembroDto dto)
@@ -100,6 +100,9 @@ public class MembroServico : IMembroServico
         await _repositorio.Remover(entidade.Id);
         await _financeiroServico.SincronizarParcelas(entidade.TorneioId);
     }
+
+    public async Task<(int total, List<string> fotosParaRemover)> RemoverTodos() =>
+        await _repositorio.RemoverTodos(_tenantContext.TorneioId);
 
     public async Task<RecuperacaoSenhaMembroSolicitadaDto> SolicitarRecuperacaoSenha(
         Guid torneioId,

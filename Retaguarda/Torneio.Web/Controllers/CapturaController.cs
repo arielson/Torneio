@@ -191,6 +191,7 @@ public class CapturaController : TorneioBaseController
     {
         var captura = await _capturaServico.ObterPorId(id);
         await _capturaServico.Remover(id);
+        await RemoverFotoAsync(captura?.FotoUrl);
         TempData["Sucesso"] = "Captura removida.";
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto

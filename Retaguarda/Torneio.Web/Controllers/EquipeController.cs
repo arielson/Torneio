@@ -244,6 +244,8 @@ public class EquipeController : TorneioBaseController
     {
         var equipe = await _servico.ObterPorId(id);
         await _servico.Remover(id);
+        await RemoverFotoAsync(equipe?.FotoUrl);
+        await RemoverFotoAsync(equipe?.FotoCapitaoUrl);
         TempData["Sucesso"] = "Equipe removida.";
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto
