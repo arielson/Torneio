@@ -87,6 +87,31 @@ class _TorneioScreenState extends State<TorneioScreen> {
     super.dispose();
   }
 
+  /// Retorna os botões extras da barra fixa inferior.
+  /// Vazio quando [permitirRegistroPublicoMembro] é false — sem barra.
+  List<Widget> _buildBotoesExtras(BuildContext context, dynamic config) {
+    if (!config.permitirRegistroPublicoMembro) return [];
+    return [
+      OutlinedButton.icon(
+        icon: const Icon(Icons.badge_outlined),
+        label: Text('Entrar como ${config.labelMembro.toLowerCase()}'),
+        onPressed: () => Navigator.pushNamed(context, '/login', arguments: 'Membro'),
+      ),
+      const SizedBox(height: 8),
+      OutlinedButton.icon(
+        icon: const Icon(Icons.person_add_alt_1_outlined),
+        label: Text('Registrar ${config.labelMembro.toLowerCase()}'),
+        onPressed: () => Navigator.pushNamed(context, '/registro-pescador'),
+      ),
+      const SizedBox(height: 8),
+      OutlinedButton.icon(
+        icon: const Icon(Icons.lock_reset_outlined),
+        label: Text('Recuperar senha do ${config.labelMembro.toLowerCase()}'),
+        onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
+      ),
+    ];
+  }
+
   Color _corStatus(String status) => switch (status) {
         'Liberado' => Colors.green,
         'Finalizado' => Colors.grey,
@@ -127,114 +152,122 @@ class _TorneioScreenState extends State<TorneioScreen> {
     final cor = _corStatus(config.status);
     final exibirRanking = config.status == 'Liberado' || config.status == 'Finalizado';
 
+    final botoesExtras = _buildBotoesExtras(context, config);
+    final temBarra = botoesExtras.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(config.nomeTorneio),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Logo
-            if (config.logoUrl != null)
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(config.logoUrl!, height: 120, fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const SizedBox.shrink()),
-                ),
-              ),
-            const SizedBox(height: 16),
-
-            // Info card
-            Card(
-              child: Padding(
+      body: Column(
+        children: [
+          // ── Conteúdo rolável ──────────────────────────────────────────────
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Text(
-                        config.nomeTorneio,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    // Logo
+                    if (config.logoUrl != null)
+                      Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            config.logoUrl!, height: 120, fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Info card
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                config.nomeTorneio,
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Chip(
+                              label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
+                              backgroundColor: cor.withAlpha(30),
+                              side: BorderSide(color: cor.withAlpha(80)),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    Chip(
-                      label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
-                      backgroundColor: cor.withAlpha(30),
-                      side: BorderSide(color: cor.withAlpha(80)),
+                    const SizedBox(height: 16),
+
+                    // Status message
+                    if (config.status == 'Aberto')
+                      _StatusBanner(
+                        icon: Icons.lock_clock,
+                        message: 'Este torneio ainda não está aberto ao público.',
+                        color: Colors.orange,
+                      )
+                    else if (config.status == 'Finalizado')
+                      _StatusBanner(
+                        icon: Icons.check_circle,
+                        message: 'Este torneio foi encerrado.',
+                        color: Colors.grey,
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Botão Fiscal/Administração (fixo no scroll)
+                    FilledButton.icon(
+                      icon: const Icon(Icons.login),
+                      label: const Text('Fiscal/Administração'),
+                      onPressed: () => Navigator.pushNamed(context, '/login'),
                     ),
+
+                    // ── Ranking ──────────────────────────────────────────────
+                    if (exibirRanking) ...[
+                      const SizedBox(height: 16),
+                      if (_rankingCarregando)
+                        const Center(child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        ))
+                      else if (_rankingData != null && (_rankingData!['disponivel'] as bool? ?? false))
+                        _RankingSection(
+                          data: _rankingData!,
+                          config: config,
+                        ),
+                    ],
+
+                    // ── Patrocinadores ───────────────────────────────────────
+                    if (_patrocinadores.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      PatrocinadoresSection(patrocinadores: _patrocinadores),
+                    ],
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+          ),
 
-            // Status message
-            if (config.status == 'Aberto')
-              _StatusBanner(
-                icon: Icons.lock_clock,
-                message: 'Este torneio ainda não está aberto ao público.',
-                color: Colors.orange,
-              )
-            else if (config.status == 'Finalizado')
-              _StatusBanner(
-                icon: Icons.check_circle,
-                message: 'Este torneio foi encerrado.',
-                color: Colors.grey,
-              ),
-
-            const SizedBox(height: 16),
-
-            // Login button
-            FilledButton.icon(
-              icon: const Icon(Icons.login),
-              label: const Text('Fiscal/Administração'),
-              onPressed: () => Navigator.pushNamed(context, '/login'),
-            ),
-            if (config.permitirRegistroPublicoMembro) ...[
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.badge_outlined),
-                label: Text('Entrar como ${config.labelMembro.toLowerCase()}'),
-                onPressed: () => Navigator.pushNamed(context, '/login', arguments: 'Membro'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.person_add_alt_1_outlined),
-                label: Text('Registrar ${config.labelMembro.toLowerCase()}'),
-                onPressed: () => Navigator.pushNamed(context, '/registro-pescador'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.lock_reset_outlined),
-                label: Text('Recuperar senha do ${config.labelMembro.toLowerCase()}'),
-                onPressed: () => Navigator.pushNamed(context, '/recuperar-senha-pescador'),
-              ),
-            ],
-
-            // ── Ranking ────────────────────────────────────────────────────
-            if (exibirRanking) ...[
-              const SizedBox(height: 24),
-              if (_rankingCarregando)
-                const Center(child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
-                ))
-              else if (_rankingData != null && (_rankingData!['disponivel'] as bool? ?? false))
-                _RankingSection(
-                  data: _rankingData!,
-                  config: config,
+          // ── Barra de botões fixa (só quando permitirRegistroPublicoMembro) ──
+          if (temBarra)
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: botoesExtras,
                 ),
-            ],
-
-            // ── Patrocinadores ─────────────────────────────────────────────
-            if (_patrocinadores.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              PatrocinadoresSection(patrocinadores: _patrocinadores),
-            ],
-          ],
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -414,6 +447,7 @@ class _MembroTile extends StatefulWidget {
 
 class _MembroTileState extends State<_MembroTile> {
   bool _expandido = false;
+  final _expandidoKey = GlobalKey();
 
   String _resolverFoto(String? url) => AppConfig.resolverUrl(url) ?? '';
 
@@ -425,7 +459,21 @@ class _MembroTileState extends State<_MembroTile> {
         children: [
           ListTile(
             onTap: widget.capturas.isNotEmpty
-                ? () => setState(() => _expandido = !_expandido)
+                ? () {
+                    setState(() => _expandido = !_expandido);
+                    if (!_expandido) return;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      final ctx = _expandidoKey.currentContext;
+                      if (ctx != null) {
+                        Scrollable.ensureVisible(
+                          ctx,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+                        );
+                      }
+                    });
+                  }
                 : null,
             leading: Row(
               mainAxisSize: MainAxisSize.min,
@@ -458,6 +506,7 @@ class _MembroTileState extends State<_MembroTile> {
           ),
           if (_expandido && widget.capturas.isNotEmpty)
             Padding(
+              key: _expandidoKey,
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
               child: Column(
                 children: widget.capturas.map((c) {
