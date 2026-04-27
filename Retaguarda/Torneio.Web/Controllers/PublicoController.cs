@@ -63,14 +63,16 @@ public class PublicoController : TorneioBaseController
                     equipes.TryGetValue(g.Key, out var eq);
                     return new RankingEquipeVm
                     {
-                        EquipeId    = g.Key,
-                        NomeEquipe  = eq?.Nome ?? g.First().NomeEquipe,
-                        FotoUrl     = eq?.FotoUrl,
-                        TotalPontos = g.Sum(c => c.Pontuacao),
-                        QtdCapturas = g.Count()
+                        EquipeId       = g.Key,
+                        NomeEquipe     = eq?.Nome ?? g.First().NomeEquipe,
+                        FotoUrl        = eq?.FotoUrl,
+                        TotalPontos    = g.Sum(c => c.Pontuacao),
+                        QtdCapturas    = g.Count(),
+                        PrimeiraCaptura = g.Min(c => c.DataHora)
                     };
                 })
                 .OrderByDescending(r => r.TotalPontos)
+                .ThenBy(r => r.PrimeiraCaptura)
                 .ThenBy(r => r.NomeEquipe)
                 .ToList();
 
@@ -85,23 +87,25 @@ public class PublicoController : TorneioBaseController
                     membros.TryGetValue(g.Key, out var m);
                     return new RankingMembroVm
                     {
-                        NomeMembro  = m?.Nome ?? g.First().NomeMembro,
-                        FotoUrl     = m?.FotoUrl,
-                        NomeEquipe  = g.First().NomeEquipe,
-                        TotalPontos = g.Sum(c => c.Pontuacao),
-                        Capturas    = g.OrderByDescending(c => c.Pontuacao)
+                        NomeMembro      = m?.Nome ?? g.First().NomeMembro,
+                        FotoUrl         = m?.FotoUrl,
+                        NomeEquipe      = g.First().NomeEquipe,
+                        TotalPontos     = g.Sum(c => c.Pontuacao),
+                        PrimeiraCaptura = g.Min(c => c.DataHora),
+                        Capturas        = g.OrderByDescending(c => c.Pontuacao)
                             .Select(c => new RankingCapturaVm
                             {
-                                NomeItem          = c.NomeItem,
-                                TamanhoMedida     = c.TamanhoMedida,
+                                NomeItem           = c.NomeItem,
+                                TamanhoMedida      = c.TamanhoMedida,
                                 FatorMultiplicador = c.FatorMultiplicador,
-                                Pontuacao         = c.Pontuacao,
-                                FotoUrl           = c.FotoUrl,
-                                DataHora          = c.DataHora
+                                Pontuacao          = c.Pontuacao,
+                                FotoUrl            = c.FotoUrl,
+                                DataHora           = c.DataHora
                             }).ToList()
                     };
                 })
                 .OrderByDescending(r => r.TotalPontos)
+                .ThenBy(r => r.PrimeiraCaptura)
                 .ThenBy(r => r.NomeMembro)
                 .ToList();
 

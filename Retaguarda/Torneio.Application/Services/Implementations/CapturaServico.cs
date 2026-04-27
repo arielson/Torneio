@@ -175,7 +175,7 @@ public class CapturaServico : ICapturaServico
             FatorMultiplicador = fator,
             Pontuacao = pontuacao,
             FotoUrl = c.FotoUrl,
-            DataHora = c.DataHora,
+            DataHora = c.DataHora.ToLocalTime(),
             PendenteSync = c.PendenteSync,
             Origem = c.Origem,
             FonteFoto = c.FonteFoto,

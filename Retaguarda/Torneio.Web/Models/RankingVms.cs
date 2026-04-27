@@ -8,6 +8,7 @@ public class RankingEquipeVm
     public string? FotoUrl { get; set; }
     public decimal TotalPontos { get; set; }
     public int QtdCapturas { get; set; }
+    public DateTime PrimeiraCaptura { get; set; }
 }
 
 public class RankingMembroVm
@@ -17,6 +18,7 @@ public class RankingMembroVm
     public string? FotoUrl { get; set; }
     public string NomeEquipe { get; set; } = null!;
     public decimal TotalPontos { get; set; }
+    public DateTime PrimeiraCaptura { get; set; }
     public List<RankingCapturaVm> Capturas { get; set; } = new();
 }
 

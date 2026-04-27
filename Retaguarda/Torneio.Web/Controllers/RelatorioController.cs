@@ -114,12 +114,13 @@ public class RelatorioController : TorneioBaseController
             vm.Equipes.AddRange(equipes
                 .Select(e => new GanhadorRelatorioViewModel
                 {
-                    EquipeId = e.Id,
-                    NomeEquipe = e.Nome,
-                    Capitao = e.Capitao,
-                    TotalPontos = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao)
+                    EquipeId        = e.Id,
+                    NomeEquipe      = e.Nome,
+                    Capitao         = e.Capitao,
+                    TotalPontos     = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao),
+                    PrimeiraCaptura = capturas.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeEquipe)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeEquipe)
                 .Take(torneio.QtdGanhadores)
                 .Select((x, i) => new GanhadorRelatorioViewModel
                 {
@@ -135,11 +136,12 @@ public class RelatorioController : TorneioBaseController
             vm.Membros.AddRange(membros
                 .Select(m => new GanhadorRelatorioViewModel
                 {
-                    MembroId = m.Id,
-                    NomeMembro = m.Nome,
-                    TotalPontos = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao)
+                    MembroId        = m.Id,
+                    NomeMembro      = m.Nome,
+                    TotalPontos     = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao),
+                    PrimeiraCaptura = capturas.Where(c => c.MembroId == m.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeMembro)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeMembro)
                 .Take(torneio.QtdGanhadores)
                 .Select((x, i) => new GanhadorRelatorioViewModel
                 {

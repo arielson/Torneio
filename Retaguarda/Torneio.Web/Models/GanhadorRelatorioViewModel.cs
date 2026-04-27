@@ -12,6 +12,7 @@ public class GanhadorRelatorioViewModel
     public string? NomeMembro { get; init; }
 
     public decimal TotalPontos { get; init; }
+    public DateTime PrimeiraCaptura { get; init; }
 }
 
 public class GanhadoresPageViewModel

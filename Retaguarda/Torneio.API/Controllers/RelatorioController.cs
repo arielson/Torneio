@@ -53,12 +53,13 @@ public class RelatorioController : BaseController
             equipesGanhadoras = equipes
                 .Select(e => new
                 {
-                    EquipeId = e.Id,
-                    NomeEquipe = e.Nome,
-                    Capitao = e.Capitao,
-                    TotalPontos = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao)
+                    EquipeId        = e.Id,
+                    NomeEquipe      = e.Nome,
+                    Capitao         = e.Capitao,
+                    TotalPontos     = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao),
+                    PrimeiraCaptura = capturas.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeEquipe)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeEquipe)
                 .Take(torneio.QtdGanhadores)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.Capitao, x.TotalPontos })
                 .ToList();
@@ -70,11 +71,12 @@ public class RelatorioController : BaseController
             membrosGanhadores = membros
                 .Select(m => new
                 {
-                    MembroId = m.Id,
-                    NomeMembro = m.Nome,
-                    TotalPontos = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao)
+                    MembroId        = m.Id,
+                    NomeMembro      = m.Nome,
+                    TotalPontos     = capturas.Where(c => c.MembroId == m.Id).Sum(c => c.Pontuacao),
+                    PrimeiraCaptura = capturas.Where(c => c.MembroId == m.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeMembro)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeMembro)
                 .Take(torneio.QtdGanhadores)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.MembroId, x.NomeMembro, x.TotalPontos })
                 .ToList();

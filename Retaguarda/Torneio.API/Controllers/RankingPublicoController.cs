@@ -62,14 +62,15 @@ public class RankingPublicoController : BaseController
                     equipes.TryGetValue(g.Key, out var eq);
                     return new
                     {
-                        EquipeId   = g.Key,
-                        NomeEquipe = eq?.Nome ?? g.First().NomeEquipe,
-                        FotoUrl    = eq?.FotoUrl,
-                        TotalPontos = g.Sum(c => c.Pontuacao),
-                        QtdCapturas = g.Count()
+                        EquipeId        = g.Key,
+                        NomeEquipe      = eq?.Nome ?? g.First().NomeEquipe,
+                        FotoUrl         = eq?.FotoUrl,
+                        TotalPontos     = g.Sum(c => c.Pontuacao),
+                        QtdCapturas     = g.Count(),
+                        PrimeiraCaptura = g.Min(c => c.DataHora)
                     };
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeEquipe)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeEquipe)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.FotoUrl, x.TotalPontos, x.QtdCapturas })
                 .ToList();
         }
@@ -86,12 +87,13 @@ public class RankingPublicoController : BaseController
                     membros.TryGetValue(g.Key, out var m);
                     return new
                     {
-                        MembroId    = g.Key,
-                        NomeMembro  = m?.Nome ?? g.First().NomeMembro,
-                        FotoUrl     = m?.FotoUrl,
-                        NomeEquipe  = g.First().NomeEquipe,
-                        TotalPontos = g.Sum(c => c.Pontuacao),
-                        Capturas    = g.OrderByDescending(c => c.Pontuacao).Select(c => new
+                        MembroId        = g.Key,
+                        NomeMembro      = m?.Nome ?? g.First().NomeMembro,
+                        FotoUrl         = m?.FotoUrl,
+                        NomeEquipe      = g.First().NomeEquipe,
+                        TotalPontos     = g.Sum(c => c.Pontuacao),
+                        PrimeiraCaptura = g.Min(c => c.DataHora),
+                        Capturas        = g.OrderByDescending(c => c.Pontuacao).Select(c => new
                         {
                             c.NomeItem,
                             c.TamanhoMedida,
@@ -102,7 +104,7 @@ public class RankingPublicoController : BaseController
                         }).ToList()
                     };
                 })
-                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.NomeMembro)
+                .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeMembro)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.MembroId, x.NomeMembro, x.FotoUrl, x.NomeEquipe, x.TotalPontos, x.Capturas })
                 .ToList();
         }
