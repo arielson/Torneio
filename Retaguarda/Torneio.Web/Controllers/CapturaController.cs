@@ -185,6 +185,74 @@ public class CapturaController : TorneioBaseController
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
+    [HttpPost("{id:guid}/editar-completo")]
+    [Authorize(Policy = "AdminGeral")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarCompleto(Guid id, decimal tamanhoMedida, DateTime dataHora, IFormFile? foto, bool removerFoto = false)
+    {
+        try
+        {
+            var capturaAntes = await _capturaServico.ObterPorId(id);
+            if (capturaAntes is null)
+            {
+                TempData["Erro"] = "Captura não encontrada.";
+                return RedirectToAction(nameof(Index), new { slug = Slug });
+            }
+
+            // Determina a nova foto:
+            // - nova foto enviada  → salva e usa o novo path
+            // - removerFoto=true   → null (sem foto)
+            // - nenhum dos dois    → null sinaliza ao serviço "manter a atual"
+            string? novaFotoPath = null;
+            bool fotoAlterada = false;
+            if (foto is { Length: > 0 })
+            {
+                novaFotoPath = await SalvarFotoAsync(foto, "capturas");
+                fotoAlterada = true;
+            }
+            else if (removerFoto)
+            {
+                novaFotoPath = null;   // limpar
+                fotoAlterada = true;
+            }
+
+            await _capturaServico.EditarCompleto(
+                id, tamanhoMedida, novaFotoPath, dataHora.ToUniversalTime(),
+                alterarFoto: fotoAlterada);
+
+            // Apaga arquivo antigo quando a foto foi substituída ou removida
+            if (fotoAlterada && !string.IsNullOrEmpty(capturaAntes.FotoUrl))
+                await RemoverFotoAsync(capturaAntes.FotoUrl);
+
+            TempData["Sucesso"] = "Captura atualizada.";
+            var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+
+            var alteracoes = new List<string>();
+            if (capturaAntes.TamanhoMedida != tamanhoMedida)
+                alteracoes.Add($"Medida: {capturaAntes.TamanhoMedida} → {tamanhoMedida}");
+            if (capturaAntes.DataHora.ToLocalTime().ToString("dd/MM/yyyy HH:mm") != dataHora.ToString("dd/MM/yyyy HH:mm"))
+                alteracoes.Add($"Data: {capturaAntes.DataHora.ToLocalTime():dd/MM/yyyy HH:mm} → {dataHora:dd/MM/yyyy HH:mm}");
+            if (foto is { Length: > 0 })
+                alteracoes.Add("Foto substituída");
+            else if (removerFoto)
+                alteracoes.Add("Foto removida");
+
+            var descAlteracoes = alteracoes.Any() ? string.Join(" | ", alteracoes) : "Sem alterações";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
+                Categoria = CategoriaLog.Capturas, Acao = "EditarCapturaAdminGeral",
+                Descricao = $"Captura editada (AdminGeral) | Item: {capturaAntes.NomeItem} | Pescador: {capturaAntes.NomeMembro} | Equipe: {capturaAntes.NomeEquipe} | {descAlteracoes}",
+                UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
+            });
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
     [HttpPost("{id:guid}/remover")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remover(Guid id)

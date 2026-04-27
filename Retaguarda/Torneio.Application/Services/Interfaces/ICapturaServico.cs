@@ -14,4 +14,6 @@ public interface ICapturaServico
     Task Invalidar(Guid id, string motivo);
     Task Revalidar(Guid id);
     Task AlterarTamanho(Guid id, decimal tamanhoMedida);
+    /// <param name="novaFotoUrl">Nova URL da foto. Quando <c>null</c>, mantém a atual. Para limpar a foto, passe <c>string.Empty</c>.</param>
+    Task EditarCompleto(Guid id, decimal tamanhoMedida, string? novaFotoUrl, DateTime dataHora, bool alterarFoto = false);
 }

@@ -83,4 +83,13 @@ public class Captura
     public void MarcarSincronizado() => PendenteSync = false;
 
     public void AtualizarFoto(string? fotoUrl) => FotoUrl = fotoUrl;
+
+    public void EditarCompleto(decimal tamanhoMedida, string? fotoUrl, DateTime dataHora)
+    {
+        if (tamanhoMedida <= 0)
+            throw new InvalidOperationException("O tamanho da captura deve ser maior que zero.");
+        TamanhoMedida = tamanhoMedida;
+        FotoUrl = fotoUrl;
+        DataHora = dataHora;
+    }
 }

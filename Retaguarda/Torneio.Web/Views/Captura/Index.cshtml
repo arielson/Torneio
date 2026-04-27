@@ -1,5 +1,18 @@
 @using Torneio.Application.DTOs.Captura
 @model IEnumerable<CapturaDto>
+
+@functions {
+    static string FmtDataHora(DateTime dt) =>
+        dt.ToLocalTime().ToString("yyyy-MM-ddTHH:mm");
+
+    static string FotoAbsoluta(string? url, string sb) {
+        if (string.IsNullOrEmpty(url)) return string.Empty;
+        return url.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? url
+            : sb.TrimEnd('/') + "/" + url.TrimStart('/');
+    }
+}
+
 @{
     var torneio            = ViewBag.Torneio as TorneioDto;
     var labelEquipe        = torneio?.LabelEquipe  ?? "Equipe";
@@ -11,6 +24,8 @@
     var usarFator          = torneio?.UsarFatorMultiplicador ?? false;
     var storageBase        = ViewBag.StorageBaseUrl as string ?? "";
     var slug               = Context.GetRouteData().Values["slug"]?.ToString();
+    var isAdminGeral       = User.HasClaim("perfil", "AdminGeral");
+    var labelCapturaMin    = labelCaptura.ToLower();
     ViewData["Title"] = labelCapturaPlural;
     var lista = Model.ToList();
 }
@@ -156,25 +171,41 @@ else
                                 <div class="d-flex gap-1">
                                     @if (c.Invalidada)
                                     {
-                                        <form asp-action="Revalidar" asp-route-id="@c.Id" method="post"
-                                              onsubmit="return confirm('Revalidar esta @labelCaptura.ToLower()?')">
+                                        <form asp-action="Revalidar" asp-route-slug="@slug" asp-route-id="@c.Id" method="post" data-confirm-action="revalidar">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="btn btn-sm btn-outline-success" title="Revalidar">
                                                 <i class="bi bi-check-circle"></i>
                                             </button>
                                         </form>
                                     }
-                                    else
+                                    @if (!c.Invalidada && isAdminGeral)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                title="Editar captura"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarCompleto"
+                                                data-id="@c.Id"
+                                                data-nome="@c.NomeMembro - @c.NomeItem"
+                                                data-medida="@c.TamanhoMedida.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                data-datahora="@FmtDataHora(c.DataHora)"
+                                                data-foto="@FotoAbsoluta(c.FotoUrl, storageBase)">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                    }
+                                    @if (!c.Invalidada && !isAdminGeral)
                                     {
                                         <button type="button" class="btn btn-sm btn-outline-primary"
                                                 title="Alterar medida"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modalAlterarTamanho"
                                                 data-id="@c.Id"
-                                                data-nome=”@c.NomeMembro - @c.NomeItem”
+                                                data-nome="@c.NomeMembro - @c.NomeItem"
                                                 data-medida="@c.TamanhoMedida.ToString(System.Globalization.CultureInfo.InvariantCulture)">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
+                                    }
+                                    @if (!c.Invalidada)
+                                    {
                                         <button type="button" class="btn btn-sm btn-outline-warning"
                                                 title="Invalidar"
                                                 data-bs-toggle="modal"
@@ -184,8 +215,7 @@ else
                                             <i class="bi bi-slash-circle"></i>
                                         </button>
                                     }
-                                    <form asp-action="Remover" asp-route-id="@c.Id" method="post"
-                                          onsubmit="return confirm('Remover esta @labelCaptura.ToLower()?')">
+                                    <form asp-action="Remover" asp-route-slug="@slug" asp-route-id="@c.Id" method="post" data-confirm-action="remover">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
                                             <i class="bi bi-trash"></i>
@@ -280,11 +310,79 @@ else
     </div>
 </div>
 
+@if (isAdminGeral)
+{
+    <div class="modal fade" id="modalEditarCompleto" tabindex="-1" aria-labelledby="modalEditarCompletoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="formEditarCompleto" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditarCompletoLabel">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar @labelCaptura
+                            <small class="text-muted fw-normal ms-1">(Admin Geral)</small>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3" id="modalEditarCompletoNome"></p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Medida (@medida) <span class="text-danger">*</span></label>
+                                <input name="tamanhoMedida" type="number" step="0.01" min="0.01" class="form-control" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Data e Hora <span class="text-danger">*</span></label>
+                                <input name="dataHora" type="datetime-local" class="form-control" required />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Foto</label>
+                                <div id="fotoAtualWrapper" class="mb-2 d-none">
+                                    <img id="fotoAtualImg" src="" alt="foto atual"
+                                         class="foto-thumb"
+                                         style="height:60px;width:60px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;cursor:pointer;"
+                                         data-src="" data-nome="" />
+                                    <span class="text-muted small ms-2">Foto atual</span>
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" name="removerFoto" value="true" id="chkRemoverFoto" />
+                                        <label class="form-check-label text-danger small" for="chkRemoverFoto">Remover foto atual</label>
+                                    </div>
+                                </div>
+                                <input type="file" name="foto" class="form-control" accept="image/*" id="inputFotoEditar" />
+                                <div class="form-text">Selecione para substituir a foto atual.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 me-1"></i>Salvar alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
     <script>
+        const _lcMin = '@labelCapturaMin';
+
         // Tooltips
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
             new bootstrap.Tooltip(el);
+        });
+
+        // Confirmação antes de submeter formulários de ação destrutiva/reversível
+        document.querySelectorAll('form[data-confirm-action]').forEach(form => {
+            form.addEventListener('submit', e => {
+                const action = form.dataset.confirmAction;
+                const msg = action === 'remover'
+                    ? `Remover esta ${_lcMin}? Esta ação não pode ser desfeita.`
+                    : `Revalidar esta ${_lcMin}?`;
+                if (!confirm(msg)) e.preventDefault();
+            });
         });
 
         // Zoom de foto
@@ -325,6 +423,48 @@ else
                 document.getElementById('formInvalidar').action = `/@(slug)/capturas/${id}/invalidar`;
                 document.getElementById('modalInvalidarNome').textContent = nome;
                 modalInvalidar.querySelector('textarea[name="motivo"]').value = '';
+            });
+        }
+
+        const modalEditarCompleto = document.getElementById('modalEditarCompleto');
+        if (modalEditarCompleto) {
+            modalEditarCompleto.addEventListener('show.bs.modal', e => {
+                const btn      = e.relatedTarget;
+                const id       = btn.dataset.id;
+                const nome     = btn.dataset.nome;
+                const medida   = btn.dataset.medida;
+                const dataHora = btn.dataset.datahora;
+                const fotoUrl  = btn.dataset.foto;
+
+                document.getElementById('formEditarCompleto').action = `/@(slug)/capturas/${id}/editar-completo`;
+                document.getElementById('modalEditarCompletoNome').textContent = nome;
+                modalEditarCompleto.querySelector('input[name="tamanhoMedida"]').value = medida;
+                modalEditarCompleto.querySelector('input[name="dataHora"]').value = dataHora;
+                document.getElementById('inputFotoEditar').value = '';
+                document.getElementById('chkRemoverFoto').checked = false;
+
+                const wrapper = document.getElementById('fotoAtualWrapper');
+                const imgEl   = document.getElementById('fotoAtualImg');
+                if (fotoUrl) {
+                    wrapper.classList.remove('d-none');
+                    imgEl.src           = fotoUrl;
+                    imgEl.dataset.src   = fotoUrl;
+                    imgEl.dataset.nome  = nome;
+                } else {
+                    wrapper.classList.add('d-none');
+                    imgEl.src = '';
+                }
+            });
+
+            // Wiring do zoom na foto atual dentro do modal
+            modalEditarCompleto.addEventListener('shown.bs.modal', () => {
+                const imgEl = document.getElementById('fotoAtualImg');
+                imgEl.onclick = () => {
+                    if (!imgEl.dataset.src) return;
+                    modalFotoImg.src = imgEl.dataset.src;
+                    modalFotoNome.textContent = imgEl.dataset.nome;
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFoto')).show();
+                };
             });
         }
     </script>

@@ -120,6 +120,18 @@ public class CapturaServico : ICapturaServico
         await _repositorio.Atualizar(entidade);
     }
 
+    public async Task EditarCompleto(Guid id, decimal tamanhoMedida, string? novaFotoUrl, DateTime dataHora, bool alterarFoto = false)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+        if (entidade.TorneioId != _tenantContext.TorneioId)
+            throw new KeyNotFoundException($"Captura '{id}' nao encontrada.");
+
+        var fotoFinal = alterarFoto ? novaFotoUrl : entidade.FotoUrl;
+        entidade.EditarCompleto(tamanhoMedida, fotoFinal, dataHora);
+        await _repositorio.Atualizar(entidade);
+    }
+
     public async Task<int> SincronizarLote(IEnumerable<RegistrarCapturaDto> capturas)
     {
         var count = 0;
