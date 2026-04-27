@@ -93,6 +93,7 @@ public class PublicoController : TorneioBaseController
                     membros.TryGetValue(g.Key, out var m);
                     return new RankingMembroVm
                     {
+                        MembroId         = g.Key,
                         NomeMembro      = m?.Nome ?? g.First().NomeMembro,
                         FotoUrl         = m?.FotoUrl,
                         NomeEquipe      = g.First().NomeEquipe,

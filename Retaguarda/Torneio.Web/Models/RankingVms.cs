@@ -14,6 +14,7 @@ public class RankingEquipeVm
 public class RankingMembroVm
 {
     public int Posicao { get; set; }
+    public Guid MembroId { get; set; }
     public string NomeMembro { get; set; } = null!;
     public string? FotoUrl { get; set; }
     public string NomeEquipe { get; set; } = null!;

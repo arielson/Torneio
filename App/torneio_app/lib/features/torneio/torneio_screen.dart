@@ -173,6 +173,13 @@ class _TorneioScreenState extends State<TorneioScreen> {
 
     final cor = _corStatus(config.status);
     final exibirRanking = config.status == 'Liberado' || config.status == 'Finalizado';
+    final rankingMembros =
+        (_rankingData?['membrosGanhadores'] as List?)?.cast<Map<String, dynamic>>() ?? const <Map<String, dynamic>>[];
+    final posicoesParticipantes = <String, int>{
+      for (final membro in rankingMembros)
+        if ((membro['membroId'] as String?)?.isNotEmpty ?? false)
+          membro['membroId'] as String: (membro['posicao'] as int?) ?? 0,
+    };
 
     final botoesExtras = _buildBotoesExtras(context, config);
     final temBarra = botoesExtras.isNotEmpty;
@@ -271,6 +278,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
                       _ParticipantesSection(
                         participantes: _participantes,
                         labelMembroPlural: config.labelMembroPlural,
+                        posicoesRanking: posicoesParticipantes,
                       ),
                     ],
                     if (_patrocinadores.isNotEmpty) ...[
@@ -699,10 +707,12 @@ class _StatusBanner extends StatelessWidget {
 class _ParticipantesSection extends StatelessWidget {
   final List<Membro> participantes;
   final String labelMembroPlural;
+  final Map<String, int> posicoesRanking;
 
   const _ParticipantesSection({
     required this.participantes,
     required this.labelMembroPlural,
+    required this.posicoesRanking,
   });
 
   @override
@@ -718,22 +728,23 @@ class _ParticipantesSection extends StatelessWidget {
         const SizedBox(height: 8),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${participantes.length} ${labelMembroPlural.toLowerCase()} cadastrados',
+                  '${participantes.length} ${labelMembroPlural.toLowerCase()}',
                   style: TextStyle(
                     color: Colors.grey.shade700,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: participantes.map((participante) {
+                    final posicaoRanking = posicoesRanking[participante.id];
                     return SizedBox(
                       width: 120,
                       child: Column(
@@ -755,6 +766,10 @@ class _ParticipantesSection extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
+                          if (posicaoRanking != null && posicaoRanking > 0) ...[
+                            const SizedBox(height: 4),
+                            _Medalha(posicaoRanking),
+                          ],
                         ],
                       ),
                     );
