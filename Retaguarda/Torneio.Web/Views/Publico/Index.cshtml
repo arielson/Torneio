@@ -6,7 +6,7 @@
         .Where(p => p.ExibirNaTelaInicial)
         .OrderBy(p => p.Nome)
         .ToList();
-    var participantes = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>?)ViewBag.Participantes ?? Enumerable.Empty<Torneio.Application.DTOs.Membro.MembroDto>())
+    var participantes = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>?)ViewBag.Participantes ?? Enumerable.Empty<MembroDto>())
         .OrderBy(m => m.Nome)
         .ToList();
 
