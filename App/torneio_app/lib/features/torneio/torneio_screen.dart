@@ -747,6 +747,7 @@ class _ParticipantesSection extends StatelessWidget {
                     final posicaoRanking = posicoesRanking[participante.id];
                     return SizedBox(
                       width: 120,
+                      height: 180,
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
@@ -754,6 +755,8 @@ class _ParticipantesSection extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             GestureDetector(
                               onTap: (participante.fotoUrl ?? '').isNotEmpty
@@ -772,10 +775,15 @@ class _ParticipantesSection extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
-                            if (posicaoRanking != null && posicaoRanking > 0) ...[
-                              const SizedBox(height: 4),
-                              _Medalha(posicaoRanking),
-                            ],
+                            const SizedBox(height: 4),
+                            SizedBox(
+                              height: 42,
+                              child: Center(
+                                child: posicaoRanking != null && posicaoRanking > 0
+                                    ? _Medalha(posicaoRanking)
+                                    : null,
+                              ),
+                            ),
                           ],
                         ),
                       ),
