@@ -26,7 +26,9 @@ namespace Torneio.Infrastructure.Migrations
                     table.PrimaryKey("pk_especies_peixe", x => x.id);
                 });
 
-            // 2. Migrar itens existentes: criar uma espécie por nome distinto
+            // 2. Garantir extensão de UUID disponível e migrar itens existentes
+            migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS ""pgcrypto"";");
+
             migrationBuilder.Sql(@"
                 INSERT INTO especies_peixe (id, nome, nome_cientifico, foto_url)
                 SELECT gen_random_uuid(), nome, NULL, MAX(foto_url)

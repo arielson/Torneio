@@ -29,10 +29,16 @@ public class ItemController : TorneioBaseController
         _log = log;
     }
 
-    private async Task SetViewBag()
+    private async Task SetViewBag(Guid? itemAtualId = null)
     {
         ViewBag.Torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         ViewBag.Especies = await _especieServico.ListarTodas();
+        var itensDoTorneio = await _servico.ListarPorTorneio(TenantContext.TorneioId);
+        // Espécies já adicionadas, excluindo o item que está sendo editado
+        ViewBag.EspeciesJaAdicionadas = itensDoTorneio
+            .Where(i => i.Id != itemAtualId)
+            .Select(i => i.EspeciePeixeId)
+            .ToHashSet();
     }
 
     [HttpGet("")]
@@ -109,7 +115,7 @@ public class ItemController : TorneioBaseController
         var item = await _servico.ObterPorId(id);
         if (item is null) return NotFound();
         ViewBag.Item = item;
-        await SetViewBag();
+        await SetViewBag(itemAtualId: id);
         return View(new AtualizarItemDto
         {
             EspeciePeixeId = item.EspeciePeixeId,
@@ -136,7 +142,7 @@ public class ItemController : TorneioBaseController
         if (!ModelState.IsValid)
         {
             ViewBag.Item = await _servico.ObterPorId(id);
-            await SetViewBag();
+            await SetViewBag(itemAtualId: id);
             return View(dto);
         }
         try
@@ -149,7 +155,7 @@ public class ItemController : TorneioBaseController
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewBag.Item = await _servico.ObterPorId(id);
-            await SetViewBag();
+            await SetViewBag(itemAtualId: id);
             return View(dto);
         }
     }

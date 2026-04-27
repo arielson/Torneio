@@ -8,6 +8,7 @@
     var medida = torneio?.MedidaCaptura ?? "cm";
     var usarFator = torneio?.UsarFatorMultiplicador ?? false;
     var storageBase = ViewBag.StorageBaseUrl as string ?? "";
+    var jaAdicionadas = ViewBag.EspeciesJaAdicionadas as HashSet<Guid> ?? new HashSet<Guid>();
     ViewData["Title"] = $"Adicionar {label}";
 }
 
@@ -38,43 +39,75 @@
         }
         else
         {
-            <div class="mb-3">
-                <label class="form-label">Selecione a espécie</label>
-                <div class="row g-2" id="especiesGrid">
-                    @foreach (var e in especies.OrderBy(x => x.Nome))
-                    {
-                        var fotoUrl = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
-                            : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
-                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                            <label class="especie-card @(Model.EspeciePeixeId == e.Id ? "selected" : "")" data-id="@e.Id">
-                                <input type="radio" name="EspeciePeixeId" value="@e.Id"
-                                       @(Model.EspeciePeixeId == e.Id ? "checked" : "")
-                                       class="d-none especie-radio" />
-                                @if (fotoUrl != null)
-                                {
-                                    <img src="@fotoUrl" alt="@e.Nome"
-                                         style="width:64px;height:64px;object-fit:cover;border-radius:8px;"
-                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                    <span class="especie-placeholder" style="display:none">
-                                        <i class="bi bi-collection"></i>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="especie-placeholder">
-                                        <i class="bi bi-collection"></i>
-                                    </span>
-                                }
-                                <span class="especie-nome">@e.Nome</span>
-                                @if (!string.IsNullOrWhiteSpace(e.NomeCientifico))
-                                {
-                                    <span class="especie-cientifico">@e.NomeCientifico</span>
-                                }
-                            </label>
-                        </div>
-                    }
+            <div class="row g-3 mb-3">
+                <!-- Grid de seleção -->
+                <div class="col-lg-8">
+                    <label class="form-label">Selecione a espécie</label>
+                    <div class="row g-2" id="especiesGrid">
+                        @foreach (var e in especies.OrderBy(x => x.Nome))
+                        {
+                            var fotoUrl = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
+                                : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
+                            var jaAdicionada = jaAdicionadas.Contains(e.Id);
+                            <div class="col-6 col-sm-4 col-md-3">
+                                <label class="especie-card @(Model.EspeciePeixeId == e.Id ? "selected" : "") @(jaAdicionada ? "ja-adicionada" : "")"
+                                       data-id="@e.Id"
+                                       data-nome="@e.Nome"
+                                       data-cientifico="@(e.NomeCientifico ?? "")"
+                                       data-foto="@(fotoUrl ?? "")">
+                                    <input type="radio" name="EspeciePeixeId" value="@e.Id"
+                                           @(Model.EspeciePeixeId == e.Id ? "checked" : "")
+                                           @(jaAdicionada ? "disabled" : "")
+                                           class="d-none especie-radio" />
+                                    @if (fotoUrl != null)
+                                    {
+                                        <img src="@fotoUrl" alt="@e.Nome"
+                                             style="width:56px;height:56px;object-fit:cover;border-radius:8px;"
+                                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                        <span class="especie-placeholder" style="display:none">
+                                            <i class="bi bi-collection"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="especie-placeholder">
+                                            <i class="bi bi-collection"></i>
+                                        </span>
+                                    }
+                                    <span class="especie-nome">@e.Nome</span>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <span asp-validation-for="EspeciePeixeId" class="text-danger small"></span>
                 </div>
-                <span asp-validation-for="EspeciePeixeId" class="text-danger small"></span>
+
+                <!-- Preview da espécie selecionada -->
+                <div class="col-lg-4">
+                    <label class="form-label d-none d-lg-block">&nbsp;</label>
+                    <div id="especiePreview" class="especie-preview">
+                        <div id="previewVazio" class="especie-preview-vazio">
+                            <i class="bi bi-collection fs-1 text-secondary"></i>
+                            <span class="text-muted small mt-2">Selecione uma espécie</span>
+                        </div>
+                        <div id="previewConteudo" style="display:none">
+                            <div id="previewFotoWrap" class="mb-3">
+                                <img id="previewFoto" src="" alt=""
+                                     style="width:100%;max-height:260px;object-fit:cover;border-radius:10px;" />
+                                <div id="previewFotoPlaceholder" class="especie-preview-placeholder" style="display:none">
+                                    <i class="bi bi-collection"></i>
+                                </div>
+                            </div>
+                            <div class="fw-bold fs-6" id="previewNome"></div>
+                            <div class="text-muted fst-italic small mt-1" id="previewCientifico"></div>
+                            <div class="mt-2">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-check-circle me-1"></i>Selecionada
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         }
 
@@ -113,39 +146,107 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 10px 8px;
+    gap: 5px;
+    padding: 8px 6px;
     border: 2px solid #dee2e6;
     border-radius: 10px;
     cursor: pointer;
     text-align: center;
     transition: border-color .15s, background .15s;
     background: #fff;
-    min-height: 110px;
+    min-height: 100px;
     justify-content: center;
 }
 .especie-card:hover { border-color: #0d6efd; background: #f0f6ff; }
-.especie-card.selected { border-color: #0d6efd; background: #e8f0fe; }
+.especie-card.selected { border-color: #0d6efd; background: #e8f0fe; box-shadow: 0 0 0 3px rgba(13,110,253,.15); }
 .especie-placeholder {
-    width: 64px; height: 64px;
+    width: 56px; height: 56px;
     border-radius: 8px;
     background: #e9ecef;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.6rem; color: #6c757d;
+    font-size: 1.4rem; color: #6c757d;
 }
-.especie-nome { font-size: .85rem; font-weight: 600; line-height: 1.2; word-break: break-word; }
-.especie-cientifico { font-size: .72rem; color: #6c757d; font-style: italic; line-height: 1.1; }
+.especie-nome { font-size: .8rem; font-weight: 600; line-height: 1.2; word-break: break-word; }
+.ja-adicionada { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.ja-adicionada::after {
+    content: "Já adicionada";
+    font-size: .65rem; color: #6c757d;
+    display: block; margin-top: 2px;
+}
+
+.especie-preview {
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.especie-preview-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    opacity: .5;
+}
+.especie-preview-placeholder {
+    width: 100%; height: 140px;
+    border-radius: 10px;
+    background: #e9ecef;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; color: #6c757d;
+}
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-    document.querySelectorAll('.especie-card').forEach(card => {
-        card.addEventListener('click', () => {
+    (() => {
+        const vazio     = document.getElementById('previewVazio');
+        const conteudo  = document.getElementById('previewConteudo');
+        const foto      = document.getElementById('previewFoto');
+        const fotoPh    = document.getElementById('previewFotoPlaceholder');
+        const nome      = document.getElementById('previewNome');
+        const cient     = document.getElementById('previewCientifico');
+
+        function selecionarCard(card) {
             document.querySelectorAll('.especie-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             card.querySelector('.especie-radio').checked = true;
+
+            const nomeTxt   = card.dataset.nome;
+            const cienTxt   = card.dataset.cientifico;
+            const fotoSrc   = card.dataset.foto;
+
+            nome.textContent  = nomeTxt;
+            cient.textContent = cienTxt;
+            cient.style.display = cienTxt ? '' : 'none';
+
+            if (fotoSrc) {
+                foto.src = fotoSrc;
+                foto.alt = nomeTxt;
+                foto.style.display = '';
+                fotoPh.style.display = 'none';
+                foto.onerror = () => { foto.style.display = 'none'; fotoPh.style.display = 'flex'; };
+            } else {
+                foto.style.display = 'none';
+                fotoPh.style.display = 'flex';
+            }
+
+            vazio.style.display    = 'none';
+            conteudo.style.display = '';
+        }
+
+        document.querySelectorAll('.especie-card:not(.ja-adicionada)').forEach(card => {
+            card.addEventListener('click', () => selecionarCard(card));
         });
-    });
+
+        // Inicializa preview se já há seleção (erro de validação)
+        const selecionado = document.querySelector('.especie-card.selected');
+        if (selecionado) selecionarCard(selecionado);
+    })();
     </script>
 }
