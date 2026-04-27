@@ -475,33 +475,50 @@ class _MembroTileState extends State<_MembroTile> {
                     });
                   }
                 : null,
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
+            leading: _Medalha(widget.posicao),
+            minLeadingWidth: 40,
+            title: Row(
               children: [
-                _Medalha(widget.posicao),
-                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: widget.fotoUrl.isNotEmpty
                       ? () => _abrirFoto(context, widget.fotoUrl)
                       : null,
                   child: _Avatar(fotoUrl: widget.fotoUrl, icon: Icons.person),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.nome,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                  ),
+                ),
               ],
             ),
-            title: Text(widget.nome, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
-            subtitle: Text(widget.nomeEquipe, style: const TextStyle(fontSize: 15)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${widget.totalPontos.toStringAsFixed(2)} pts',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                if (widget.capturas.isNotEmpty) ...[
-                  const SizedBox(width: 4),
-                  Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 22),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.nomeEquipe.isNotEmpty)
+                    Text(widget.nomeEquipe, style: const TextStyle(fontSize: 15)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      Text(
+                        '${widget.totalPontos.toStringAsFixed(2)} pts',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      if (widget.capturas.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 22),
+                      ],
+                    ],
+                  ),
                 ],
-              ],
+              ),
             ),
           ),
           if (_expandido && widget.capturas.isNotEmpty)
