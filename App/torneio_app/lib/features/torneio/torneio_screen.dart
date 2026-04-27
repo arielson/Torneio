@@ -741,15 +741,15 @@ class _ParticipantesSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 6,
+                  runSpacing: 6,
                   children: participantes.map((participante) {
                     final posicaoRanking = posicoesRanking[participante.id];
                     return SizedBox(
                       width: 120,
                       height: 180,
                       child: Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(12),

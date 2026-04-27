@@ -184,10 +184,8 @@
                                 : (r.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? r.FotoUrl : $"{storageBase}/{r.FotoUrl.TrimStart('/')}");
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed @(r.Posicao <= 3 ? "fw-semibold" : "")"
-                                            type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#@accordId" aria-expanded="false"
-                                            style="padding-top:2rem;padding-bottom:2rem">
+                                    <div class="accordion-button collapsed @(r.Posicao <= 3 ? "fw-semibold" : "")"
+                                         style="padding-top:2rem;padding-bottom:2rem">
                                         <span class="me-2" style="min-width:72px;font-size:3rem">@medalha</span>
                                         @if (fotoMb != null)
                                         {
@@ -204,9 +202,13 @@
                                                 <i class="bi bi-person"></i>
                                             </span>
                                         }
-                                        <span class="flex-fill" style="font-size:2rem">@r.NomeMembro <span class="text-muted fw-normal ms-1">@r.NomeEquipe</span></span>
-                                        <span class="badge bg-primary ms-2" style="font-size:2rem">@r.TotalPontos.ToString("0.##") pts</span>
-                                    </button>
+                                        <button class="btn btn-link text-decoration-none text-reset d-flex align-items-center flex-fill p-0 border-0 bg-transparent"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#@accordId" aria-expanded="false">
+                                            <span class="flex-fill text-start" style="font-size:2rem">@r.NomeMembro <span class="text-muted fw-normal ms-1">@r.NomeEquipe</span></span>
+                                            <span class="badge bg-primary ms-2" style="font-size:2rem">@r.TotalPontos.ToString("0.##") pts</span>
+                                        </button>
+                                    </div>
                                 </h2>
                                 <div id="@accordId" class="accordion-collapse collapse" data-bs-parent="#accordionMembros">
                                     <div class="accordion-body p-0">
@@ -343,6 +345,7 @@
         const modalNome = document.getElementById('modalFotoPublicoNome');
         document.querySelectorAll('.foto-thumb').forEach(img => {
             img.addEventListener('click', e => {
+                e.preventDefault();
                 e.stopPropagation();
                 modalImg.src = img.dataset.src;
                 modalImg.alt = img.dataset.nome;
