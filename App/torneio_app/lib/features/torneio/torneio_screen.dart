@@ -747,30 +747,37 @@ class _ParticipantesSection extends StatelessWidget {
                     final posicaoRanking = posicoesRanking[participante.id];
                     return SizedBox(
                       width: 120,
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: (participante.fotoUrl ?? '').isNotEmpty
-                                ? () => _abrirFoto(context, participante.fotoUrl!)
-                                : null,
-                            child: _Avatar(
-                              fotoUrl: participante.fotoUrl ?? '',
-                              icon: Icons.person,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: (participante.fotoUrl ?? '').isNotEmpty
+                                  ? () => _abrirFoto(context, participante.fotoUrl!)
+                                  : null,
+                              child: _Avatar(
+                                fotoUrl: participante.fotoUrl ?? '',
+                                icon: Icons.person,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            participante.nome,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          if (posicaoRanking != null && posicaoRanking > 0) ...[
-                            const SizedBox(height: 4),
-                            _Medalha(posicaoRanking),
+                            const SizedBox(height: 8),
+                            Text(
+                              participante.nome,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            if (posicaoRanking != null && posicaoRanking > 0) ...[
+                              const SizedBox(height: 4),
+                              _Medalha(posicaoRanking),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     );
                   }).toList(),
