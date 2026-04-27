@@ -30,6 +30,7 @@ public class CriarTorneioDto
     public bool PermitirCapturaOffline { get; init; } = true;
     public bool ExibirModuloFinanceiro { get; init; } = true;
     public bool PermitirRegistroPublicoMembro { get; init; }
+    public bool ExibirParticipantesPublicos { get; init; }
     public ModoSorteio ModoSorteio { get; init; }
 
     [Range(1, 100, ErrorMessage = "Informe entre 1 e 100 ganhadores.")]

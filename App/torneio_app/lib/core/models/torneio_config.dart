@@ -22,6 +22,7 @@ class TorneioConfig {
   final bool permitirCapturaOffline;
   final bool exibirModuloFinanceiro;
   final bool permitirRegistroPublicoMembro;
+  final bool exibirParticipantesPublicos;
   final String modoSorteio;
   final bool permitirEscolhaManual;
   final int qtdGanhadores;
@@ -56,6 +57,7 @@ class TorneioConfig {
     required this.permitirCapturaOffline,
     required this.exibirModuloFinanceiro,
     required this.permitirRegistroPublicoMembro,
+    required this.exibirParticipantesPublicos,
     required this.modoSorteio,
     required this.permitirEscolhaManual,
     required this.qtdGanhadores,
@@ -91,6 +93,7 @@ class TorneioConfig {
         permitirCapturaOffline: json['permitirCapturaOffline'] as bool? ?? true,
         exibirModuloFinanceiro: json['exibirModuloFinanceiro'] as bool? ?? true,
         permitirRegistroPublicoMembro: json['permitirRegistroPublicoMembro'] as bool? ?? false,
+        exibirParticipantesPublicos: json['exibirParticipantesPublicos'] as bool? ?? false,
         modoSorteio: json['modoSorteio'] as String? ?? 'Sorteio',
         permitirEscolhaManual: json['permitirEscolhaManual'] as bool? ?? false,
         qtdGanhadores: json['qtdGanhadores'] as int? ?? 3,

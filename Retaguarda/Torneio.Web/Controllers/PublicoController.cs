@@ -37,6 +37,12 @@ public class PublicoController : TorneioBaseController
         if (torneio is null) return NotFound();
 
         ViewBag.Patrocinadores = await _patrocinadorServico.ListarPorTorneio(torneio.Id);
+        if (torneio.ExibirParticipantesPublicos)
+        {
+            ViewBag.Participantes = (await _membroServico.ListarTodos())
+                .OrderBy(m => m.Nome)
+                .ToList();
+        }
 
         if (torneio.Status is "Liberado" or "Finalizado")
         {

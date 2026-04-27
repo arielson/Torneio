@@ -48,6 +48,7 @@ public class AtualizarTorneioDto
     public bool PermitirCapturaOffline { get; init; }
     public bool ExibirModuloFinanceiro { get; init; } = true;
     public bool PermitirRegistroPublicoMembro { get; init; }
+    public bool ExibirParticipantesPublicos { get; init; }
     public ModoSorteio ModoSorteio { get; init; }
 
     [System.ComponentModel.DataAnnotations.Range(1, 100, ErrorMessage = "Informe entre 1 e 100 ganhadores.")]

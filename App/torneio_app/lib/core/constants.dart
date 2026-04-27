@@ -11,6 +11,7 @@ class ApiConstants {
   static String membros(String slug) => '$_base/api/$slug/membros';
   static String itens(String slug) => '$_base/api/$slug/itens';
   static String patrocinadores(String slug) => '$_base/api/$slug/patrocinadores';
+  static String participantes(String slug) => '$_base/api/$slug/participantes';
   static String registroPescadorSolicitarCodigo(String slug) => '$_base/api/$slug/registro-pescador/solicitar-codigo';
   static String registroPescadorConfirmar(String slug) => '$_base/api/$slug/registro-pescador/confirmar';
   static String recuperarSenhaPescadorSolicitarCodigo(String slug) => '$_base/api/$slug/pescador/recuperar-senha/solicitar-codigo';

@@ -6,6 +6,9 @@
         .Where(p => p.ExibirNaTelaInicial)
         .OrderBy(p => p.Nome)
         .ToList();
+    var participantes = ((IEnumerable<Torneio.Application.DTOs.Membro.MembroDto>?)ViewBag.Participantes ?? Enumerable.Empty<Torneio.Application.DTOs.Membro.MembroDto>())
+        .OrderBy(m => m.Nome)
+        .ToList();
 
     var badgeClass = Model.Status switch
     {
@@ -291,6 +294,50 @@
         })();
         </script>
     }
+}
+
+@if (Model.ExibirParticipantesPublicos && participantes.Any())
+{
+    <div class="content-card mt-4">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-people me-2"></i>Participantes</h5>
+        </div>
+        <div class="card-body-pad">
+            <div class="mb-3 text-muted fw-semibold">@participantes.Count @Model.LabelMembroPlural.ToLower() cadastrados</div>
+            <div class="row g-3">
+                @foreach (var participante in participantes)
+                {
+                    var fotoUrl = string.IsNullOrWhiteSpace(participante.FotoUrl)
+                        ? null
+                        : (participante.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                            ? participante.FotoUrl
+                            : $"{storageBase}/{participante.FotoUrl.TrimStart('/')}");
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                        <div class="border rounded-3 p-3 h-100 bg-white d-flex flex-column align-items-center text-center gap-2">
+                            @if (fotoUrl != null)
+                            {
+                                <img src="@fotoUrl"
+                                     alt="@participante.Nome"
+                                     class="rounded-circle foto-thumb"
+                                     style="width:96px;height:96px;object-fit:cover;cursor:pointer;flex-shrink:0;"
+                                     data-src="@fotoUrl"
+                                     data-nome="@participante.Nome"
+                                     onerror="this.style.visibility='hidden'" />
+                            }
+                            else
+                            {
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+                                      style="width:96px;height:96px;font-size:2rem;">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                            }
+                            <div class="fw-semibold">@participante.Nome</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 }
 
 @if (patrocinadores.Any())

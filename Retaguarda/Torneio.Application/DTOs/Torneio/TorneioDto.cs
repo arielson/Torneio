@@ -25,6 +25,7 @@ public class TorneioDto
     public bool PermitirCapturaOffline { get; init; }
     public bool ExibirModuloFinanceiro { get; init; }
     public bool PermitirRegistroPublicoMembro { get; init; }
+    public bool ExibirParticipantesPublicos { get; init; }
     public decimal ValorPorMembro { get; init; }
     public int QuantidadeParcelas { get; init; }
     public DateTime? DataPrimeiroVencimento { get; init; }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
 import '../../core/flavor_config.dart';
+import '../../core/models/membro.dart';
 import '../../core/models/patrocinador.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
@@ -20,6 +21,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
   late ConfigProvider _configProvider;
   final ApiService _api = ApiService();
   List<Patrocinador> _patrocinadores = const [];
+  List<Membro> _participantes = const [];
 
   // Ranking state
   bool _rankingCarregando = false;
@@ -35,6 +37,9 @@ class _TorneioScreenState extends State<TorneioScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _configProvider.carregarConfig(_slug!);
           _carregarPatrocinadores(_slug!);
+          if (_configProvider.config?.exibirParticipantesPublicos ?? false) {
+            _carregarParticipantes(_slug!);
+          }
           final cfg = _configProvider.config;
           if (cfg != null && (cfg.status == 'Liberado' || cfg.status == 'Finalizado')) {
             _carregarRanking(_slug!);
@@ -60,6 +65,23 @@ class _TorneioScreenState extends State<TorneioScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _patrocinadores = const []);
+    }
+  }
+
+  Future<void> _carregarParticipantes(String slug) async {
+    try {
+      final data = await _api.get(ApiConstants.participantes(slug));
+      final lista = data is List
+          ? data
+              .map((e) => Membro.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : <Membro>[];
+      lista.sort((a, b) => a.nome.compareTo(b.nome));
+      if (!mounted) return;
+      setState(() => _participantes = lista);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _participantes = const []);
     }
   }
 
@@ -244,6 +266,13 @@ class _TorneioScreenState extends State<TorneioScreen> {
                     ],
 
                     // ── Patrocinadores ───────────────────────────────────────
+                    if (config.exibirParticipantesPublicos && _participantes.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      _ParticipantesSection(
+                        participantes: _participantes,
+                        labelMembroPlural: config.labelMembroPlural,
+                      ),
+                    ],
                     if (_patrocinadores.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       PatrocinadoresSection(patrocinadores: _patrocinadores),
@@ -662,6 +691,117 @@ class _StatusBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(child: Text(message, style: TextStyle(color: color))),
         ],
+      ),
+    );
+  }
+}
+
+class _ParticipantesSection extends StatelessWidget {
+  final List<Membro> participantes;
+  final String labelMembroPlural;
+
+  const _ParticipantesSection({
+    required this.participantes,
+    required this.labelMembroPlural,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle(
+          icon: Icons.groups_2_outlined,
+          color: Colors.green.shade700,
+          title: 'Participantes',
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${participantes.length} ${labelMembroPlural.toLowerCase()} cadastrados',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: participantes.map((participante) {
+                    return SizedBox(
+                      width: 120,
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: (participante.fotoUrl ?? '').isNotEmpty
+                                ? () => _abrirFoto(context, participante.fotoUrl!)
+                                : null,
+                            child: _Avatar(
+                              fotoUrl: participante.fotoUrl ?? '',
+                              icon: Icons.person,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            participante.nome,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _abrirFoto(BuildContext context, String url) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (ctx, e, st) => const Center(
+                  child: Icon(Icons.broken_image, color: Colors.white, size: 64),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

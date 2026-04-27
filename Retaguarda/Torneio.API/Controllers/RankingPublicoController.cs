@@ -117,6 +117,7 @@ public class RankingPublicoController : BaseController
             torneio.ApenasMaiorCapturaPorPescador,
             torneio.UsarFatorMultiplicador,
             torneio.MedidaCaptura,
+            torneio.ExibirParticipantesPublicos,
             EquipesGanhadoras = equipesGanhadoras,
             MembrosGanhadores = membrosGanhadores,
         });

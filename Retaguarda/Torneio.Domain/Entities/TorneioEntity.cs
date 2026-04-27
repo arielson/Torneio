@@ -31,6 +31,7 @@ public class TorneioEntity
     public bool PermitirCapturaOffline { get; private set; }
     public bool ExibirModuloFinanceiro { get; private set; } = true;
     public bool PermitirRegistroPublicoMembro { get; private set; }
+    public bool ExibirParticipantesPublicos { get; private set; }
     public decimal ValorPorMembro { get; private set; }
     public int QuantidadeParcelas { get; private set; }
     public DateTime? DataPrimeiroVencimento { get; private set; }
@@ -80,6 +81,7 @@ public class TorneioEntity
         bool permitirCapturaOffline = true,
         bool exibirModuloFinanceiro = true,
         bool permitirRegistroPublicoMembro = false,
+        bool exibirParticipantesPublicos = false,
         int qtdGanhadores = 3,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -115,6 +117,7 @@ public class TorneioEntity
             PermitirCapturaOffline = permitirCapturaOffline,
             ExibirModuloFinanceiro = exibirModuloFinanceiro,
             PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro,
+            ExibirParticipantesPublicos = exibirParticipantesPublicos,
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
@@ -174,6 +177,7 @@ public class TorneioEntity
         bool permitirCapturaOffline,
         bool exibirModuloFinanceiro,
         bool permitirRegistroPublicoMembro,
+        bool exibirParticipantesPublicos,
         int qtdGanhadores,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -201,6 +205,7 @@ public class TorneioEntity
         PermitirCapturaOffline = permitirCapturaOffline;
         ExibirModuloFinanceiro = exibirModuloFinanceiro;
         PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro;
+        ExibirParticipantesPublicos = exibirParticipantesPublicos;
         QtdGanhadores = qtdGanhadores;
         PremiacaoPorEquipe = premiacaoPorEquipe;
         PremiacaoPorMembro = premiacaoPorMembro;

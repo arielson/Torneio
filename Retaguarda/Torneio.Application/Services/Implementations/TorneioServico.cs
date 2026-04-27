@@ -91,7 +91,7 @@ public class TorneioServico : ITorneioServico
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
             dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro,
-            dto.PermitirRegistroPublicoMembro,
+            dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos,
             dto.QtdGanhadores, dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
@@ -116,7 +116,7 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.PermitirRegistroPublicoMembro, dto.QtdGanhadores,
+            dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos, dto.QtdGanhadores,
             dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
@@ -229,7 +229,7 @@ public class TorneioServico : ITorneioServico
             origem.MedidaCaptura,
             origem.ModoSorteio, origem.TipoTorneio,
             origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline, origem.ExibirModuloFinanceiro,
-            origem.PermitirRegistroPublicoMembro,
+            origem.PermitirRegistroPublicoMembro, origem.ExibirParticipantesPublicos,
             origem.QtdGanhadores, origem.PremiacaoPorEquipe, origem.PremiacaoPorMembro,
             origem.ApenasMaiorCapturaPorPescador,
             origem.LogoUrl, origem.CorPrimaria);
@@ -320,6 +320,7 @@ public class TorneioServico : ITorneioServico
         PermitirCapturaOffline = e.PermitirCapturaOffline,
         ExibirModuloFinanceiro = e.ExibirModuloFinanceiro,
         PermitirRegistroPublicoMembro = e.PermitirRegistroPublicoMembro,
+        ExibirParticipantesPublicos = e.ExibirParticipantesPublicos,
         ValorPorMembro = e.ValorPorMembro,
         QuantidadeParcelas = e.QuantidadeParcelas,
         DataPrimeiroVencimento = e.DataPrimeiroVencimento,

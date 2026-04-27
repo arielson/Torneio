@@ -41,7 +41,7 @@
         <div class="mb-3">
             <label class="form-label">Logo <small class="text-muted fw-normal">(opcional)</small></label>
             <input type="file" name="logoArquivo" class="form-control" accept="image/*" />
-            <div class="form-text">Ou informe uma URL externa abaixo — o upload tem prioridade.</div>
+            <div class="form-text">Ou informe uma URL externa abaixo, o upload tem prioridade.</div>
         </div>
         <div class="mb-3">
             <label asp-for="LogoUrl" class="form-label">URL do Logo <small class="text-muted fw-normal">(opcional)</small></label>
@@ -60,7 +60,7 @@
         <div class="form-section-title">Terminologia</div>
         <div class="form-text text-muted mb-3">
             <i class="bi bi-info-circle me-1"></i>
-            Preenchido automaticamente conforme o tipo. Personalize se necessário — ao trocar o tipo os valores são redefinidos.
+            Preenchido automaticamente conforme o tipo. Personalize se necessário, ao trocar o tipo os valores são redefinidos.
         </div>
         <div class="row g-3 mb-2">
             <div class="col-md-6">
@@ -135,7 +135,7 @@
         <div class="mb-3">
             <label asp-for="QtdGanhadores" class="form-label">Quantidade de Ganhadores</label>
             <input asp-for="QtdGanhadores" class="form-control" type="number" min="1" max="100" />
-            <div class="form-text">Número de posições premiadas (1º, 2º, 3º…)</div>
+            <div class="form-text">Número de posições premiadas (1º, 2º, 3º...)</div>
             <span asp-validation-for="QtdGanhadores" class="text-danger small"></span>
         </div>
         <div class="form-check mb-2">
@@ -152,7 +152,11 @@
         </div>
         <div class="form-check mb-3">
             <input asp-for="PermitirRegistroPublicoMembro" class="form-check-input" type="checkbox" />
-            <label asp-for="PermitirRegistroPublicoMembro" class="form-check-label">Permitir cadastro público de pescador com SMS</label>
+            <label asp-for="PermitirRegistroPublicoMembro" class="form-check-label">Permitir cadastro público de membro com SMS</label>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="ExibirParticipantesPublicos" class="form-check-input" type="checkbox" />
+            <label asp-for="ExibirParticipantesPublicos" class="form-check-label">Exibir participantes na tela inicial pública do torneio</label>
         </div>
 
         <div class="form-section-title">Premiação</div>
@@ -172,7 +176,7 @@
         <div class="form-section-title">Tema Visual</div>
         <div class="form-text text-muted mb-3">
             <i class="bi bi-palette me-1"></i>
-            Opcional — deixe em branco para usar as cores padrão da plataforma.
+            Opcional, deixe em branco para usar as cores padrão da plataforma.
         </div>
         <div class="row g-3 mb-3">
             <div class="col-md-6">
