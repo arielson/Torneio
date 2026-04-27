@@ -24,6 +24,7 @@ public class TorneioDbContext : DbContext
     public DbSet<Equipe> Equipes { get; set; }
     public DbSet<Membro> Membros { get; set; }
     public DbSet<RegistroPublicoMembro> RegistrosPublicosMembros { get; set; }
+    public DbSet<EspeciePeixe> EspeciesPeixe { get; set; }
     public DbSet<Item> Itens { get; set; }
     public DbSet<Patrocinador> Patrocinadores { get; set; }
     public DbSet<ParcelaTorneio> ParcelasTorneio { get; set; }

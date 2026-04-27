@@ -166,7 +166,7 @@ public class CapturaServico : ICapturaServico
             Id = c.Id,
             TorneioId = c.TorneioId,
             ItemId = c.ItemId,
-            NomeItem = item?.Nome ?? string.Empty,
+            NomeItem = item?.Especie?.Nome ?? string.Empty,
             MembroId = c.MembroId,
             NomeMembro = membro?.Nome ?? string.Empty,
             EquipeId = c.EquipeId,

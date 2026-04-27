@@ -2,16 +2,18 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
+    var especies = (IEnumerable<EspeciePeixeDto>)(ViewBag.Especies ?? Enumerable.Empty<EspeciePeixeDto>());
     var label = torneio?.LabelItem ?? "Item";
     var labelPlural = torneio?.LabelItemPlural ?? "Itens";
     var medida = torneio?.MedidaCaptura ?? "cm";
     var usarFator = torneio?.UsarFatorMultiplicador ?? false;
-    ViewData["Title"] = $"Novo {label}";
+    var storageBase = ViewBag.StorageBaseUrl as string ?? "";
+    ViewData["Title"] = $"Adicionar {label}";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Novo @label</h1>
+        <h1>Adicionar @label ao Torneio</h1>
     </div>
 </div>
 <a href="/@slug/itens" class="back-link">
@@ -19,21 +21,67 @@
 </a>
 
 <div class="form-card">
-    <form asp-controller="Item" asp-action="Criar" asp-route-slug="@slug" method="post" enctype="multipart/form-data">
+    <form asp-controller="Item" asp-action="Criar" asp-route-slug="@slug" method="post">
         <input asp-for="TorneioId" type="hidden" />
         @if (!ViewContext.ModelState.IsValid)
         {
             <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
         }
-        <div class="form-section-title">Dados do @label</div>
-        <div class="mb-3">
-            <label asp-for="Nome" class="form-label">Nome do @label</label>
-            <input asp-for="Nome" class="form-control" />
-            <span asp-validation-for="Nome" class="text-danger small"></span>
-        </div>
+
+        <div class="form-section-title">Espécie</div>
+        @if (!especies.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Nenhuma espécie cadastrada no sistema. <a href="/admin/especies/criar" target="_blank">Criar espécies</a> antes de adicionar itens ao torneio.
+            </div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <label class="form-label">Selecione a espécie</label>
+                <div class="row g-2" id="especiesGrid">
+                    @foreach (var e in especies.OrderBy(x => x.Nome))
+                    {
+                        var fotoUrl = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
+                            : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <label class="especie-card @(Model.EspeciePeixeId == e.Id ? "selected" : "")" data-id="@e.Id">
+                                <input type="radio" name="EspeciePeixeId" value="@e.Id"
+                                       @(Model.EspeciePeixeId == e.Id ? "checked" : "")
+                                       class="d-none especie-radio" />
+                                @if (fotoUrl != null)
+                                {
+                                    <img src="@fotoUrl" alt="@e.Nome"
+                                         style="width:64px;height:64px;object-fit:cover;border-radius:8px;"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <span class="especie-placeholder" style="display:none">
+                                        <i class="bi bi-fish"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="especie-placeholder">
+                                        <i class="bi bi-fish"></i>
+                                    </span>
+                                }
+                                <span class="especie-nome">@e.Nome</span>
+                                @if (!string.IsNullOrWhiteSpace(e.NomeCientifico))
+                                {
+                                    <span class="especie-cientifico">@e.NomeCientifico</span>
+                                }
+                            </label>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="EspeciePeixeId" class="text-danger small"></span>
+            </div>
+        }
+
+        <div class="form-section-title">Configurações no Torneio</div>
         <div class="row g-3 mb-2">
             <div class="@(usarFator ? "col-md-6" : "col-12")">
-                <label asp-for="Comprimento" class="form-label">Comprimento minimo (@medida) - opcional</label>
+                <label asp-for="Comprimento" class="form-label">Comprimento mínimo (@medida) <span class="text-muted">- opcional</span></label>
                 <input asp-for="Comprimento" class="form-control" type="number" step="0.01" min="0" />
                 <span asp-validation-for="Comprimento" class="text-danger small"></span>
             </div>
@@ -50,17 +98,54 @@
                 <input asp-for="FatorMultiplicador" type="hidden" value="1.00" />
             }
         </div>
-        <div class="form-section-title">Foto</div>
-        <partial name="_FotoUpload" view-data='@(new ViewDataDictionary(ViewData) { { "inputName", "foto" }, { "label", $"Foto do {label}" } })' />
+
         <div class="d-flex gap-2 pt-2">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1"></i>Criar @label
+                <i class="bi bi-check-lg me-1"></i>Adicionar ao Torneio
             </button>
             <a href="/@slug/itens" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>
 
+<style>
+.especie-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+    background: #fff;
+    min-height: 110px;
+    justify-content: center;
+}
+.especie-card:hover { border-color: #0d6efd; background: #f0f6ff; }
+.especie-card.selected { border-color: #0d6efd; background: #e8f0fe; }
+.especie-placeholder {
+    width: 64px; height: 64px;
+    border-radius: 8px;
+    background: #e9ecef;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: #6c757d;
+}
+.especie-nome { font-size: .85rem; font-weight: 600; line-height: 1.2; word-break: break-word; }
+.especie-cientifico { font-size: .72rem; color: #6c757d; font-style: italic; line-height: 1.1; }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    document.querySelectorAll('.especie-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.especie-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            card.querySelector('.especie-radio').checked = true;
+        });
+    });
+    </script>
 }

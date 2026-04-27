@@ -17,7 +17,7 @@
     </div>
     <div class="page-header-actions">
         <a href="/@slug/itens/criar" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Novo @label
+            <i class="bi bi-plus-lg me-1"></i>Adicionar @label
         </a>
     </div>
 </div>
@@ -27,12 +27,12 @@
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-collection me-2"></i>@labelPlural cadastrados</h5>
+        <h5><i class="bi bi-collection me-2"></i>@labelPlural do torneio</h5>
     </div>
     @if (!lista.Any())
     {
         <div class="card-body-pad text-muted">
-            Nenhum @label.ToLower() cadastrado. <a href="/@slug/itens/criar">Criar o primeiro</a>.
+            Nenhum @label.ToLower() adicionado. <a href="/@slug/itens/criar">Adicionar o primeiro</a>.
         </div>
     }
     else
@@ -74,7 +74,13 @@
                                     </span>
                                 }
                             </td>
-                            <td class="fw-semibold">@i.Nome</td>
+                            <td>
+                                <span class="fw-semibold">@i.Nome</span>
+                                @if (!string.IsNullOrWhiteSpace(i.NomeCientifico))
+                                {
+                                    <br /><small class="text-muted fst-italic">@i.NomeCientifico</small>
+                                }
+                            </td>
                             <td>@(i.Comprimento?.ToString("F2") ?? "-")</td>
                             @if (usarFator)
                             {
@@ -96,7 +102,7 @@
                                     </a>
                                     <form asp-controller="Item" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@i.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @i.Nome?')" title="Remover">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @i.Nome do torneio?')" title="Remover">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

@@ -12,25 +12,33 @@ namespace Torneio.Web.Controllers;
 public class ItemController : TorneioBaseController
 {
     private readonly IItemServico _servico;
+    private readonly IEspeciePeixeServico _especieServico;
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _log;
 
-    public ItemController(TenantContext tenantContext, IItemServico servico, ITorneioServico torneioServico, ILogAuditoriaServico log) : base(tenantContext)
+    public ItemController(
+        TenantContext tenantContext,
+        IItemServico servico,
+        IEspeciePeixeServico especieServico,
+        ITorneioServico torneioServico,
+        ILogAuditoriaServico log) : base(tenantContext)
     {
         _servico = servico;
+        _especieServico = especieServico;
         _torneioServico = torneioServico;
         _log = log;
     }
 
-    private async Task SetTorneioViewBag()
+    private async Task SetViewBag()
     {
         ViewBag.Torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        ViewBag.Especies = await _especieServico.ListarTodas();
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
-        await SetTorneioViewBag();
+        await SetViewBag();
         var itens = await _servico.ListarPorTorneio(TenantContext.TorneioId);
         return View(itens);
     }
@@ -38,7 +46,7 @@ public class ItemController : TorneioBaseController
     [HttpGet("criar")]
     public async Task<IActionResult> Criar()
     {
-        await SetTorneioViewBag();
+        await SetViewBag();
         return View(new CriarItemDto { TorneioId = TenantContext.TorneioId });
     }
 
@@ -54,35 +62,35 @@ public class ItemController : TorneioBaseController
             dto = new CriarItemDto
             {
                 TorneioId = TenantContext.TorneioId,
-                Nome = dto.Nome,
+                EspeciePeixeId = dto.EspeciePeixeId,
                 Comprimento = dto.Comprimento,
                 FatorMultiplicador = 1.0m,
-                FotoUrl = dto.FotoUrl,
             };
         }
 
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid || dto.EspeciePeixeId == Guid.Empty)
         {
-            await SetTorneioViewBag();
+            ModelState.AddModelError(nameof(dto.EspeciePeixeId), "Selecione uma espécie.");
+            await SetViewBag();
             return View(dto);
         }
+
         try
         {
-            var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/itens");
+            var especie = await _especieServico.ObterPorId(dto.EspeciePeixeId);
             await _servico.Criar(new CriarItemDto
             {
                 TorneioId = TenantContext.TorneioId,
-                Nome = dto.Nome,
+                EspeciePeixeId = dto.EspeciePeixeId,
                 Comprimento = dto.Comprimento,
                 FatorMultiplicador = dto.FatorMultiplicador,
-                FotoUrl = fotoUrl,
             });
-            TempData["Sucesso"] = "Item criado com sucesso.";
+            TempData["Sucesso"] = "Item adicionado ao torneio.";
             await _log.Registrar(new RegistrarLogDto
             {
                 TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
                 Categoria = CategoriaLog.Itens, Acao = "CriarItem",
-                Descricao = $"Item criado | Nome: {dto.Nome} | Comprimento mínimo: {dto.Comprimento} | Fator: {dto.FatorMultiplicador}",
+                Descricao = $"Item adicionado | Espécie: {especie?.Nome} | Comprimento mínimo: {dto.Comprimento} | Fator: {dto.FatorMultiplicador}",
                 UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
             });
             return RedirectToAction(nameof(Index), new { slug = Slug });
@@ -90,7 +98,7 @@ public class ItemController : TorneioBaseController
         catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            await SetTorneioViewBag();
+            await SetViewBag();
             return View(dto);
         }
     }
@@ -101,13 +109,12 @@ public class ItemController : TorneioBaseController
         var item = await _servico.ObterPorId(id);
         if (item is null) return NotFound();
         ViewBag.Item = item;
-        await SetTorneioViewBag();
+        await SetViewBag();
         return View(new AtualizarItemDto
         {
-            Nome = item.Nome,
+            EspeciePeixeId = item.EspeciePeixeId,
             Comprimento = item.Comprimento,
             FatorMultiplicador = item.FatorMultiplicador,
-            FotoUrl = item.FotoUrl,
         });
     }
 
@@ -120,30 +127,20 @@ public class ItemController : TorneioBaseController
         {
             dto = new AtualizarItemDto
             {
-                Nome = dto.Nome,
+                EspeciePeixeId = dto.EspeciePeixeId,
                 Comprimento = dto.Comprimento,
                 FatorMultiplicador = 1.0m,
-                FotoUrl = dto.FotoUrl,
             };
         }
 
         if (!ModelState.IsValid)
         {
             ViewBag.Item = await _servico.ObterPorId(id);
-            await SetTorneioViewBag();
+            await SetViewBag();
             return View(dto);
         }
         try
         {
-            var itemAtual = await _servico.ObterPorId(id);
-            var fotoUrl = await SalvarFotoAsync(Request.Form.Files["foto"], "fotos/itens") ?? itemAtual?.FotoUrl;
-            dto = new AtualizarItemDto
-            {
-                Nome = dto.Nome,
-                Comprimento = dto.Comprimento,
-                FatorMultiplicador = dto.FatorMultiplicador,
-                FotoUrl = fotoUrl,
-            };
             await _servico.Atualizar(id, dto);
             TempData["Sucesso"] = "Item atualizado.";
             return RedirectToAction(nameof(Index), new { slug = Slug });
@@ -152,7 +149,7 @@ public class ItemController : TorneioBaseController
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewBag.Item = await _servico.ObterPorId(id);
-            await SetTorneioViewBag();
+            await SetViewBag();
             return View(dto);
         }
     }
@@ -163,14 +160,13 @@ public class ItemController : TorneioBaseController
     {
         var item = await _servico.ObterPorId(id);
         await _servico.Remover(id);
-        await RemoverFotoAsync(item?.FotoUrl);
         TempData["Sucesso"] = "Item removido.";
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         await _log.Registrar(new RegistrarLogDto
         {
             TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
             Categoria = CategoriaLog.Itens, Acao = "RemoverItem",
-            Descricao = $"Item removido | Nome: {item?.Nome ?? id.ToString()} | Comprimento mínimo: {item?.Comprimento} | Fator: {item?.FatorMultiplicador}",
+            Descricao = $"Item removido | Espécie: {item?.Nome ?? id.ToString()} | Comprimento mínimo: {item?.Comprimento} | Fator: {item?.FatorMultiplicador}",
             UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
         });
         return RedirectToAction(nameof(Index), new { slug = Slug });

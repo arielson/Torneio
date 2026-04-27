@@ -10,10 +10,13 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
     {
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Nome).IsRequired().HasMaxLength(200);
-        builder.Property(e => e.FotoUrl).HasMaxLength(500);
         builder.Property(e => e.Comprimento).HasColumnType("numeric(10,2)");
         builder.Property(e => e.FatorMultiplicador).HasColumnType("numeric(10,4)").IsRequired();
+
+        builder.HasOne(e => e.Especie)
+            .WithMany()
+            .HasForeignKey(e => e.EspeciePeixeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<TorneioEntity>()
             .WithMany()

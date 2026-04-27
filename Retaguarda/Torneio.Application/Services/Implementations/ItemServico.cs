@@ -42,9 +42,12 @@ public class ItemServico : IItemServico
     {
         await _validador.ValidateAndThrowAsync(dto);
 
-        var entidade = Item.Criar(dto.TorneioId, dto.Nome, dto.Comprimento, dto.FatorMultiplicador, dto.FotoUrl);
+        var entidade = Item.Criar(dto.TorneioId, dto.EspeciePeixeId, dto.Comprimento, dto.FatorMultiplicador);
         await _repositorio.Adicionar(entidade);
-        return ParaDto(entidade);
+
+        // Reload with navigation property
+        var comEspecie = await _repositorio.ObterPorId(entidade.Id);
+        return ParaDto(comEspecie!);
     }
 
     public async Task Atualizar(Guid id, AtualizarItemDto dto)
@@ -54,7 +57,7 @@ public class ItemServico : IItemServico
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
 
-        entidade.Atualizar(dto.Nome, dto.Comprimento, dto.FatorMultiplicador, dto.FotoUrl);
+        entidade.Atualizar(dto.EspeciePeixeId, dto.Comprimento, dto.FatorMultiplicador);
         await _repositorio.Atualizar(entidade);
     }
 
@@ -72,8 +75,10 @@ public class ItemServico : IItemServico
     {
         Id = e.Id,
         TorneioId = e.TorneioId,
-        Nome = e.Nome,
-        FotoUrl = e.FotoUrl,
+        EspeciePeixeId = e.EspeciePeixeId,
+        Nome = e.Especie?.Nome ?? string.Empty,
+        NomeCientifico = e.Especie?.NomeCientifico,
+        FotoUrl = e.Especie?.FotoUrl,
         Comprimento = e.Comprimento,
         FatorMultiplicador = e.FatorMultiplicador
     };

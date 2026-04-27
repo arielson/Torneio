@@ -4,8 +4,8 @@ public class Item
 {
     public Guid Id { get; private set; }
     public Guid TorneioId { get; private set; }
-    public string Nome { get; private set; } = null!;
-    public string? FotoUrl { get; private set; }
+    public Guid EspeciePeixeId { get; private set; }
+    public EspeciePeixe Especie { get; private set; } = null!;
     public decimal? Comprimento { get; private set; }
     public decimal FatorMultiplicador { get; private set; }
 
@@ -13,27 +13,24 @@ public class Item
 
     public static Item Criar(
         Guid torneioId,
-        string nome,
+        Guid especiePeixeId,
         decimal? comprimento,
-        decimal fatorMultiplicador = 1.0m,
-        string? fotoUrl = null)
+        decimal fatorMultiplicador = 1.0m)
     {
         return new Item
         {
             Id = Guid.NewGuid(),
             TorneioId = torneioId,
-            Nome = nome,
+            EspeciePeixeId = especiePeixeId,
             Comprimento = comprimento,
-            FatorMultiplicador = fatorMultiplicador,
-            FotoUrl = fotoUrl
+            FatorMultiplicador = fatorMultiplicador
         };
     }
 
-    public void Atualizar(string nome, decimal? comprimento, decimal fatorMultiplicador, string? fotoUrl = null)
+    public void Atualizar(Guid especiePeixeId, decimal? comprimento, decimal fatorMultiplicador)
     {
-        Nome = nome;
+        EspeciePeixeId = especiePeixeId;
         Comprimento = comprimento;
         FatorMultiplicador = fatorMultiplicador;
-        if (fotoUrl != null) FotoUrl = fotoUrl;
     }
 }
