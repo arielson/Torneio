@@ -16,7 +16,6 @@ public class TorneioServico : ITorneioServico
     private readonly IEquipeRepositorio _equipeRepositorio;
     private readonly IMembroRepositorio _membroRepositorio;
     private readonly IPremioRepositorio _premioRepositorio;
-    private readonly IItemRepositorio _itemRepositorio;
     private readonly ICapturaRepositorio _capturaRepositorio;
     private readonly IBannerRepositorio _bannerRepositorio;
     private readonly IFileStorage _fileStorage;
@@ -29,7 +28,6 @@ public class TorneioServico : ITorneioServico
         IEquipeRepositorio equipeRepositorio,
         IMembroRepositorio membroRepositorio,
         IPremioRepositorio premioRepositorio,
-        IItemRepositorio itemRepositorio,
         ICapturaRepositorio capturaRepositorio,
         IBannerRepositorio bannerRepositorio,
         IFileStorage fileStorage,
@@ -41,7 +39,6 @@ public class TorneioServico : ITorneioServico
         _equipeRepositorio = equipeRepositorio;
         _membroRepositorio = membroRepositorio;
         _premioRepositorio = premioRepositorio;
-        _itemRepositorio = itemRepositorio;
         _capturaRepositorio = capturaRepositorio;
         _bannerRepositorio = bannerRepositorio;
         _fileStorage = fileStorage;
@@ -183,8 +180,7 @@ public class TorneioServico : ITorneioServico
         var membros  = await _membroRepositorio.ListarPorTorneio(id);
         urls.AddRange(membros.Select(m => m.FotoUrl));
 
-        var itens    = await _itemRepositorio.ListarPorTorneio(id);
-        urls.AddRange(itens.Select(i => i.FotoUrl));
+        // Fotos de espécies são globais — não são deletadas ao remover o torneio
 
         var capturas = await _capturaRepositorio.ListarPorTorneio(id);
         urls.AddRange(capturas.Select(c => c.FotoUrl));

@@ -1,38 +1,32 @@
-@model IEnumerable<ItemDto>
+@model IEnumerable<EspeciePeixeDto>
 @{
-    var slug = Context.GetRouteData().Values["slug"]?.ToString();
-    var torneio = (TorneioDto)ViewBag.Torneio;
-    var label = torneio?.LabelItem ?? "Item";
-    var labelPlural = torneio?.LabelItemPlural ?? "Itens";
-    var medida = torneio?.MedidaCaptura ?? "cm";
-    var usarFator = torneio?.UsarFatorMultiplicador ?? false;
-    ViewData["Title"] = labelPlural;
+    ViewData["Title"] = "Espécies de Peixe";
     var lista = Model.ToList();
     var storageBase = ViewBag.StorageBaseUrl as string ?? "";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>@labelPlural</h1>
+        <h1>Espécies de Peixe</h1>
     </div>
     <div class="page-header-actions">
-        <a href="/@slug/itens/criar" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Adicionar @label
+        <a href="/admin/especies/criar" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Nova Espécie
         </a>
     </div>
 </div>
-<a href="/@slug/admin" class="back-link">
+<a href="/admin" class="back-link">
     <i class="bi bi-arrow-left"></i> Painel
 </a>
 
 <div class="content-card">
     <div class="card-header-bar">
-        <h5><i class="bi bi-collection me-2"></i>@labelPlural do torneio</h5>
+        <h5><i class="bi bi-collection me-2"></i>Espécies cadastradas</h5>
     </div>
     @if (!lista.Any())
     {
         <div class="card-body-pad text-muted">
-            Nenhum @label.ToLower() adicionado. <a href="/@slug/itens/criar">Adicionar o primeiro</a>.
+            Nenhuma espécie cadastrada. <a href="/admin/especies/criar">Criar a primeira</a>.
         </div>
     }
     else
@@ -43,27 +37,23 @@
                     <tr>
                         <th style="width:48px"></th>
                         <th>Nome</th>
-                        <th>Comprimento min. (@medida)</th>
-                        @if (usarFator)
-                        {
-                            <th>Fator</th>
-                        }
+                        <th>Nome Científico</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var i in lista)
+                    @foreach (var e in lista)
                     {
-                        var fotoItem = string.IsNullOrWhiteSpace(i.FotoUrl) ? null
-                            : (i.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? i.FotoUrl : $"{storageBase}/{i.FotoUrl.TrimStart('/')}");
+                        var fotoUrl = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
+                            : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
                         <tr>
                             <td>
-                                @if (fotoItem != null)
+                                @if (fotoUrl != null)
                                 {
-                                    <img src="@fotoItem" alt="@i.Nome"
+                                    <img src="@fotoUrl" alt="@e.Nome"
                                          class="rounded foto-thumb"
                                          style="width:36px;height:36px;object-fit:cover;cursor:pointer;"
-                                         data-src="@fotoItem" data-nome="@i.Nome"
+                                         data-src="@fotoUrl" data-nome="@e.Nome"
                                          onerror="this.replaceWith(document.getElementById('avatar-tpl').content.cloneNode(true))" />
                                 }
                                 else
@@ -74,35 +64,16 @@
                                     </span>
                                 }
                             </td>
-                            <td>
-                                <span class="fw-semibold">@i.Nome</span>
-                                @if (!string.IsNullOrWhiteSpace(i.NomeCientifico))
-                                {
-                                    <br /><small class="text-muted fst-italic">@i.NomeCientifico</small>
-                                }
-                            </td>
-                            <td>@(i.Comprimento?.ToString("F2") ?? "-")</td>
-                            @if (usarFator)
-                            {
-                                <td>
-                                    @if (i.FatorMultiplicador != 1.0m)
-                                    {
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle">@i.FatorMultiplicador.ToString("F2")</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">1,00</span>
-                                    }
-                                </td>
-                            }
+                            <td class="fw-semibold">@e.Nome</td>
+                            <td class="text-muted fst-italic small">@(e.NomeCientifico ?? "—")</td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <a href="/@slug/itens/@i.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <a href="/admin/especies/@e.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form asp-controller="Item" asp-action="Remover" asp-route-slug="@slug" asp-route-id="@i.Id" method="post" class="d-inline">
+                                    <form asp-controller="EspeciePeixe" asp-action="Remover" asp-route-id="@e.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @i.Nome do torneio?')" title="Remover">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover @e.Nome? Isso afetará todos os torneios que usam essa espécie.')" title="Remover">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

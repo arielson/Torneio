@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Torneio.Application;
 using Torneio.Infrastructure;
 using Torneio.Infrastructure.Seed;
@@ -90,6 +91,7 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Torneio.Infrastructure.Data.TorneioDbContext>();
+    await db.Database.MigrateAsync();
     var hasher = scope.ServiceProvider.GetRequiredService<Torneio.Application.Common.IPasswordHasher>();
     await DatabaseSeeder.SeedAsync(db, hasher);
 }

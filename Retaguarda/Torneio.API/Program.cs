@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Torneio.Application;
 using Torneio.API.Middleware;
@@ -61,6 +62,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Torneio.Infrastructure.Data.TorneioDbContext>();
+    await db.Database.MigrateAsync();
     var hasher = scope.ServiceProvider.GetRequiredService<Torneio.Application.Common.IPasswordHasher>();
     await DatabaseSeeder.SeedAsync(db, hasher);
 }
