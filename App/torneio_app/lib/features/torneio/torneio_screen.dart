@@ -317,11 +317,11 @@ class _RankingSection extends StatelessWidget {
                       _Avatar(fotoUrl: fotoUrl, icon: Icons.directions_boat),
                     ],
                   ),
-                  title: Text(r['nomeEquipe'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text('${r['qtdCapturas']} ${config.labelCaptura.toLowerCase()}(s)'),
+                  title: Text(r['nomeEquipe'] as String? ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+                  subtitle: Text('${r['qtdCapturas']} ${config.labelCaptura.toLowerCase()}(s)', style: const TextStyle(fontSize: 15)),
                   trailing: Text(
                     '${(r['totalPontos'] as num?)?.toStringAsFixed(2) ?? '0'} pts',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 );
               }).toList(),
@@ -384,7 +384,7 @@ class _Medalha extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = switch (posicao) { 1 => '🥇', 2 => '🥈', 3 => '🥉', _ => '$posicao°' };
-    return Text(text, style: const TextStyle(fontSize: 20));
+    return Text(text, style: const TextStyle(fontSize: 32));
   }
 }
 
@@ -395,25 +395,25 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (fotoUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: 18,
-        backgroundColor: Colors.grey.shade300,
-        child: ClipOval(
-          child: Image.network(
-            fotoUrl,
-            width: 36, height: 36,
-            fit: BoxFit.cover,
-            errorBuilder: (ctx, err, st) =>
-                Icon(icon, size: 18, color: Colors.grey.shade600),
-          ),
-        ),
-      );
-    }
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: Colors.grey.shade300,
-      child: Icon(icon, size: 18, color: Colors.grey.shade600),
+    const double size = 56;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.grey.shade300,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: fotoUrl.isNotEmpty
+          ? Image.network(
+              fotoUrl,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (ctx, err, st) =>
+                  Icon(icon, size: 28, color: Colors.grey.shade600),
+            )
+          : Icon(icon, size: 28, color: Colors.grey.shade600),
     );
   }
 }
@@ -488,18 +488,18 @@ class _MembroTileState extends State<_MembroTile> {
                 ),
               ],
             ),
-            title: Text(widget.nome, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(widget.nomeEquipe, style: const TextStyle(fontSize: 12)),
+            title: Text(widget.nome, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+            subtitle: Text(widget.nomeEquipe, style: const TextStyle(fontSize: 15)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '${widget.totalPontos.toStringAsFixed(2)} pts',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 if (widget.capturas.isNotEmpty) ...[
                   const SizedBox(width: 4),
-                  Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 20),
+                  Icon(_expandido ? Icons.expand_less : Icons.expand_more, size: 22),
                 ],
               ],
             ),
@@ -522,30 +522,30 @@ class _MembroTileState extends State<_MembroTile> {
                               ? () => _abrirFoto(context, capFotoUrl)
                               : null,
                           child: Container(
-                            width: 56,
-                            height: 56,
+                            width: 80,
+                            height: 80,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(8),
                               color: Colors.grey.shade200,
                             ),
                             child: capFotoUrl.isNotEmpty
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     child: Image.network(
                                       capFotoUrl,
                                       fit: BoxFit.cover,
                                       errorBuilder: (ctx, e, st) => Icon(
                                         Icons.image_not_supported_outlined,
                                         color: Colors.grey.shade400,
-                                        size: 24,
+                                        size: 32,
                                       ),
                                     ),
                                   )
                                 : Icon(Icons.photo_camera_outlined,
-                                    color: Colors.grey.shade400, size: 24),
+                                    color: Colors.grey.shade400, size: 32),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         // Detalhes
                         Expanded(
                           child: Column(
@@ -553,18 +553,18 @@ class _MembroTileState extends State<_MembroTile> {
                             children: [
                               Text(
                                 c['nomeItem'] as String? ?? '',
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Text(
                                 '${(c['tamanhoMedida'] as num?)?.toStringAsFixed(2) ?? '-'} ${widget.medida}'
                                 '${widget.usarFator && fator > 1 ? '  ×${fator.toStringAsFixed(2)}' : ''}',
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
                               ),
                               if (c['dataHora'] != null)
                                 Text(
                                   c['dataHora'] as String,
-                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                  style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                                 ),
                             ],
                           ),
@@ -572,7 +572,7 @@ class _MembroTileState extends State<_MembroTile> {
                         // Pontuação
                         Text(
                           '${(c['pontuacao'] as num?)?.toStringAsFixed(2) ?? '-'} pts',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

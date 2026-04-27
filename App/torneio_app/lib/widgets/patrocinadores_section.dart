@@ -30,7 +30,7 @@ class PatrocinadoresSection extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: patrocinadores.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            separatorBuilder: (_, i) => const SizedBox(width: 10),
             itemBuilder: (context, index) => _PatrocinadorCard(
               patrocinador: patrocinadores[index],
             ),

@@ -1396,7 +1396,7 @@ class _BouncingDotsState extends State<_BouncingDots>
         3,
         (i) => AnimatedBuilder(
           animation: _ctrls[i],
-          builder: (_, _) => Transform.translate(
+          builder: (ctx, _) => Transform.translate(
             offset: Offset(0, -9 * _ctrls[i].value),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 5),

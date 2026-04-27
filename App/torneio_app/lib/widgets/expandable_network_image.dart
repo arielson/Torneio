@@ -29,7 +29,7 @@ class ExpandableAvatar extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: imageUrl!,
               fit: BoxFit.cover,
-              errorWidget: (_, _, _) => Icon(fallbackIcon),
+              errorWidget: (ctx, url, err) => Icon(fallbackIcon),
             ),
           ),
         ),
@@ -60,7 +60,7 @@ class ExpandableRectImage extends StatelessWidget {
         ? CachedNetworkImage(
             imageUrl: imageUrl!,
             fit: BoxFit.cover,
-            errorWidget: (_, _, _) => _RectPlaceholder(icon: fallbackIcon),
+            errorWidget: (ctx, url, err) => _RectPlaceholder(icon: fallbackIcon),
           )
         : _RectPlaceholder(icon: fallbackIcon);
 
@@ -99,7 +99,7 @@ Future<void> showExpandedImage(BuildContext context, String imageUrl) {
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.contain,
-                errorWidget: (_, _, _) => const Padding(
+                errorWidget: (ctx, url, err) => const Padding(
                   padding: EdgeInsets.all(32),
                   child: Icon(Icons.broken_image, size: 64, color: Colors.grey),
                 ),
