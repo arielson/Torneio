@@ -56,57 +56,72 @@ public class ItemController : TorneioBaseController
         return View(new CriarItemDto { TorneioId = TenantContext.TorneioId });
     }
 
-    [HttpPost("criar")]
+    [HttpPost("criar/lote")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Criar(CriarItemDto dto)
+    public async Task<IActionResult> CriarLote(
+        [FromForm] List<Guid>? EspeciePeixeIds,
+        [FromForm] decimal? Comprimento,
+        [FromForm] decimal FatorMultiplicador = 1.0m)
     {
-        ModelState.Remove(nameof(dto.TorneioId));
+        if (EspeciePeixeIds is null || EspeciePeixeIds.Count == 0)
+        {
+            TempData["Erro"] = "Selecione ao menos uma espécie.";
+            await SetViewBag();
+            return View("Criar", new CriarItemDto { TorneioId = TenantContext.TorneioId });
+        }
 
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is not null && !torneio.UsarFatorMultiplicador)
+            FatorMultiplicador = 1.0m;
+
+        var adicionados = new List<string>();
+        var ignorados   = new List<string>();
+
+        foreach (var especieId in EspeciePeixeIds.Distinct())
         {
-            dto = new CriarItemDto
+            try
             {
-                TorneioId = TenantContext.TorneioId,
-                EspeciePeixeId = dto.EspeciePeixeId,
-                Comprimento = dto.Comprimento,
-                FatorMultiplicador = 1.0m,
-            };
+                var especie = await _especieServico.ObterPorId(especieId);
+                await _servico.Criar(new CriarItemDto
+                {
+                    TorneioId        = TenantContext.TorneioId,
+                    EspeciePeixeId   = especieId,
+                    Comprimento      = Comprimento,
+                    FatorMultiplicador = FatorMultiplicador,
+                });
+                adicionados.Add(especie?.Nome ?? especieId.ToString());
+            }
+            catch
+            {
+                var especie = await _especieServico.ObterPorId(especieId);
+                ignorados.Add(especie?.Nome ?? especieId.ToString());
+            }
         }
 
-        if (!ModelState.IsValid || dto.EspeciePeixeId == Guid.Empty)
+        if (adicionados.Count > 0)
         {
-            ModelState.AddModelError(nameof(dto.EspeciePeixeId), "Selecione uma espécie.");
-            await SetViewBag();
-            return View(dto);
-        }
-
-        try
-        {
-            var especie = await _especieServico.ObterPorId(dto.EspeciePeixeId);
-            await _servico.Criar(new CriarItemDto
-            {
-                TorneioId = TenantContext.TorneioId,
-                EspeciePeixeId = dto.EspeciePeixeId,
-                Comprimento = dto.Comprimento,
-                FatorMultiplicador = dto.FatorMultiplicador,
-            });
-            TempData["Sucesso"] = "Item adicionado ao torneio.";
             await _log.Registrar(new RegistrarLogDto
             {
                 TorneioId = TenantContext.TorneioId, NomeTorneio = torneio?.NomeTorneio,
-                Categoria = CategoriaLog.Itens, Acao = "CriarItem",
-                Descricao = $"Item adicionado | Espécie: {especie?.Nome} | Comprimento mínimo: {dto.Comprimento} | Fator: {dto.FatorMultiplicador}",
+                Categoria = CategoriaLog.Itens, Acao = "CriarItemLote",
+                Descricao = $"{adicionados.Count} espécie(s) adicionada(s): {string.Join(", ", adicionados)}" +
+                            (ignorados.Count > 0 ? $" | Ignoradas (já existiam): {string.Join(", ", ignorados)}" : ""),
                 UsuarioNome = UsuarioNome, UsuarioPerfil = UsuarioPerfil, IpAddress = IpAddress
             });
-            return RedirectToAction(nameof(Index), new { slug = Slug });
+
+            TempData["Sucesso"] = adicionados.Count == 1
+                ? $"Espécie \"{adicionados[0]}\" adicionada ao torneio."
+                : $"{adicionados.Count} espécies adicionadas ao torneio.";
         }
-        catch (Exception ex)
+
+        if (ignorados.Count > 0 && adicionados.Count == 0)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
+            TempData["Erro"] = "As espécies selecionadas já estão cadastradas no torneio.";
             await SetViewBag();
-            return View(dto);
+            return View("Criar", new CriarItemDto { TorneioId = TenantContext.TorneioId });
         }
+
+        return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
     [HttpGet("{id:guid}/editar")]

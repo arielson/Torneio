@@ -21,44 +21,59 @@
     <i class="bi bi-arrow-left"></i> @labelPlural
 </a>
 
-<div class="form-card">
-    <form asp-controller="Item" asp-action="Criar" asp-route-slug="@slug" method="post">
-        <input asp-for="TorneioId" type="hidden" />
-        @if (!ViewContext.ModelState.IsValid)
-        {
-            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
-        }
+<form asp-controller="Item" asp-action="CriarLote" asp-route-slug="@slug" method="post" id="formLote">
+    @Html.AntiForgeryToken()
+    <input name="TorneioId" type="hidden" value="@Model.TorneioId" />
 
-        <div class="form-section-title">Espécie</div>
-        @if (!especies.Any())
-        {
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                Nenhuma espécie cadastrada no sistema. <a href="/admin/especies/criar" target="_blank">Criar espécies</a> antes de adicionar itens ao torneio.
-            </div>
-        }
-        else
-        {
-            <div class="row g-3 mb-3">
-                <!-- Grid de seleção -->
-                <div class="col-lg-8">
-                    <label class="form-label">Selecione a espécie</label>
-                    <div class="row g-2" id="especiesGrid">
+    @if (TempData["Erro"] is string erroMsg)
+    {
+        <div class="alert alert-danger py-2 mb-3 small"><i class="bi bi-exclamation-circle me-1"></i>@erroMsg</div>
+    }
+
+    <div class="form-card">
+        <div class="d-flex gap-4 align-items-start flex-wrap flex-md-nowrap">
+
+        <!-- Grid de espécies -->
+        <div class="flex-grow-1 min-w-0">
+                <div class="form-section-title">
+                    Espécies disponíveis
+                    @if (especies.Any(e => !jaAdicionadas.Contains(e.Id)))
+                    {
+                        <button type="button" class="btn btn-link btn-sm p-0 ms-2 text-decoration-none" id="btnSelecionarTodas">
+                            Selecionar todas
+                        </button>
+                        <span class="text-muted">·</span>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="btnLimparSelecao">
+                            Limpar
+                        </button>
+                    }
+                </div>
+
+                @if (!especies.Any())
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Nenhuma espécie cadastrada no sistema. <a href="/admin/especies/criar" target="_blank">Criar espécies</a> antes de adicionar itens ao torneio.
+                    </div>
+                }
+                else
+                {
+                    <div class="especies-grid" id="especiesGrid">
                         @foreach (var e in especies.OrderBy(x => x.Nome))
                         {
                             var fotoUrl = string.IsNullOrWhiteSpace(e.FotoUrl) ? null
                                 : (e.FotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? e.FotoUrl : $"{storageBase}/{e.FotoUrl.TrimStart('/')}");
                             var jaAdicionada = jaAdicionadas.Contains(e.Id);
-                            <div class="col-6 col-sm-4 col-md-3">
-                                <label class="especie-card @(Model.EspeciePeixeId == e.Id ? "selected" : "") @(jaAdicionada ? "ja-adicionada" : "")"
+                                <label class="especie-card @(jaAdicionada ? "ja-adicionada" : "")"
                                        data-id="@e.Id"
                                        data-nome="@e.Nome"
-                                       data-cientifico="@(e.NomeCientifico ?? "")"
                                        data-foto="@(fotoUrl ?? "")">
-                                    <input type="radio" name="EspeciePeixeId" value="@e.Id"
-                                           @(Model.EspeciePeixeId == e.Id ? "checked" : "")
+                                    <input type="checkbox" name="EspeciePeixeIds" value="@e.Id"
                                            @(jaAdicionada ? "disabled" : "")
-                                           class="d-none especie-radio" />
+                                           class="d-none especie-check" />
+                                    <div class="especie-check-icon">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
                                     @if (fotoUrl != null)
                                     {
                                         <img src="@fotoUrl" alt="@e.Nome"
@@ -76,73 +91,68 @@
                                     }
                                     <span class="especie-nome">@e.Nome</span>
                                 </label>
-                            </div>
                         }
                     </div>
-                    <span asp-validation-for="EspeciePeixeId" class="text-danger small"></span>
+                }
+        </div>
+
+        <!-- Painel lateral -->
+        <div class="painel-selecionadas">
+            <div class="d-flex flex-column h-100">
+                <div class="form-section-title mb-2">
+                    Selecionadas <span class="badge bg-primary rounded-pill ms-1" id="badgeContagem">0</span>
                 </div>
 
-                <!-- Preview da espécie selecionada -->
-                <div class="col-lg-4">
-                    <label class="form-label d-none d-lg-block">&nbsp;</label>
-                    <div id="especiePreview" class="especie-preview">
-                        <div id="previewVazio" class="especie-preview-vazio">
-                            <i class="bi bi-collection fs-1 text-secondary"></i>
-                            <span class="text-muted small mt-2">Selecione uma espécie</span>
-                        </div>
-                        <div id="previewConteudo" style="display:none">
-                            <div id="previewFotoWrap" class="mb-3">
-                                <img id="previewFoto" src="" alt=""
-                                     style="width:100%;max-height:260px;object-fit:cover;border-radius:10px;" />
-                                <div id="previewFotoPlaceholder" class="especie-preview-placeholder" style="display:none">
-                                    <i class="bi bi-collection"></i>
-                                </div>
-                            </div>
-                            <div class="fw-bold fs-6" id="previewNome"></div>
-                            <div class="text-muted fst-italic small mt-1" id="previewCientifico"></div>
-                            <div class="mt-2">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                    <i class="bi bi-check-circle me-1"></i>Selecionada
-                                </span>
-                            </div>
-                        </div>
+                <!-- Lista das selecionadas -->
+                <div id="listaSelecionadas" class="selecionadas-lista flex-grow-1 mb-3">
+                    <div id="vazioMsg" class="text-muted text-center small py-4">
+                        <i class="bi bi-hand-index fs-2 d-block mb-2 opacity-50"></i>
+                        Clique nas espécies ao lado para selecioná-las
                     </div>
                 </div>
-            </div>
-        }
 
-        <div class="form-section-title">Configurações no Torneio</div>
-        <div class="row g-3 mb-2">
-            <div class="@(usarFator ? "col-md-6" : "col-12")">
-                <label asp-for="Comprimento" class="form-label">Comprimento mínimo (@medida) <span class="text-muted">- opcional</span></label>
-                <input asp-for="Comprimento" class="form-control" type="number" step="0.01" min="0" />
-                <span asp-validation-for="Comprimento" class="text-danger small"></span>
-            </div>
-            @if (usarFator)
-            {
-                <div class="col-md-6">
-                    <label asp-for="FatorMultiplicador" class="form-label">Fator Multiplicador</label>
-                    <input asp-for="FatorMultiplicador" class="form-control" type="number" step="0.01" min="0.01" value="1.00" />
-                    <span asp-validation-for="FatorMultiplicador" class="text-danger small"></span>
+                <!-- Configurações compartilhadas -->
+                <div class="border-top pt-3">
+                    <div class="form-section-title mb-2">Configurações (para todas)</div>
+                    <div class="row g-2">
+                        <div class="@(usarFator ? "col-12" : "col-12")">
+                            <label class="form-label form-label-sm">Comprimento mínimo (@medida) <span class="text-muted">- opcional</span></label>
+                            <input name="Comprimento" class="form-control form-control-sm" type="number" step="0.01" min="0" />
+                        </div>
+                        @if (usarFator)
+                        {
+                            <div class="col-12">
+                                <label class="form-label form-label-sm">Fator Multiplicador</label>
+                                <input name="FatorMultiplicador" class="form-control form-control-sm" type="number" step="0.01" min="0.01" value="1.00" />
+                            </div>
+                        }
+                        else
+                        {
+                            <input name="FatorMultiplicador" type="hidden" value="1.00" />
+                        }
+                    </div>
                 </div>
-            }
-            else
-            {
-                <input asp-for="FatorMultiplicador" type="hidden" value="1.00" />
-            }
+
+                <!-- Botões -->
+                <div class="d-flex gap-2 pt-3">
+                    <button type="submit" class="btn btn-primary flex-grow-1" id="btnAdicionar" disabled>
+                        <i class="bi bi-check-lg me-1"></i>
+                        <span id="btnTexto">Selecione espécies</span>
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <a href="/@slug/itens" class="btn btn-outline-secondary w-100">Cancelar</a>
+                </div>
+            </div>
         </div>
 
-        <div class="d-flex gap-2 pt-2">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1"></i>Adicionar ao Torneio
-            </button>
-            <a href="/@slug/itens" class="btn btn-outline-secondary">Cancelar</a>
-        </div>
-    </form>
-</div>
+        </div><!-- fim d-flex -->
+    </div><!-- fim form-card -->
+</form>
 
 <style>
 .especie-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -158,7 +168,25 @@
     justify-content: center;
 }
 .especie-card:hover { border-color: #0d6efd; background: #f0f6ff; }
-.especie-card.selected { border-color: #0d6efd; background: #e8f0fe; box-shadow: 0 0 0 3px rgba(13,110,253,.15); }
+.especie-card.selected {
+    border-color: #0d6efd;
+    background: #e8f0fe;
+    box-shadow: 0 0 0 3px rgba(13,110,253,.15);
+}
+.especie-check-icon {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    line-height: 1;
+}
+.especie-card.selected .especie-check-icon { display: flex; }
 .especie-placeholder {
     width: 56px; height: 56px;
     border-radius: 8px;
@@ -174,79 +202,197 @@
     display: block; margin-top: 2px;
 }
 
-.especie-preview {
-    border: 2px solid #dee2e6;
-    border-radius: 12px;
-    padding: 16px;
-    background: #fff;
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* Grid de espécies: colunas automáticas de ~110px */
+.especies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
 }
-.especie-preview-vazio {
+
+/* Painel lateral: largura fixa, sticky enquanto rola o grid */
+.painel-selecionadas {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    border-left: 1px solid #dee2e6;
+    padding-left: 1.25rem;
+}
+@@media (max-width: 767px) {
+    .painel-selecionadas {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #dee2e6;
+        padding-left: 0;
+        padding-top: 1rem;
+        position: static;
+    }
+}
+
+.selecionadas-lista {
+    max-height: 320px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    gap: 6px;
+}
+.selecionada-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    min-height: 140px;
-    opacity: .5;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #f8f9fa;
+    animation: fadeIn .15s ease;
 }
-.especie-preview-placeholder {
-    width: 100%; height: 140px;
-    border-radius: 10px;
+.selecionada-item img {
+    width: 36px; height: 36px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.selecionada-item .selecionada-placeholder {
+    width: 36px; height: 36px;
+    border-radius: 6px;
     background: #e9ecef;
     display: flex; align-items: center; justify-content: center;
-    font-size: 3rem; color: #6c757d;
+    font-size: .9rem; color: #6c757d;
+    flex-shrink: 0;
 }
+.selecionada-nome { font-size: .82rem; font-weight: 600; flex-grow: 1; line-height: 1.2; }
+.selecionada-remover {
+    border: none; background: none; padding: 2px 4px;
+    color: #6c757d; cursor: pointer; flex-shrink: 0;
+    border-radius: 4px;
+    transition: color .1s, background .1s;
+}
+.selecionada-remover:hover { color: #dc3545; background: #f8d7da; }
+@@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
 </style>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
     (() => {
-        const vazio     = document.getElementById('previewVazio');
-        const conteudo  = document.getElementById('previewConteudo');
-        const foto      = document.getElementById('previewFoto');
-        const fotoPh    = document.getElementById('previewFotoPlaceholder');
-        const nome      = document.getElementById('previewNome');
-        const cient     = document.getElementById('previewCientifico');
+        const btnAdicionar    = document.getElementById('btnAdicionar');
+        const btnTexto        = document.getElementById('btnTexto');
+        const badgeContagem   = document.getElementById('badgeContagem');
+        const listaSelecionadas = document.getElementById('listaSelecionadas');
+        const vazioMsg        = document.getElementById('vazioMsg');
+        const btnSelTodas     = document.getElementById('btnSelecionarTodas');
+        const btnLimpar       = document.getElementById('btnLimparSelecao');
 
-        function selecionarCard(card) {
-            document.querySelectorAll('.especie-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            card.querySelector('.especie-radio').checked = true;
+        // Map id -> { nome, foto, card, checkbox, itemEl }
+        const selecionadas = new Map();
 
-            const nomeTxt   = card.dataset.nome;
-            const cienTxt   = card.dataset.cientifico;
-            const fotoSrc   = card.dataset.foto;
-
-            nome.textContent  = nomeTxt;
-            cient.textContent = cienTxt;
-            cient.style.display = cienTxt ? '' : 'none';
-
-            if (fotoSrc) {
-                foto.src = fotoSrc;
-                foto.alt = nomeTxt;
-                foto.style.display = '';
-                fotoPh.style.display = 'none';
-                foto.onerror = () => { foto.style.display = 'none'; fotoPh.style.display = 'flex'; };
-            } else {
-                foto.style.display = 'none';
-                fotoPh.style.display = 'flex';
-            }
-
-            vazio.style.display    = 'none';
-            conteudo.style.display = '';
+        function atualizarUI() {
+            const n = selecionadas.size;
+            badgeContagem.textContent = n;
+            btnAdicionar.disabled = n === 0;
+            btnTexto.textContent = n === 0
+                ? 'Selecione espécies'
+                : n === 1 ? 'Adicionar 1 espécie ao torneio'
+                          : `Adicionar ${n} espécies ao torneio`;
+            vazioMsg.style.display = n === 0 ? '' : 'none';
         }
 
+        function adicionarItem(id, nome, foto, card, checkbox) {
+            if (selecionadas.has(id)) return;
+
+            const item = document.createElement('div');
+            item.className = 'selecionada-item';
+            item.dataset.id = id;
+
+            if (foto) {
+                const img = document.createElement('img');
+                img.src = foto;
+                img.alt = nome;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    ph.style.display = 'flex';
+                };
+                item.appendChild(img);
+            }
+            const ph = document.createElement('div');
+            ph.className = 'selecionada-placeholder';
+            ph.innerHTML = '<i class="bi bi-collection"></i>';
+            if (foto) ph.style.display = 'none';
+            item.appendChild(ph);
+
+            const nomeEl = document.createElement('span');
+            nomeEl.className = 'selecionada-nome';
+            nomeEl.textContent = nome;
+            item.appendChild(nomeEl);
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'selecionada-remover';
+            btn.title = 'Remover';
+            btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+            btn.addEventListener('click', () => removerItem(id));
+            item.appendChild(btn);
+
+            listaSelecionadas.appendChild(item);
+            selecionadas.set(id, { nome, foto, card, checkbox, itemEl: item });
+
+            card.classList.add('selected');
+            checkbox.checked = true;
+            atualizarUI();
+        }
+
+        function removerItem(id) {
+            const entry = selecionadas.get(id);
+            if (!entry) return;
+            entry.itemEl.remove();
+            entry.card.classList.remove('selected');
+            entry.checkbox.checked = false;
+            selecionadas.delete(id);
+            atualizarUI();
+        }
+
+        function toggleCard(card) {
+            const id   = card.dataset.id;
+            const nome = card.dataset.nome;
+            const foto = card.dataset.foto;
+            const checkbox = card.querySelector('.especie-check');
+
+            if (selecionadas.has(id)) {
+                removerItem(id);
+            } else {
+                adicionarItem(id, nome, foto, card, checkbox);
+            }
+        }
+
+        // Clique nos cards
         document.querySelectorAll('.especie-card:not(.ja-adicionada)').forEach(card => {
-            card.addEventListener('click', () => selecionarCard(card));
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleCard(card);
+            });
         });
 
-        // Inicializa preview se já há seleção (erro de validação)
-        const selecionado = document.querySelector('.especie-card.selected');
-        if (selecionado) selecionarCard(selecionado);
+        // Selecionar todas
+        if (btnSelTodas) {
+            btnSelTodas.addEventListener('click', () => {
+                document.querySelectorAll('.especie-card:not(.ja-adicionada):not(.selected)').forEach(card => {
+                    const id   = card.dataset.id;
+                    const nome = card.dataset.nome;
+                    const foto = card.dataset.foto;
+                    const checkbox = card.querySelector('.especie-check');
+                    adicionarItem(id, nome, foto, card, checkbox);
+                });
+            });
+        }
+
+        // Limpar seleção
+        if (btnLimpar) {
+            btnLimpar.addEventListener('click', () => {
+                [...selecionadas.keys()].forEach(id => removerItem(id));
+            });
+        }
+
+        atualizarUI();
     })();
     </script>
 }

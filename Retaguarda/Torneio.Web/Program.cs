@@ -5,6 +5,9 @@ using Torneio.Infrastructure;
 using Torneio.Infrastructure.Seed;
 using Torneio.Web.Middleware;
 
+// Npgsql 8: aceita DateTime com Kind=Unspecified tratando como UTC (comportamento legado)
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();

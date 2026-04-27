@@ -9,6 +9,10 @@ public class FiscalRepositorio : RepositorioBase<Fiscal>, IFiscalRepositorio
 {
     public FiscalRepositorio(TorneioDbContext context) : base(context) { }
 
+    public override async Task<Fiscal?> ObterPorId(Guid id) =>
+        await _dbSet.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == id);
+
     public async Task<Fiscal?> ObterPorUsuario(string usuario, Guid torneioId) =>
         await _dbSet
             .Include(f => f.Equipes)

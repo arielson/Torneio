@@ -9,6 +9,10 @@ public class AdminTorneioRepositorio : RepositorioBase<AdminTorneio>, IAdminTorn
 {
     public AdminTorneioRepositorio(TorneioDbContext context) : base(context) { }
 
+    public override async Task<AdminTorneio?> ObterPorId(Guid id) =>
+        await _dbSet.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
     public async Task<AdminTorneio?> ObterPorUsuario(string usuario) =>
         await _dbSet.IgnoreQueryFilters()
             .FirstOrDefaultAsync(a => a.Usuario == usuario);
