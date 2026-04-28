@@ -13,18 +13,7 @@ class HomeAdminScreen extends StatefulWidget {
 }
 
 class _HomeAdminScreenState extends State<HomeAdminScreen> {
-  late final ApiService _api;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _api = context.read<AuthProvider>().api;
-  }
+  final ApiService _api = ApiService();
 
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
@@ -296,7 +285,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                 ),
               ],
               const SizedBox(height: 20),
-              Text('Operacoes', style: Theme.of(context).textTheme.titleMedium),
+              Text('Operações', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               _NavGrid(
                 items: [
@@ -331,7 +320,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     minimumSize: const Size.fromHeight(48),
                   ),
                   icon: const Icon(Icons.warning_amber_rounded),
-                  label: const Text('Abrir Reorganizacao Emergencial'),
+                  label: const Text('Abrir Reorganização Emergencial'),
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -342,7 +331,7 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                     border: Border.all(color: Colors.orange.shade200),
                   ),
                   child: Text(
-                    'A reorganizacao emergencial de ${labelMembroPlural.toLowerCase()} entre ${labelEquipePlural.toLowerCase()} deve ser usada apenas em caso excepcional e exige confirmacao do admin do torneio.',
+                    'A reorganização emergencial de ${labelMembroPlural.toLowerCase()} entre ${labelEquipePlural.toLowerCase()} deve ser usada apenas em caso excepcional e exige confirmacao do admin do torneio.',
                     style: TextStyle(color: Colors.orange.shade900),
                   ),
                 ),

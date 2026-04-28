@@ -84,7 +84,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
     final exibirQtdGanhadores = config?.modoSorteio == 'Nenhum';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatorios')),
+      appBar: AppBar(title: const Text('Relatórios')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

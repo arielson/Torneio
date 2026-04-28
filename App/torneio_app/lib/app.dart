@@ -93,6 +93,13 @@ class _TorneioAppState extends State<TorneioApp> {
               title: 'Torvia',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.fromConfig(configProvider.config),
+              builder: (context, child) => SafeArea(
+                top: false,
+                left: false,
+                right: false,
+                bottom: true,
+                child: child ?? const SizedBox.shrink(),
+              ),
               initialRoute: '/',
               routes: {
                 '/': (_) => const _SplashRedirect(),

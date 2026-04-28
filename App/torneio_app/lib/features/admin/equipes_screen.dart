@@ -146,7 +146,7 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
           if (exibirMembros)
             IconButton(
               onPressed: _abrirReorganizacaoEmergencial,
-              tooltip: 'Reorganizacao emergencial',
+              tooltip: 'Reorganização emergencial',
               icon: const Icon(Icons.warning_amber_rounded),
             ),
         ],
@@ -185,7 +185,7 @@ class _EquipesAdminScreenState extends State<EquipesAdminScreen> {
                                   border: Border.all(color: Colors.orange.shade200),
                                 ),
                                 child: const Text(
-                                  'Reorganizacao de emergencia deve ser usada apenas em caso critico e exige confirmacao do administrador do torneio.',
+                                  'Reorganização de emergência deve ser usada apenas em caso crítico e exige confirmação do administrador do torneio.',
                                 ),
                               ),
                             Padding(

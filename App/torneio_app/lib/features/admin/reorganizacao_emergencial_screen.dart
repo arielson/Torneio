@@ -88,7 +88,7 @@ class _ReorganizacaoEmergencialScreenState extends State<ReorganizacaoEmergencia
       builder: (_) => AlertDialog(
         title: const Text('Confirmacao de emergencia'),
         content: Text(
-          'Esta reorganizacao manual de ${config?.labelMembroPlural.toLowerCase() ?? "membros"} sera registrada no log. Deseja continuar?',
+          'Esta reorganização manual de ${config?.labelMembroPlural.toLowerCase() ?? "membros"} sera registrada no log. Deseja continuar?',
         ),
         actions: [
           TextButton(
@@ -130,7 +130,7 @@ class _ReorganizacaoEmergencialScreenState extends State<ReorganizacaoEmergencia
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Reorganizacao emergencial registrada com sucesso.'),
+          content: Text('Reorganização emergencial registrada com sucesso.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -159,7 +159,7 @@ class _ReorganizacaoEmergencialScreenState extends State<ReorganizacaoEmergencia
     final labelMembro = config?.labelMembro ?? 'Pescador';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reorganizacao Emergencial')),
+      appBar: AppBar(title: const Text('Reorganização Emergencial')),
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -253,7 +253,7 @@ class _ReorganizacaoEmergencialScreenState extends State<ReorganizacaoEmergencia
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Informe o motivo da reorganizacao.';
+                              return 'Informe o motivo da reorganização.';
                             }
                             return null;
                           },

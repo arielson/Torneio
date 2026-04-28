@@ -99,7 +99,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
     final exibirQtdGanhadores = config?.modoSorteio == 'Nenhum';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatorios dos Ganhadores')),
+      appBar: AppBar(title: const Text('Relatórios dos Ganhadores')),
       body: FutureBuilder<GanhadoresResponse>(
         future: _future,
         builder: (context, snapshot) {
