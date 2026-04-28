@@ -7,6 +7,7 @@
     var labelEquipe = torneio?.LabelEquipe ?? "Equipe";
     var labelEquipePlural = torneio?.LabelEquipePlural ?? "Equipes";
     var labelMembro = torneio?.LabelMembro ?? "Membro";
+    var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
     ViewData["Title"] = "Reorganizacao Emergencial";
 }
 
@@ -28,7 +29,7 @@
     </div>
 </div>
 
-<div class="content-card">
+<div class="content-card mb-4">
     <div class="card-header-bar">
         <h5><i class="bi bi-shuffle me-2"></i>Confirmar reorganização</h5>
     </div>
@@ -84,6 +85,366 @@
     </div>
 </div>
 
+<!-- ── Sorteio Emergencial ──────────────────────────────────── -->
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-trophy me-2"></i>Sorteio Emergencial</h5>
+    </div>
+    <div class="card-body-pad">
+        <p class="text-muted small mb-3">
+            Sorteia visualmente 1 @labelMembro.ToLower() entre os @labelMembroPlural.ToLower() de uma @labelEquipe.ToLower(). Resultado apenas visual — nenhum dado é salvo.
+        </p>
+
+        <div class="row g-3">
+            <!-- Seleção da equipe -->
+            <div class="col-md-5">
+                <label class="form-label">@labelEquipe</label>
+                <select id="seSelect" class="form-select">
+                    <option value="">Selecione a @labelEquipe.ToLower()...</option>
+                    @foreach (var eq in equipes.OrderBy(e => e.Nome))
+                    {
+                        <option value="@eq.Id">@eq.Nome</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Lista de membros da equipe selecionada -->
+            <div class="col-md-7">
+                <label class="form-label">
+                    @labelMembroPlural participantes
+                    <span class="text-muted small ms-1">(mínimo 2)</span>
+                </label>
+                <div id="seMembrosWrap">
+                    <div id="seMembrosVazio" class="text-muted small fst-italic py-2">
+                        Selecione uma @labelEquipe.ToLower() para ver seus @labelMembroPlural.ToLower().
+                    </div>
+                    <div id="seMembrosLista" class="se-check-list" style="display:none"></div>
+                    <div id="seSemMembros" class="text-muted small fst-italic py-2" style="display:none">
+                        Esta @labelEquipe.ToLower() não possui @labelMembroPlural.ToLower() cadastrados.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3 d-flex align-items-center gap-3">
+            <button type="button" id="btnSortearEmergencial" class="btn btn-primary" disabled
+                    onclick="iniciarSorteioEmergencial()">
+                <i class="bi bi-trophy me-1"></i>Sortear
+            </button>
+            <span id="seValidacaoMsg" class="small text-muted"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ── Overlay do sorteio emergencial ──────────────────────── -->
+<div id="seOverlay" class="se-overlay" style="display:none">
+
+    <!-- Fase 1: girando -->
+    <div id="sePhaseGirando">
+        <div class="se-title">🏆&nbsp; SORTEIO EMERGENCIAL</div>
+        <div class="se-slot-box">
+            <div class="se-slot-label">@labelMembro</div>
+            <div id="seSlotMembro" class="se-slot-text">---</div>
+        </div>
+        <div class="se-status">Sorteando entre os @labelMembroPlural.ToLower() selecionados...</div>
+        <div class="se-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- Fase 2: revelando vencedor -->
+    <div id="sePhaseResultado" style="display:none" class="text-center">
+        <div class="se-title mb-3">🏆&nbsp; Resultado</div>
+        <div id="seWinnerCard" class="se-winner-card">
+            <div class="se-winner-trophy">🏆</div>
+            <div id="seWinnerNome" class="se-winner-nome"></div>
+            <div id="seWinnerEquipe" class="se-winner-equipe"></div>
+        </div>
+        <div id="seBtnFecharWrap" class="mt-4" style="opacity:0;transition:opacity .4s ease">
+            <button type="button" class="btn btn-outline-light px-5" onclick="fecharSeOverlay()">
+                <i class="bi bi-x me-1"></i>Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.se-check-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    padding: .25rem 0;
+}
+.se-check-list .form-check {
+    padding: .3rem .75rem;
+    margin: 0;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+.se-check-list .form-check:last-child { border-bottom: none; }
+
+/* Overlay */
+.se-overlay {
+    position: fixed; inset: 0;
+    background: rgba(8,8,18,.95);
+    z-index: 9999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; font-family: inherit;
+}
+.se-title {
+    font-size: clamp(1.4rem,4vw,2.2rem);
+    font-weight: 700; letter-spacing: .08em; margin-bottom: 2rem;
+    text-shadow: 0 0 28px rgba(255,215,0,.7);
+}
+.se-slot-box {
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid rgba(255,215,0,.4);
+    border-radius: 14px;
+    padding: 1.4rem 3rem;
+    width: min(420px,90vw);
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,215,0,.15);
+}
+.se-slot-label {
+    font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .14em; color: rgba(255,255,255,.45);
+    margin-bottom: .4rem;
+}
+.se-slot-text {
+    font-size: clamp(1.4rem,4vw,2rem);
+    font-weight: 700; color: #ffd700;
+    min-height: 2.4rem; line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: opacity .07s ease;
+}
+.se-slot-text.flash { opacity: 0; }
+.se-status { color: rgba(255,255,255,.55); font-size: .85rem; margin-top: 1.4rem; }
+.se-dots { display: flex; gap: 8px; margin-top: 1rem; }
+.se-dots span {
+    width: 8px; height: 8px; border-radius: 50%; background: #ffd700;
+    animation: seDotBounce 1.1s ease-in-out infinite;
+}
+.se-dots span:nth-child(2) { animation-delay: .18s; }
+.se-dots span:nth-child(3) { animation-delay: .36s; }
+@@keyframes seDotBounce {
+    0%,60%,100% { transform: translateY(0); opacity: .4; }
+    30%          { transform: translateY(-9px); opacity: 1; }
+}
+
+/* Winner card */
+.se-winner-card {
+    background: rgba(255,215,0,.1);
+    border: 2px solid rgba(255,215,0,.5);
+    border-radius: 20px;
+    padding: 2.5rem 3.5rem;
+    width: min(420px,90vw);
+    box-shadow: 0 0 60px rgba(255,215,0,.25);
+    opacity: 0; transform: scale(.8);
+    transition: opacity .5s ease, transform .5s ease;
+}
+.se-winner-card.visible { opacity: 1; transform: scale(1); }
+.se-winner-trophy { font-size: 3.5rem; margin-bottom: .75rem; }
+.se-winner-nome {
+    font-size: clamp(1.4rem,4vw,2rem);
+    font-weight: 800; color: #ffd700;
+    text-shadow: 0 0 20px rgba(255,215,0,.5);
+    line-height: 1.2; word-break: break-word;
+}
+.se-winner-equipe {
+    font-size: .9rem; color: rgba(255,255,255,.55);
+    margin-top: .5rem;
+}
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    (() => {
+        const LABEL_MEMBRO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labelMembro));
+        const LABEL_EQUIPE = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labelEquipe));
+
+        // Mapa equipeId → { nome, membros: [{id, nome}] }
+        const EQUIPES_MAP = new Map();
+        const MEMBROS_MAP = new Map();
+
+        const equipesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            equipes.Select(e => new {
+                id     = e.Id.ToString(),
+                nome   = e.Nome,
+                membroIds = e.MembroIds.Select(m => m.ToString()).ToList()
+            })
+        ));
+        const membrosData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            membros.Select(m => new { id = m.Id.ToString(), nome = m.Nome })
+        ));
+
+        for (const m of membrosData) MEMBROS_MAP.set(m.id, m.nome);
+        for (const e of equipesData) {
+            EQUIPES_MAP.set(e.id, {
+                nome:    e.nome,
+                membros: e.membroIds
+                    .map(id => ({ id, nome: MEMBROS_MAP.get(id) ?? id }))
+                    .filter(m => m.nome)
+                    .sort((a, b) => a.nome.localeCompare(b.nome))
+            });
+        }
+
+        // ── Seleção de equipe e membros ────────────────────
+        const seSelect       = document.getElementById('seSelect');
+        const seVazio        = document.getElementById('seMembrosVazio');
+        const seLista        = document.getElementById('seMembrosLista');
+        const seSemMembros   = document.getElementById('seSemMembros');
+        const btnSortear     = document.getElementById('btnSortearEmergencial');
+        const seValidacaoMsg = document.getElementById('seValidacaoMsg');
+
+        function getMemberosSelecionados() {
+            return [...document.querySelectorAll('.se-chk-membro:checked')]
+                .map(c => ({ id: c.value, nome: c.dataset.nome }));
+        }
+
+        function atualizarValidacao() {
+            const selecionados = getMemberosSelecionados();
+            const n = selecionados.length;
+            if (n < 2) {
+                btnSortear.disabled = true;
+                seValidacaoMsg.textContent = n === 0
+                    ? `Selecione pelo menos 2 ${LABEL_MEMBRO.toLowerCase()}s.`
+                    : `Selecione mais 1 ${LABEL_MEMBRO.toLowerCase()} (mínimo 2).`;
+                seValidacaoMsg.className = 'small text-warning';
+            } else {
+                btnSortear.disabled = false;
+                seValidacaoMsg.textContent = `${n} ${LABEL_MEMBRO.toLowerCase()}${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''} — pronto para sortear.`;
+                seValidacaoMsg.className = 'small text-success';
+            }
+        }
+
+        seSelect.addEventListener('change', () => {
+            const equipeId = seSelect.value;
+            seLista.innerHTML = '';
+
+            if (!equipeId) {
+                seVazio.style.display      = '';
+                seLista.style.display      = 'none';
+                seSemMembros.style.display = 'none';
+                btnSortear.disabled = true;
+                seValidacaoMsg.textContent = '';
+                return;
+            }
+
+            const equipe = EQUIPES_MAP.get(equipeId);
+            if (!equipe || equipe.membros.length === 0) {
+                seVazio.style.display      = 'none';
+                seLista.style.display      = 'none';
+                seSemMembros.style.display = '';
+                btnSortear.disabled = true;
+                seValidacaoMsg.textContent = '';
+                return;
+            }
+
+            seVazio.style.display      = 'none';
+            seSemMembros.style.display = 'none';
+            seLista.style.display      = '';
+
+            for (const m of equipe.membros) {
+                const div = document.createElement('div');
+                div.className = 'form-check';
+                div.innerHTML = `
+                    <input class="form-check-input se-chk-membro" type="checkbox"
+                           id="se_mb_${m.id}" value="${m.id}" data-nome="${m.nome}" checked />
+                    <label class="form-check-label" for="se_mb_${m.id}">${m.nome}</label>`;
+                seLista.appendChild(div);
+            }
+
+            seLista.addEventListener('change', atualizarValidacao);
+            atualizarValidacao();
+        });
+
+        // ── Animação ───────────────────────────────────────
+        function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        let _spinInterval = null;
+        let _spinIdx = 0;
+
+        function startSpinning(nomes) {
+            const el = document.getElementById('seSlotMembro');
+            _spinIdx = 0;
+            _spinInterval = setInterval(() => {
+                el.classList.add('flash');
+                setTimeout(() => {
+                    el.textContent = nomes[_spinIdx % nomes.length];
+                    el.classList.remove('flash');
+                }, 70);
+                _spinIdx++;
+            }, 145);
+        }
+
+        function stopSpinning() { clearInterval(_spinInterval); _spinInterval = null; }
+
+        window.iniciarSorteioEmergencial = async function () {
+            const selecionados = getMemberosSelecionados();
+            if (selecionados.length < 2) return;
+
+            const equipeId   = seSelect.value;
+            const equipeNome = EQUIPES_MAP.get(equipeId)?.nome ?? '';
+            const nomes      = selecionados.map(m => m.nome);
+
+            // Escolhe o vencedor aleatoriamente
+            const embaralhados = shuffle(selecionados);
+            const vencedor     = embaralhados[0];
+
+            // Abre overlay
+            const overlay = document.getElementById('seOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('sePhaseGirando').style.display    = 'block';
+            document.getElementById('sePhaseResultado').style.display  = 'none';
+
+            startSpinning(nomes);
+            await delay(3500);
+            stopSpinning();
+
+            // Anima parada: desacelera nos últimos frames mostrando o vencedor
+            const el = document.getElementById('seSlotMembro');
+            for (const intervalo of [200, 280, 380, 500]) {
+                el.classList.add('flash');
+                await delay(intervalo / 2);
+                el.textContent = vencedor.nome;
+                el.classList.remove('flash');
+                await delay(intervalo / 2);
+            }
+
+            await delay(300);
+
+            // Revela o resultado
+            document.getElementById('sePhaseGirando').style.display  = 'none';
+            document.getElementById('sePhaseResultado').style.display = 'flex';
+            document.getElementById('sePhaseResultado').style.flexDirection = 'column';
+            document.getElementById('sePhaseResultado').style.alignItems = 'center';
+
+            document.getElementById('seWinnerNome').textContent   = vencedor.nome;
+            document.getElementById('seWinnerEquipe').textContent = equipeNome;
+
+            const card = document.getElementById('seWinnerCard');
+            await delay(50);
+            card.classList.add('visible');
+
+            await delay(600);
+            const btnFecha = document.getElementById('seBtnFecharWrap');
+            btnFecha.style.opacity = '1';
+        };
+
+        window.fecharSeOverlay = function () {
+            document.getElementById('seOverlay').style.display = 'none';
+            document.getElementById('seWinnerCard').classList.remove('visible');
+            document.getElementById('seBtnFecharWrap').style.opacity = '0';
+        };
+    })();
+    </script>
 }

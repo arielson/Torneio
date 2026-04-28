@@ -14,17 +14,20 @@ public class EquipeServico : IEquipeServico
     private readonly IMembroRepositorio _membroRepositorio;
     private readonly ITenantContext _tenantContext;
     private readonly IValidator<CriarEquipeDto> _validador;
+    private readonly IFileStorage _fileStorage;
 
     public EquipeServico(
         IEquipeRepositorio repositorio,
         IMembroRepositorio membroRepositorio,
         ITenantContext tenantContext,
-        IValidator<CriarEquipeDto> validador)
+        IValidator<CriarEquipeDto> validador,
+        IFileStorage fileStorage)
     {
         _repositorio = repositorio;
         _membroRepositorio = membroRepositorio;
         _tenantContext = tenantContext;
         _validador = validador;
+        _fileStorage = fileStorage;
     }
 
     public async Task<EquipeDto?> ObterPorId(Guid id)
@@ -146,6 +149,36 @@ public class EquipeServico : IEquipeServico
 
         var origemPrincipal = equipesOrigem.First();
         return (ParaDto(origemPrincipal), ParaDto(equipeDestino), ParaMembroDto(membro));
+    }
+
+    public async Task<IEnumerable<EquipeDto>> ListarPorTorneioExterno(Guid torneioId)
+    {
+        var lista = await _repositorio.ListarPorTorneio(torneioId);
+        return lista.Select(ParaDto);
+    }
+
+    public async Task<int> ImportarDeOutroTorneio(Guid sourceTorneioId, IEnumerable<Guid> equipeIds)
+    {
+        var origem = await _repositorio.ListarPorTorneio(sourceTorneioId);
+        var map = origem.ToDictionary(e => e.Id);
+        var count = 0;
+        foreach (var id in equipeIds)
+        {
+            if (!map.TryGetValue(id, out var equipe)) continue;
+            var novaFoto = await _fileStorage.CopiarAsync(equipe.FotoUrl, "fotos/equipes");
+            var novaFotoCapitao = await _fileStorage.CopiarAsync(equipe.FotoCapitaoUrl, "fotos/capitaos");
+            var nova = Equipe.Criar(
+                _tenantContext.TorneioId,
+                equipe.Nome,
+                equipe.Capitao,
+                equipe.QtdVagas,
+                novaFoto, novaFotoCapitao, 0,
+                Domain.Enums.StatusEmbarcacaoFinanceira.Pendente,
+                null);
+            await _repositorio.Adicionar(nova);
+            count++;
+        }
+        return count;
     }
 
     private static EquipeDto ParaDto(Equipe e) => new()

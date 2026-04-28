@@ -36,6 +36,22 @@ public class FileStorage : IFileStorage
     public string ObterUrlPublica(string caminhoRelativo) =>
         $"{_options.BaseUrl.TrimEnd('/')}/{caminhoRelativo}";
 
+    public Task<string?> CopiarAsync(string? caminhoRelativoOrigem, string subpastaDestino)
+    {
+        if (string.IsNullOrWhiteSpace(caminhoRelativoOrigem)) return Task.FromResult<string?>(null);
+        if (caminhoRelativoOrigem.StartsWith("http", StringComparison.OrdinalIgnoreCase)) return Task.FromResult<string?>(null);
+
+        var origem = Path.Combine(_options.BasePath, caminhoRelativoOrigem);
+        if (!File.Exists(origem)) return Task.FromResult<string?>(null);
+
+        var ext = Path.GetExtension(origem).ToLowerInvariant();
+        var nomeArquivo = $"{Guid.NewGuid()}{ext}";
+        var pasta = Path.Combine(_options.BasePath, subpastaDestino);
+        Directory.CreateDirectory(pasta);
+        File.Copy(origem, Path.Combine(pasta, nomeArquivo));
+        return Task.FromResult<string?>(Path.Combine(subpastaDestino, nomeArquivo).Replace('\\', '/'));
+    }
+
     public string? UrlParaCaminhoRelativo(string? urlPublica)
     {
         if (string.IsNullOrWhiteSpace(urlPublica)) return null;

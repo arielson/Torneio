@@ -8,8 +8,10 @@
     var labelMembro      = torneio?.LabelMembro ?? "Membro";
     var labelMembroPlural = torneio?.LabelMembroPlural ?? "Membros";
     ViewData["Title"] = $"{labelMembroPlural} — {equipe.Nome}";
-    var lista = Model.ToList();
-    var cheio = equipe.QtdMembros >= equipe.QtdVagas;
+    var membroIds = equipe.MembroIds.ToHashSet();
+    var naEquipe  = Model.Where(m => membroIds.Contains(m.Id)).OrderBy(m => m.Nome).ToList();
+    var fora      = Model.Where(m => !membroIds.Contains(m.Id)).OrderBy(m => m.Nome).ToList();
+    var cheio     = equipe.QtdMembros >= equipe.QtdVagas;
 }
 
 <div class="page-header">
@@ -33,20 +35,21 @@
     </div>
 </div>
 
-<div class="content-card">
+<!-- Membros na equipe -->
+<div class="content-card mb-3">
     <div class="card-header-bar">
-        <h5><i class="bi bi-person-plus me-2"></i>Gerenciar @labelMembroPlural</h5>
+        <h5><i class="bi bi-people-fill me-2"></i>@labelMembroPlural nesta @labelEquipe.ToLower()</h5>
     </div>
-    @if (!lista.Any())
+    @if (!naEquipe.Any())
     {
         <div class="card-body-pad text-muted">
-            Nenhum @labelMembro.ToLower() disponível para adicionar.
+            Nenhum @labelMembro.ToLower() alocado ainda.
         </div>
     }
     else
     {
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>@labelMembro</th>
@@ -54,31 +57,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var m in lista)
+                    @foreach (var m in naEquipe)
                     {
                         <tr>
                             <td class="fw-semibold">@m.Nome</td>
                             <td class="text-end">
-                                <div class="d-flex gap-1 justify-content-end">
-                                    <form asp-controller="Equipe" asp-action="AdicionarMembro"
-                                          asp-route-slug="@slug"
-                                          asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
-                                          method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button class="btn btn-sm btn-outline-success" title="Adicionar">
-                                            <i class="bi bi-plus-lg"></i>
-                                        </button>
-                                    </form>
-                                    <form asp-controller="Equipe" asp-action="RemoverMembro"
-                                          asp-route-slug="@slug"
-                                          asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
-                                          method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button class="btn btn-sm btn-outline-danger" title="Remover">
-                                            <i class="bi bi-dash-lg"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                <form asp-controller="Equipe" asp-action="RemoverMembro"
+                                      asp-route-slug="@slug"
+                                      asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
+                                      method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-outline-danger" title="Remover"
+                                            onclick="return confirm('Remover @m.Nome desta @labelEquipe.ToLower()?')">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }
@@ -87,3 +80,42 @@
         </div>
     }
 </div>
+
+<!-- Membros disponíveis para adicionar -->
+@if (fora.Any())
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-person-plus me-2"></i>Adicionar @labelMembro.ToLower()</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>@labelMembro</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in fora)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@m.Nome</td>
+                            <td class="text-end">
+                                <form asp-controller="Equipe" asp-action="AdicionarMembro"
+                                      asp-route-slug="@slug"
+                                      asp-route-id="@equipe.Id" asp-route-membroId="@m.Id"
+                                      method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-outline-success" title="Adicionar">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

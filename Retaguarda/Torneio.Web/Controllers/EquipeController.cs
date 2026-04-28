@@ -340,6 +340,55 @@ public class EquipeController : TorneioBaseController
         return RedirectToAction(nameof(Membros), new { slug = Slug, id });
     }
 
+    [Authorize(Policy = "AdminGeral")]
+    [HttpGet("importar")]
+    public async Task<IActionResult> Importar()
+    {
+        await SetTorneioViewBag();
+        var torneios = await _torneioServico.ListarTodos();
+        ViewBag.TorneiosDisponiveis = torneios.Where(t => t.Id != TenantContext.TorneioId).OrderBy(t => t.NomeTorneio);
+        return View();
+    }
+
+    [Authorize(Policy = "AdminGeral")]
+    [HttpGet("importar/de/{torneioId:guid}")]
+    public async Task<IActionResult> ImportarEquipesJson(Guid torneioId)
+    {
+        var equipes = await _servico.ListarPorTorneioExterno(torneioId);
+        return Json(equipes.Select(e => new { e.Id, e.Nome, e.Capitao, e.QtdVagas, e.QtdMembros }));
+    }
+
+    [Authorize(Policy = "AdminGeral")]
+    [HttpPost("importar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Importar([FromForm] Guid TorneioOrigemId, [FromForm] List<Guid>? EquipeIds)
+    {
+        if (EquipeIds is null || EquipeIds.Count == 0)
+        {
+            TempData["Erro"] = "Selecione ao menos uma equipe para importar.";
+            return RedirectToAction(nameof(Importar), new { slug = Slug });
+        }
+
+        var count = await _servico.ImportarDeOutroTorneio(TorneioOrigemId, EquipeIds);
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        var torneioOrigem = await _torneioServico.ObterPorId(TorneioOrigemId);
+
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = TenantContext.TorneioId,
+            NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Equipes,
+            Acao = "ImportarEquipes",
+            Descricao = $"{count} equipe(s) importada(s) do torneio '{torneioOrigem?.NomeTorneio ?? TorneioOrigemId.ToString()}'",
+            UsuarioNome = UsuarioNome,
+            UsuarioPerfil = UsuarioPerfil,
+            IpAddress = IpAddress
+        });
+
+        TempData["Sucesso"] = count == 1 ? "1 equipe importada com sucesso." : $"{count} equipes importadas com sucesso.";
+        return RedirectToAction(nameof(Index), new { slug = Slug });
+    }
+
     [HttpGet("reorganizacao-emergencial")]
     public async Task<IActionResult> ReorganizacaoEmergencial()
     {

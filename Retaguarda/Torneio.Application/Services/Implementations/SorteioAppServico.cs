@@ -99,9 +99,23 @@ public class SorteioAppServico : ISorteioAppServico
         if (sorteioExistente.Any())
             throw new InvalidOperationException("O sorteio já foi realizado. Limpe o resultado atual antes de sortear novamente.");
 
-        var entidades = itens.Select(i =>
+        var itensList = itens.ToList();
+        var entidades = itensList.Select(i =>
             SorteioEquipe.Criar(_tenantContext.TorneioId, i.EquipeId, i.MembroId, i.Posicao));
         await _sorteioServico.SalvarSorteioAsync(entidades);
+
+        // Vincular membros às equipes conforme resultado confirmado
+        var equipes = (await _equipeRepositorio.ListarTodos()).ToDictionary(e => e.Id);
+        var membros = (await _membroRepositorio.ListarTodos()).ToDictionary(m => m.Id);
+
+        foreach (var item in itensList)
+        {
+            if (!equipes.TryGetValue(item.EquipeId, out var equipe)) continue;
+            if (!membros.TryGetValue(item.MembroId, out var membro)) continue;
+            if (equipe.Membros.Any(m => m.Id == item.MembroId)) continue;
+            equipe.AdicionarMembro(membro);
+            await _equipeRepositorio.Atualizar(equipe);
+        }
     }
 
     public async Task<IEnumerable<SorteioEquipeDto>> ObterResultado()
@@ -120,6 +134,21 @@ public class SorteioAppServico : ISorteioAppServico
 
     public async Task LimparSorteio()
     {
+        // Desvincular os membros que foram alocados pelo sorteio
+        var resultado = await _sorteioRepositorio.ListarPorTorneio(_tenantContext.TorneioId);
+        var equipeIds = resultado.Select(r => r.EquipeId).Distinct().ToHashSet();
+        var equipes = (await _equipeRepositorio.ListarTodos())
+            .Where(e => equipeIds.Contains(e.Id))
+            .ToDictionary(e => e.Id);
+
+        foreach (var sorteio in resultado)
+        {
+            if (!equipes.TryGetValue(sorteio.EquipeId, out var equipe)) continue;
+            if (!equipe.Membros.Any(m => m.Id == sorteio.MembroId)) continue;
+            equipe.RemoverMembro(sorteio.MembroId);
+            await _equipeRepositorio.Atualizar(equipe);
+        }
+
         await _sorteioServico.LimparSorteioAsync(_tenantContext.TorneioId);
     }
 

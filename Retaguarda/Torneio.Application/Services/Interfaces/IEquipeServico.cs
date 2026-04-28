@@ -13,4 +13,6 @@ public interface IEquipeServico
     Task AdicionarMembro(Guid equipeId, Guid membroId);
     Task RemoverMembro(Guid equipeId, Guid membroId);
     Task<(EquipeDto Origem, EquipeDto Destino, MembroDto Membro)> ReorganizarMembroEmergencia(Guid membroId, Guid equipeDestinoId);
+    Task<IEnumerable<EquipeDto>> ListarPorTorneioExterno(Guid torneioId);
+    Task<int> ImportarDeOutroTorneio(Guid sourceTorneioId, IEnumerable<Guid> equipeIds);
 }

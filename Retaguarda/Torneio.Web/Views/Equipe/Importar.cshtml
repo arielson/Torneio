@@ -1,0 +1,195 @@
+@{
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    var label = torneio?.LabelEquipe ?? "Equipe";
+    var labelPlural = torneio?.LabelEquipePlural ?? "Equipes";
+    var torneiosDisponiveis = (IEnumerable<TorneioDto>)(ViewBag.TorneiosDisponiveis ?? Enumerable.Empty<TorneioDto>());
+    ViewData["Title"] = $"Importar {labelPlural}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Importar @labelPlural</h1>
+    </div>
+</div>
+<a href="/@slug/equipes" class="back-link">
+    <i class="bi bi-arrow-left"></i> @labelPlural
+</a>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-box-arrow-in-down me-2"></i>Importar de outro torneio</h5>
+    </div>
+    <div class="card-body-pad">
+        <div class="alert alert-info py-2 small mb-4">
+            <i class="bi bi-info-circle me-1"></i>
+            Selecione o torneio de origem e as @labelPlural.ToLower() que deseja copiar para <strong>@torneio?.NomeTorneio</strong>.
+            Nome, capitão, vagas e fotos são importados — custo e membros não são copiados.
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Torneio de origem</label>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <select id="selectTorneio" class="form-select" style="max-width:320px">
+                    <option value="">Selecione um torneio...</option>
+                    @foreach (var t in torneiosDisponiveis)
+                    {
+                        <option value="@t.Id">@t.NomeTorneio (@t.Slug)</option>
+                    }
+                </select>
+                <button type="button" id="btnCarregar" class="btn btn-outline-primary" disabled>
+                    <i class="bi bi-arrow-repeat me-1"></i>Carregar @labelPlural.ToLower()
+                </button>
+            </div>
+        </div>
+
+        <div id="secaoEquipes" style="display:none">
+            <form asp-controller="Equipe" asp-action="Importar" asp-route-slug="@slug" method="post" id="formImportar">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TorneioOrigemId" id="torneioOrigemId" value="" />
+
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                    <div class="fw-semibold">
+                        @labelPlural disponíveis
+                        <span class="badge bg-secondary rounded-pill ms-1" id="badgeTotal">0</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btnSelTodas" class="btn btn-link btn-sm p-0 text-decoration-none">Selecionar todas</button>
+                        <span class="text-muted">·</span>
+                        <button type="button" id="btnLimpar" class="btn btn-link btn-sm p-0 text-decoration-none">Limpar</button>
+                    </div>
+                </div>
+
+                <div id="listaEquipes" class="mb-4" style="max-height:420px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;padding:8px"></div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="submit" id="btnImportar" class="btn btn-primary" disabled>
+                        <i class="bi bi-box-arrow-in-down me-1"></i>
+                        <span id="btnImportarTexto">Selecione @labelPlural.ToLower()</span>
+                    </button>
+                    <a href="/@slug/equipes" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+
+        <div id="msgNenhuma" class="text-muted small" style="display:none">
+            <i class="bi bi-inbox me-1"></i>Nenhuma @label.ToLower() encontrada neste torneio.
+        </div>
+
+        <div id="msgCarregando" style="display:none" class="text-muted small">
+            <span class="spinner-border spinner-border-sm me-1"></span>Carregando...
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (() => {
+        const selectTorneio   = document.getElementById('selectTorneio');
+        const btnCarregar     = document.getElementById('btnCarregar');
+        const secaoEquipes    = document.getElementById('secaoEquipes');
+        const listaEquipes    = document.getElementById('listaEquipes');
+        const badgeTotal      = document.getElementById('badgeTotal');
+        const btnSelTodas     = document.getElementById('btnSelTodas');
+        const btnLimpar       = document.getElementById('btnLimpar');
+        const btnImportar     = document.getElementById('btnImportar');
+        const btnImportarTexto = document.getElementById('btnImportarTexto');
+        const torneioOrigemId = document.getElementById('torneioOrigemId');
+        const msgNenhuma      = document.getElementById('msgNenhuma');
+        const msgCarregando   = document.getElementById('msgCarregando');
+        const labelPlural     = @Json.Serialize(labelPlural);
+        const labelSingular   = @Json.Serialize(label);
+
+        selectTorneio.addEventListener('change', () => {
+            btnCarregar.disabled = !selectTorneio.value;
+            secaoEquipes.style.display = 'none';
+            msgNenhuma.style.display = 'none';
+            listaEquipes.innerHTML = '';
+            atualizarBotao();
+        });
+
+        btnCarregar.addEventListener('click', async () => {
+            const id = selectTorneio.value;
+            if (!id) return;
+
+            msgCarregando.style.display = '';
+            secaoEquipes.style.display = 'none';
+            msgNenhuma.style.display = 'none';
+
+            try {
+                const resp = await fetch(`/@slug/equipes/importar/de/${id}`);
+                const equipes = await resp.json();
+
+                msgCarregando.style.display = 'none';
+                listaEquipes.innerHTML = '';
+                torneioOrigemId.value = id;
+
+                if (!equipes || equipes.length === 0) {
+                    msgNenhuma.style.display = '';
+                    return;
+                }
+
+                badgeTotal.textContent = equipes.length;
+
+                for (const eq of equipes) {
+                    const row = document.createElement('label');
+                    row.className = 'equipe-import-row d-flex align-items-center gap-3 p-2 rounded cursor-pointer';
+                    row.style.cssText = 'border:1px solid #dee2e6;margin-bottom:6px;cursor:pointer;transition:background .1s';
+                    row.dataset.id = eq.id;
+
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.name = 'EquipeIds';
+                    cb.value = eq.id;
+                    cb.className = 'form-check-input flex-shrink-0';
+                    cb.style.cssText = 'width:18px;height:18px';
+                    cb.addEventListener('change', atualizarBotao);
+                    row.appendChild(cb);
+
+                    const info = document.createElement('div');
+                    info.className = 'flex-grow-1 min-w-0';
+                    info.innerHTML = `<div class="fw-semibold text-truncate">${eq.nome}</div>
+                        <div class="text-muted small">Capitão: ${eq.capitao} · Vagas: ${eq.qtdVagas}</div>`;
+                    row.appendChild(info);
+
+                    row.addEventListener('mouseenter', () => { if (!cb.checked) row.style.background = '#f8f9fa'; });
+                    row.addEventListener('mouseleave', () => { if (!cb.checked) row.style.background = ''; });
+                    cb.addEventListener('change', () => { row.style.background = cb.checked ? '#e8f0fe' : ''; });
+
+                    listaEquipes.appendChild(row);
+                }
+
+                secaoEquipes.style.display = '';
+            } catch {
+                msgCarregando.style.display = 'none';
+                msgNenhuma.style.display = '';
+            }
+        });
+
+        btnSelTodas.addEventListener('click', () => {
+            listaEquipes.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                cb.checked = true;
+                cb.closest('label').style.background = '#e8f0fe';
+            });
+            atualizarBotao();
+        });
+
+        btnLimpar.addEventListener('click', () => {
+            listaEquipes.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                cb.checked = false;
+                cb.closest('label').style.background = '';
+            });
+            atualizarBotao();
+        });
+
+        function atualizarBotao() {
+            const n = listaEquipes.querySelectorAll('input[type=checkbox]:checked').length;
+            btnImportar.disabled = n === 0;
+            btnImportarTexto.textContent = n === 0
+                ? `Selecione ${labelPlural.toLowerCase()}`
+                : n === 1 ? `Importar 1 ${labelSingular.toLowerCase()}`
+                          : `Importar ${n} ${labelPlural.toLowerCase()}`;
+        }
+    })();
+    </script>
+}
