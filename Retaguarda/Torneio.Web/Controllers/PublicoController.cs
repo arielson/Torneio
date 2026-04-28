@@ -10,6 +10,7 @@ public class PublicoController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
     private readonly IPatrocinadorServico _patrocinadorServico;
+    private readonly IPremioServico _premioServico;
     private readonly ICapturaServico _capturaServico;
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
@@ -18,6 +19,7 @@ public class PublicoController : TorneioBaseController
         TenantContext tenantContext,
         ITorneioServico torneioServico,
         IPatrocinadorServico patrocinadorServico,
+        IPremioServico premioServico,
         ICapturaServico capturaServico,
         IEquipeServico equipeServico,
         IMembroServico membroServico)
@@ -25,6 +27,7 @@ public class PublicoController : TorneioBaseController
     {
         _torneioServico = torneioServico;
         _patrocinadorServico = patrocinadorServico;
+        _premioServico = premioServico;
         _capturaServico = capturaServico;
         _equipeServico = equipeServico;
         _membroServico = membroServico;
@@ -41,6 +44,12 @@ public class PublicoController : TorneioBaseController
         {
             ViewBag.Participantes = (await _membroServico.ListarTodos())
                 .OrderBy(m => m.Nome)
+                .ToList();
+        }
+        if (torneio.Status == "Liberado")
+        {
+            ViewBag.Premios = (await _premioServico.ListarPorTorneio(torneio.Id))
+                .OrderBy(p => p.Posicao)
                 .ToList();
         }
 

@@ -4,6 +4,7 @@ import '../../core/constants.dart';
 import '../../core/flavor_config.dart';
 import '../../core/models/membro.dart';
 import '../../core/models/patrocinador.dart';
+import '../../core/models/premio.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
 import '../../widgets/patrocinadores_section.dart';
@@ -22,6 +23,7 @@ class _TorneioScreenState extends State<TorneioScreen> {
   final ApiService _api = ApiService();
   List<Patrocinador> _patrocinadores = const [];
   List<Membro> _participantes = const [];
+  List<Premio> _premios = const [];
 
   // Ranking state
   bool _rankingCarregando = false;
@@ -37,6 +39,9 @@ class _TorneioScreenState extends State<TorneioScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _configProvider.carregarConfig(_slug!);
           _carregarPatrocinadores(_slug!);
+          if (_configProvider.config?.status == 'Liberado') {
+            _carregarPremios(_slug!);
+          }
           if (_configProvider.config?.exibirParticipantesPublicos ?? false) {
             _carregarParticipantes(_slug!);
           }
@@ -82,6 +87,21 @@ class _TorneioScreenState extends State<TorneioScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _participantes = const []);
+    }
+  }
+
+  Future<void> _carregarPremios(String slug) async {
+    try {
+      final data = await _api.get(ApiConstants.premios(slug));
+      final lista = data is List
+          ? data.map((e) => Premio.fromJson(e as Map<String, dynamic>)).toList()
+          : <Premio>[];
+      lista.sort((a, b) => a.posicao.compareTo(b.posicao));
+      if (!mounted) return;
+      setState(() => _premios = lista);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _premios = const []);
     }
   }
 
@@ -273,6 +293,10 @@ class _TorneioScreenState extends State<TorneioScreen> {
                     ],
 
                     // ── Patrocinadores ───────────────────────────────────────
+                    if (config.status == 'Liberado' && _premios.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      _PremiosSection(premios: _premios),
+                    ],
                     if (config.exibirParticipantesPublicos && _participantes.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       _ParticipantesSection(
@@ -833,6 +857,73 @@ class _ParticipantesSection extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PremiosSection extends StatelessWidget {
+  final List<Premio> premios;
+
+  const _PremiosSection({required this.premios});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle(
+          icon: Icons.workspace_premium_outlined,
+          color: Colors.amber.shade700,
+          title: 'Premiações',
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: premios
+                  .map(
+                    (premio) => Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade100,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              '${premio.posicao}º',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              premio.descricao,
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
