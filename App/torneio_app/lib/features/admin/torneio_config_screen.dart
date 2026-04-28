@@ -34,6 +34,8 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
   bool _permitirCapturaOffline = false;
   bool _exibirModuloFinanceiro = true;
   bool _exibirParticipantesPublicos = false;
+  bool _exibirNaListaInicialPublica = true;
+  bool _exibirNaPesquisaPublica = true;
   bool _premiacaoPorEquipe = true;
   bool _premiacaoPorMembro = false;
   bool _apenasMaiorCapturaPorPescador = false;
@@ -69,6 +71,8 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
       _permitirCapturaOffline = data['permitirCapturaOffline'] as bool? ?? false;
       _exibirModuloFinanceiro = data['exibirModuloFinanceiro'] as bool? ?? true;
       _exibirParticipantesPublicos = data['exibirParticipantesPublicos'] as bool? ?? false;
+      _exibirNaListaInicialPublica = data['exibirNaListaInicialPublica'] as bool? ?? true;
+      _exibirNaPesquisaPublica = data['exibirNaPesquisaPublica'] as bool? ?? true;
       _premiacaoPorEquipe = data['premiacaoPorEquipe'] as bool? ?? true;
       _premiacaoPorMembro = data['premiacaoPorMembro'] as bool? ?? false;
       _apenasMaiorCapturaPorPescador = data['apenasMaiorCapturaPorPescador'] as bool? ?? false;
@@ -142,6 +146,8 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
           'permitirCapturaOffline': _permitirCapturaOffline,
           'exibirModuloFinanceiro': _exibirModuloFinanceiro,
           'exibirParticipantesPublicos': _exibirParticipantesPublicos,
+          'exibirNaListaInicialPublica': _exibirNaListaInicialPublica,
+          'exibirNaPesquisaPublica': _exibirNaPesquisaPublica,
           'premiacaoPorEquipe': _premiacaoPorEquipe,
           'premiacaoPorMembro': _premiacaoPorMembro,
           'apenasMaiorCapturaPorPescador': _apenasMaiorCapturaPorPescador,
@@ -289,6 +295,16 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
                         value: _exibirParticipantesPublicos,
                         onChanged: (value) => setState(() => _exibirParticipantesPublicos = value),
                         title: const Text('Exibir participantes na tela inicial publica do torneio'),
+                      ),
+                      SwitchListTile(
+                        value: _exibirNaListaInicialPublica,
+                        onChanged: (value) => setState(() => _exibirNaListaInicialPublica = value),
+                        title: const Text('Exibir torneio na lista inicial publica'),
+                      ),
+                      SwitchListTile(
+                        value: _exibirNaPesquisaPublica,
+                        onChanged: (value) => setState(() => _exibirNaPesquisaPublica = value),
+                        title: const Text('Exibir torneio na pesquisa publica'),
                       ),
                       SwitchListTile(
                         value: _premiacaoPorEquipe,

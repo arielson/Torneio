@@ -91,6 +91,8 @@ public class AdminGeralController : Controller
             ExibirModuloFinanceiro = true,
             PermitirRegistroPublicoMembro = false,
             ExibirParticipantesPublicos = false,
+            ExibirNaListaInicialPublica = true,
+            ExibirNaPesquisaPublica = true,
         });
     }
 
@@ -160,6 +162,8 @@ public class AdminGeralController : Controller
             ExibirModuloFinanceiro = torneio.ExibirModuloFinanceiro,
             PermitirRegistroPublicoMembro = torneio.PermitirRegistroPublicoMembro,
             ExibirParticipantesPublicos = torneio.ExibirParticipantesPublicos,
+            ExibirNaListaInicialPublica = torneio.ExibirNaListaInicialPublica,
+            ExibirNaPesquisaPublica = torneio.ExibirNaPesquisaPublica,
             ModoSorteio = Enum.Parse<ModoSorteio>(torneio.ModoSorteio),
             QtdGanhadores = torneio.QtdGanhadores,
             PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,

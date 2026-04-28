@@ -52,6 +52,8 @@ public class AtualizarTorneioDto
     public bool ExibirModuloFinanceiro { get; init; } = true;
     public bool PermitirRegistroPublicoMembro { get; init; }
     public bool ExibirParticipantesPublicos { get; init; }
+    public bool ExibirNaListaInicialPublica { get; init; } = true;
+    public bool ExibirNaPesquisaPublica { get; init; } = true;
     public ModoSorteio ModoSorteio { get; init; }
 
     [System.ComponentModel.DataAnnotations.Range(1, 100, ErrorMessage = "Informe entre 1 e 100 ganhadores.")]

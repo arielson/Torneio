@@ -20,7 +20,8 @@ public class HomeController : Controller
     [HttpGet("/")]
     public async Task<IActionResult> Index()
     {
-        var torneios = await _torneioServico.ListarAtivos();
+        var torneios = (await _torneioServico.ListarAtivos())
+            .Where(t => t.ExibirNaListaInicialPublica);
         return View(torneios);
     }
 

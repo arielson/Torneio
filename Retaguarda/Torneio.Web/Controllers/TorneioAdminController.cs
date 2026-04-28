@@ -54,6 +54,8 @@ public class TorneioAdminController : TorneioBaseController
             PermitirCapturaOffline = torneio.PermitirCapturaOffline,
             ExibirModuloFinanceiro = torneio.ExibirModuloFinanceiro,
             ExibirParticipantesPublicos = torneio.ExibirParticipantesPublicos,
+            ExibirNaListaInicialPublica = torneio.ExibirNaListaInicialPublica,
+            ExibirNaPesquisaPublica = torneio.ExibirNaPesquisaPublica,
             PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,
             PremiacaoPorMembro = torneio.PremiacaoPorMembro,
             ApenasMaiorCapturaPorPescador = torneio.ApenasMaiorCapturaPorPescador,
@@ -97,6 +99,8 @@ public class TorneioAdminController : TorneioBaseController
                 ExibirModuloFinanceiro = model.ExibirModuloFinanceiro,
                 PermitirRegistroPublicoMembro = torneioAtual.PermitirRegistroPublicoMembro,
                 ExibirParticipantesPublicos = model.ExibirParticipantesPublicos,
+                ExibirNaListaInicialPublica = model.ExibirNaListaInicialPublica,
+                ExibirNaPesquisaPublica = model.ExibirNaPesquisaPublica,
                 ModoSorteio = Enum.Parse<Domain.Enums.ModoSorteio>(torneioAtual.ModoSorteio),
                 QtdGanhadores = model.QtdGanhadores,
                 PremiacaoPorEquipe = model.PremiacaoPorEquipe,
@@ -269,6 +273,8 @@ public class TorneioAdminController : TorneioBaseController
         Registrar(alteracoes, "Permitir captura offline", atual.PermitirCapturaOffline ? "Sim" : "Nao", novo.PermitirCapturaOffline ? "Sim" : "Nao");
         Registrar(alteracoes, "Exibir modulo financeiro", atual.ExibirModuloFinanceiro ? "Sim" : "Nao", novo.ExibirModuloFinanceiro ? "Sim" : "Nao");
         Registrar(alteracoes, "Exibir participantes publicos", atual.ExibirParticipantesPublicos ? "Sim" : "Nao", novo.ExibirParticipantesPublicos ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir na lista inicial publica", atual.ExibirNaListaInicialPublica ? "Sim" : "Nao", novo.ExibirNaListaInicialPublica ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir na pesquisa publica", atual.ExibirNaPesquisaPublica ? "Sim" : "Nao", novo.ExibirNaPesquisaPublica ? "Sim" : "Nao");
         Registrar(alteracoes, "Premiacao por equipe", atual.PremiacaoPorEquipe ? "Sim" : "Nao", novo.PremiacaoPorEquipe ? "Sim" : "Nao");
         Registrar(alteracoes, "Premiacao por membro", atual.PremiacaoPorMembro ? "Sim" : "Nao", novo.PremiacaoPorMembro ? "Sim" : "Nao");
         Registrar(alteracoes, "Apenas maior captura por pescador", atual.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao", novo.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao");

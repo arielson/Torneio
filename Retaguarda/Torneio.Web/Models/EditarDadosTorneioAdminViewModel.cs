@@ -22,6 +22,8 @@ public class EditarDadosTorneioAdminViewModel
     public bool PermitirCapturaOffline { get; set; }
     public bool ExibirModuloFinanceiro { get; set; } = true;
     public bool ExibirParticipantesPublicos { get; set; }
+    public bool ExibirNaListaInicialPublica { get; set; } = true;
+    public bool ExibirNaPesquisaPublica { get; set; } = true;
     public bool PremiacaoPorEquipe { get; set; } = true;
     public bool PremiacaoPorMembro { get; set; }
     public bool ApenasMaiorCapturaPorPescador { get; set; }

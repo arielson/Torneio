@@ -48,6 +48,8 @@ public class TorneioAdminController : BaseController
             PermitirCapturaOffline = torneio.PermitirCapturaOffline,
             ExibirModuloFinanceiro = torneio.ExibirModuloFinanceiro,
             ExibirParticipantesPublicos = torneio.ExibirParticipantesPublicos,
+            ExibirNaListaInicialPublica = torneio.ExibirNaListaInicialPublica,
+            ExibirNaPesquisaPublica = torneio.ExibirNaPesquisaPublica,
             PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,
             PremiacaoPorMembro = torneio.PremiacaoPorMembro,
             ApenasMaiorCapturaPorPescador = torneio.ApenasMaiorCapturaPorPescador,
@@ -87,6 +89,8 @@ public class TorneioAdminController : BaseController
             ExibirModuloFinanceiro = dto.ExibirModuloFinanceiro,
             PermitirRegistroPublicoMembro = torneioAtual.PermitirRegistroPublicoMembro,
             ExibirParticipantesPublicos = dto.ExibirParticipantesPublicos,
+            ExibirNaListaInicialPublica = dto.ExibirNaListaInicialPublica,
+            ExibirNaPesquisaPublica = dto.ExibirNaPesquisaPublica,
             ModoSorteio = Enum.Parse<ModoSorteio>(torneioAtual.ModoSorteio),
             QtdGanhadores = dto.QtdGanhadores,
             PremiacaoPorEquipe = dto.PremiacaoPorEquipe,
@@ -189,6 +193,8 @@ public class TorneioAdminController : BaseController
         Registrar(alteracoes, "Permitir captura offline", atual.PermitirCapturaOffline ? "Sim" : "Nao", novo.PermitirCapturaOffline ? "Sim" : "Nao");
         Registrar(alteracoes, "Exibir modulo financeiro", atual.ExibirModuloFinanceiro ? "Sim" : "Nao", novo.ExibirModuloFinanceiro ? "Sim" : "Nao");
         Registrar(alteracoes, "Exibir participantes publicos", atual.ExibirParticipantesPublicos ? "Sim" : "Nao", novo.ExibirParticipantesPublicos ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir na lista inicial publica", atual.ExibirNaListaInicialPublica ? "Sim" : "Nao", novo.ExibirNaListaInicialPublica ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir na pesquisa publica", atual.ExibirNaPesquisaPublica ? "Sim" : "Nao", novo.ExibirNaPesquisaPublica ? "Sim" : "Nao");
         Registrar(alteracoes, "Premiacao por equipe", atual.PremiacaoPorEquipe ? "Sim" : "Nao", novo.PremiacaoPorEquipe ? "Sim" : "Nao");
         Registrar(alteracoes, "Premiacao por membro", atual.PremiacaoPorMembro ? "Sim" : "Nao", novo.PremiacaoPorMembro ? "Sim" : "Nao");
         Registrar(alteracoes, "Apenas maior captura por pescador", atual.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao", novo.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao");
@@ -217,6 +223,8 @@ public class TorneioAdminConfiguracaoDto
     public bool PermitirCapturaOffline { get; init; }
     public bool ExibirModuloFinanceiro { get; init; }
     public bool ExibirParticipantesPublicos { get; init; }
+    public bool ExibirNaListaInicialPublica { get; init; }
+    public bool ExibirNaPesquisaPublica { get; init; }
     public bool PremiacaoPorEquipe { get; init; }
     public bool PremiacaoPorMembro { get; init; }
     public bool ApenasMaiorCapturaPorPescador { get; init; }
@@ -236,6 +244,8 @@ public class AtualizarTorneioAdminFormDto
     public bool PermitirCapturaOffline { get; init; }
     public bool ExibirModuloFinanceiro { get; init; } = true;
     public bool ExibirParticipantesPublicos { get; init; }
+    public bool ExibirNaListaInicialPublica { get; init; } = true;
+    public bool ExibirNaPesquisaPublica { get; init; } = true;
     public bool PremiacaoPorEquipe { get; init; } = true;
     public bool PremiacaoPorMembro { get; init; }
     public bool ApenasMaiorCapturaPorPescador { get; init; }

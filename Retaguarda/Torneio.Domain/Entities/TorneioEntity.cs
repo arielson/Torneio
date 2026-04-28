@@ -35,6 +35,8 @@ public class TorneioEntity
     public bool ExibirModuloFinanceiro { get; private set; } = true;
     public bool PermitirRegistroPublicoMembro { get; private set; }
     public bool ExibirParticipantesPublicos { get; private set; }
+    public bool ExibirNaListaInicialPublica { get; private set; } = true;
+    public bool ExibirNaPesquisaPublica { get; private set; } = true;
     public decimal ValorPorMembro { get; private set; }
     public int QuantidadeParcelas { get; private set; }
     public DateTime? DataPrimeiroVencimento { get; private set; }
@@ -88,6 +90,8 @@ public class TorneioEntity
         bool exibirModuloFinanceiro = true,
         bool permitirRegistroPublicoMembro = false,
         bool exibirParticipantesPublicos = false,
+        bool exibirNaListaInicialPublica = true,
+        bool exibirNaPesquisaPublica = true,
         int qtdGanhadores = 3,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -127,6 +131,8 @@ public class TorneioEntity
             ExibirModuloFinanceiro = exibirModuloFinanceiro,
             PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro,
             ExibirParticipantesPublicos = exibirParticipantesPublicos,
+            ExibirNaListaInicialPublica = exibirNaListaInicialPublica,
+            ExibirNaPesquisaPublica = exibirNaPesquisaPublica,
             ModoSorteio = modoSorteio,
             TipoTorneio = tipoTorneio,
             QtdGanhadores = qtdGanhadores,
@@ -190,6 +196,8 @@ public class TorneioEntity
         bool exibirModuloFinanceiro,
         bool permitirRegistroPublicoMembro,
         bool exibirParticipantesPublicos,
+        bool exibirNaListaInicialPublica,
+        bool exibirNaPesquisaPublica,
         int qtdGanhadores,
         bool premiacaoPorEquipe = true,
         bool premiacaoPorMembro = false,
@@ -221,6 +229,8 @@ public class TorneioEntity
         ExibirModuloFinanceiro = exibirModuloFinanceiro;
         PermitirRegistroPublicoMembro = permitirRegistroPublicoMembro;
         ExibirParticipantesPublicos = exibirParticipantesPublicos;
+        ExibirNaListaInicialPublica = exibirNaListaInicialPublica;
+        ExibirNaPesquisaPublica = exibirNaPesquisaPublica;
         QtdGanhadores = qtdGanhadores;
         PremiacaoPorEquipe = premiacaoPorEquipe;
         PremiacaoPorMembro = premiacaoPorMembro;

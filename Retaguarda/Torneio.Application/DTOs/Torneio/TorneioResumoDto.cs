@@ -7,5 +7,7 @@ public class TorneioResumoDto
     public string? LogoUrl { get; init; }
     public string Status { get; init; } = null!;
     public bool Ativo { get; init; }
+    public bool ExibirNaListaInicialPublica { get; init; }
+    public bool ExibirNaPesquisaPublica { get; init; }
     public DateTime CriadoEm { get; init; }
 }

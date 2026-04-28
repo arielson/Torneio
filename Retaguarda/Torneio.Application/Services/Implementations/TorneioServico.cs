@@ -88,7 +88,7 @@ public class TorneioServico : ITorneioServico
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.TipoTorneio,
             dto.UsarFatorMultiplicador, dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro,
-            dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos,
+            dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos, dto.ExibirNaListaInicialPublica, dto.ExibirNaPesquisaPublica,
             dto.QtdGanhadores, dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
@@ -113,7 +113,7 @@ public class TorneioServico : ITorneioServico
             dto.LabelCaptura, dto.LabelCapturaPlural,
             dto.MedidaCaptura,
             dto.ModoSorteio, dto.UsarFatorMultiplicador,
-            dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos, dto.QtdGanhadores,
+            dto.PermitirCapturaOffline, dto.ExibirModuloFinanceiro, dto.PermitirRegistroPublicoMembro, dto.ExibirParticipantesPublicos, dto.ExibirNaListaInicialPublica, dto.ExibirNaPesquisaPublica, dto.QtdGanhadores,
             dto.PremiacaoPorEquipe, dto.PremiacaoPorMembro,
             dto.ApenasMaiorCapturaPorPescador,
             dto.LogoUrl, dto.CorPrimaria);
@@ -225,7 +225,7 @@ public class TorneioServico : ITorneioServico
             origem.MedidaCaptura,
             origem.ModoSorteio, origem.TipoTorneio,
             origem.UsarFatorMultiplicador, origem.PermitirCapturaOffline, origem.ExibirModuloFinanceiro,
-            origem.PermitirRegistroPublicoMembro, origem.ExibirParticipantesPublicos,
+            origem.PermitirRegistroPublicoMembro, origem.ExibirParticipantesPublicos, origem.ExibirNaListaInicialPublica, origem.ExibirNaPesquisaPublica,
             origem.QtdGanhadores, origem.PremiacaoPorEquipe, origem.PremiacaoPorMembro,
             origem.ApenasMaiorCapturaPorPescador,
             origem.LogoUrl, origem.CorPrimaria);
@@ -320,6 +320,8 @@ public class TorneioServico : ITorneioServico
         ExibirModuloFinanceiro = e.ExibirModuloFinanceiro,
         PermitirRegistroPublicoMembro = e.PermitirRegistroPublicoMembro,
         ExibirParticipantesPublicos = e.ExibirParticipantesPublicos,
+        ExibirNaListaInicialPublica = e.ExibirNaListaInicialPublica,
+        ExibirNaPesquisaPublica = e.ExibirNaPesquisaPublica,
         ValorPorMembro = e.ValorPorMembro,
         QuantidadeParcelas = e.QuantidadeParcelas,
         DataPrimeiroVencimento = e.DataPrimeiroVencimento,
@@ -336,6 +338,7 @@ public class TorneioServico : ITorneioServico
     public async Task<IEnumerable<TorneioResumoDto>> ListarRecentes(int limite = 5)
     {
         var lista = await _repositorio.ListarRecentes(limite);
+        lista = lista.Where(t => t.ExibirNaListaInicialPublica);
         return lista.Select(ParaResumoDto);
     }
 
@@ -343,6 +346,7 @@ public class TorneioServico : ITorneioServico
     {
         if (string.IsNullOrWhiteSpace(q)) return [];
         var lista = await _repositorio.BuscarPorTexto(q.Trim());
+        lista = lista.Where(t => t.ExibirNaPesquisaPublica);
         return lista.Select(ParaResumoDto);
     }
 
@@ -354,6 +358,8 @@ public class TorneioServico : ITorneioServico
         LogoUrl = e.LogoUrl,
         Status = e.Status.ToString(),
         Ativo = e.Ativo,
+        ExibirNaListaInicialPublica = e.ExibirNaListaInicialPublica,
+        ExibirNaPesquisaPublica = e.ExibirNaPesquisaPublica,
         CriadoEm = e.CriadoEm,
     };
 }
