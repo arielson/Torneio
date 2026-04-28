@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/constants.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/config_provider.dart';
@@ -68,7 +69,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao emitir relatório: $e')),
+        SnackBar(content: Text('Erro ao emitir relatorio: $e')),
       );
     }
   }
@@ -76,13 +77,14 @@ class RelatoriosAdminScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
-    final labelEquipe = config?.labelEquipe ?? 'Embarcação';
+    final labelEquipe = config?.labelEquipe ?? 'Embarcacao';
     final labelMembro = config?.labelMembro ?? 'Pescador';
     final qtdGanhadores = config?.qtdGanhadores ?? 3;
     final exibirMaioresCapturas = config?.tipoTorneio == 'Pesca';
+    final exibirQtdGanhadores = config?.modoSorteio == 'Nenhum';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios')),
+      appBar: AppBar(title: const Text('Relatorios')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -91,7 +93,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.groups_outlined),
               title: Text('Por $labelEquipe'),
               subtitle: Text(
-                'Selecione uma ${labelEquipe.toLowerCase()} para gerar o relatório sintético ou analítico.',
+                'Selecione uma ${labelEquipe.toLowerCase()} para gerar o relatorio sintetico ou analitico.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/equipes'),
@@ -102,7 +104,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.person_outline),
               title: Text('Por $labelMembro'),
               subtitle: Text(
-                'Selecione um ${labelMembro.toLowerCase()} para gerar o relatório sintético ou analítico.',
+                'Selecione um ${labelMembro.toLowerCase()} para gerar o relatorio sintetico ou analitico.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/membros'),
@@ -113,7 +115,9 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.emoji_events_outlined),
               title: const Text('Ganhadores'),
               subtitle: Text(
-                'Relatórios dos $qtdGanhadores ganhadores com base na classificação atual por $labelEquipe.',
+                exibirQtdGanhadores
+                    ? 'Relatorios dos $qtdGanhadores ganhadores com base na classificacao atual por $labelEquipe.'
+                    : 'Relatorios dos ganhadores com base na classificacao atual por $labelEquipe.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/ganhadores'),

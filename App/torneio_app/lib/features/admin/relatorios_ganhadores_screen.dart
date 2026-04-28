@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/constants.dart';
 import '../../core/models/ganhador_relatorio.dart';
 import '../../core/providers/auth_provider.dart';
@@ -90,14 +91,15 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
-    final labelEquipe = config?.labelEquipe ?? 'Embarcação';
-    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcações';
+    final labelEquipe = config?.labelEquipe ?? 'Embarcacao';
+    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcacoes';
     final labelMembro = config?.labelMembro ?? 'Pescador';
     final labelMembroPlural = config?.labelMembroPlural ?? 'Pescadores';
     final qtdGanhadores = config?.qtdGanhadores ?? 3;
+    final exibirQtdGanhadores = config?.modoSorteio == 'Nenhum';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios dos Ganhadores')),
+      appBar: AppBar(title: const Text('Relatorios dos Ganhadores')),
       body: FutureBuilder<GanhadoresResponse>(
         future: _future,
         builder: (context, snapshot) {
@@ -134,7 +136,9 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    'Top $qtdGanhadores $labelEquipePlural',
+                    exibirQtdGanhadores
+                        ? 'Top $qtdGanhadores $labelEquipePlural'
+                        : 'Ganhadores por $labelEquipe',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -147,7 +151,6 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                   ...resp.equipesGanhadoras.map(
                     (item) => _CardGanhadorEquipe(
                       item: item,
-                      labelEquipe: labelEquipe,
                       onSintetico: () => _abrirPdfEquipe(item, false),
                       onAnalitico: () => _abrirPdfEquipe(item, true),
                     ),
@@ -158,7 +161,9 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    'Top $qtdGanhadores $labelMembroPlural',
+                    exibirQtdGanhadores
+                        ? 'Top $qtdGanhadores $labelMembroPlural'
+                        : 'Ganhadores por $labelMembro',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -171,7 +176,6 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                   ...resp.membrosGanhadores.map(
                     (item) => _CardGanhadorMembro(
                       item: item,
-                      labelMembro: labelMembro,
                       onSintetico: () => _abrirPdfMembro(item, false),
                       onAnalitico: () => _abrirPdfMembro(item, true),
                     ),
@@ -187,13 +191,11 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
 
 class _CardGanhadorEquipe extends StatelessWidget {
   final GanhadorEquipe item;
-  final String labelEquipe;
   final VoidCallback onSintetico;
   final VoidCallback onAnalitico;
 
   const _CardGanhadorEquipe({
     required this.item,
-    required this.labelEquipe,
     required this.onSintetico,
     required this.onAnalitico,
   });
@@ -208,11 +210,11 @@ class _CardGanhadorEquipe extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${item.posicao}º - ${item.nomeEquipe}',
+              '${item.posicao}o - ${item.nomeEquipe}',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
-            Text('Capitão: ${item.capitao}'),
+            Text('Capitao: ${item.capitao}'),
             Text('Pontos: ${item.totalPontos.toStringAsFixed(2)}'),
             const SizedBox(height: 12),
             Wrap(
@@ -222,12 +224,12 @@ class _CardGanhadorEquipe extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onSintetico,
                   icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('Sintético'),
+                  label: const Text('Sintetico'),
                 ),
                 FilledButton.icon(
                   onPressed: onAnalitico,
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('Analítico'),
+                  label: const Text('Analitico'),
                 ),
               ],
             ),
@@ -240,13 +242,11 @@ class _CardGanhadorEquipe extends StatelessWidget {
 
 class _CardGanhadorMembro extends StatelessWidget {
   final GanhadorMembro item;
-  final String labelMembro;
   final VoidCallback onSintetico;
   final VoidCallback onAnalitico;
 
   const _CardGanhadorMembro({
     required this.item,
-    required this.labelMembro,
     required this.onSintetico,
     required this.onAnalitico,
   });
@@ -261,7 +261,7 @@ class _CardGanhadorMembro extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${item.posicao}º - ${item.nomeMembro}',
+              '${item.posicao}o - ${item.nomeMembro}',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
@@ -274,12 +274,12 @@ class _CardGanhadorMembro extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onSintetico,
                   icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('Sintético'),
+                  label: const Text('Sintetico'),
                 ),
                 FilledButton.icon(
                   onPressed: onAnalitico,
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('Analítico'),
+                  label: const Text('Analitico'),
                 ),
               ],
             ),
