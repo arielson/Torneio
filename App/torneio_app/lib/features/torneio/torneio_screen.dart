@@ -236,19 +236,31 @@ class _TorneioScreenState extends State<TorneioScreen> {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                config.nomeTorneio,
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    config.nomeTorneio,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Chip(
+                                  label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
+                                  backgroundColor: cor.withAlpha(30),
+                                  side: BorderSide(color: cor.withAlpha(80)),
+                                ),
+                              ],
+                            ),
+                            if ((config.descricao ?? '').trim().isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                config.descricao!.trim(),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
                               ),
-                            ),
-                            Chip(
-                              label: Text(config.status, style: TextStyle(color: cor, fontSize: 12)),
-                              backgroundColor: cor.withAlpha(30),
-                              side: BorderSide(color: cor.withAlpha(80)),
-                            ),
+                            ],
                           ],
                         ),
                       ),

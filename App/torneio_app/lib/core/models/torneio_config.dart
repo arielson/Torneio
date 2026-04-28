@@ -4,6 +4,7 @@ class TorneioConfig {
   final String id;
   final String slug;
   final String nomeTorneio;
+  final String? descricao;
   final String? logoUrl;
   final bool ativo;
   final String status;
@@ -39,6 +40,7 @@ class TorneioConfig {
     required this.id,
     required this.slug,
     required this.nomeTorneio,
+    this.descricao,
     this.logoUrl,
     required this.ativo,
     this.status = 'Aberto',
@@ -75,6 +77,7 @@ class TorneioConfig {
         id: json['id'] as String,
         slug: json['slug'] as String,
         nomeTorneio: json['nomeTorneio'] as String,
+        descricao: json['descricao'] as String?,
         logoUrl: AppConfig.resolverUrl(json['logoUrl'] as String?),
         ativo: json['ativo'] as bool? ?? true,
         status: json['status'] as String? ?? 'Aberto',

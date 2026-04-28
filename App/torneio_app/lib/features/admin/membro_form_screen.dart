@@ -223,6 +223,13 @@ class _MembroFormScreenState extends State<MembroFormScreen> {
                     icon: Icon(_senhaVisivel ? Icons.visibility_off : Icons.visibility),
                   ),
                 ),
+                validator: (value) {
+                  if ((value ?? '').isEmpty) return null;
+                  if (value!.length < 6) {
+                    return 'A senha deve ter no minimo 6 caracteres.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
             ],

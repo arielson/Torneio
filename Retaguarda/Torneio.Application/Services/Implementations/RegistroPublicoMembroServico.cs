@@ -213,6 +213,8 @@ public class RegistroPublicoMembroServico : IRegistroPublicoMembroServico
 
         if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(senha))
             throw new InvalidOperationException("Informe usuario e senha juntos para habilitar o acesso do pescador.");
+        if (senha.Trim().Length < 6)
+            throw new InvalidOperationException("A senha deve ter pelo menos 6 caracteres.");
     }
 
     private async Task ValidarUsuarioDisponivel(Guid torneioId, string? usuario, Guid? membroIdAtual)

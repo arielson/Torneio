@@ -88,6 +88,9 @@ public class AutenticacaoServico : IAutenticacaoServico
 
     public async Task TrocarSenha(Guid usuarioId, string perfil, string senhaAtual, string novaSenha, Guid? torneioId)
     {
+        if (string.IsNullOrWhiteSpace(novaSenha) || novaSenha.Length < 6)
+            throw new InvalidOperationException("A nova senha deve ter pelo menos 6 caracteres.");
+
         switch (perfil.ToLowerInvariant())
         {
             case "admintorneio":

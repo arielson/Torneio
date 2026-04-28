@@ -10,6 +10,7 @@ public class AtualizarFiscalDto
     [Required(ErrorMessage = "O usuario e obrigatorio.")]
     public string Usuario { get; init; } = null!;
 
+    [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
     public string? Senha { get; init; }
     public string? FotoUrl { get; init; }
     public List<Guid> EquipeIds { get; init; } = new();

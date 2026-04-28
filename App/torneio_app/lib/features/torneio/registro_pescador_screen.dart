@@ -73,6 +73,20 @@ class _RegistroPescadorScreenState extends State<RegistroPescadorScreen> {
       );
       return;
     }
+    final usuario = _usuarioController.text.trim();
+    final senha = _senhaController.text;
+    if ((usuario.isEmpty && senha.isNotEmpty) || (usuario.isNotEmpty && senha.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe usuario e senha juntos para habilitar o acesso do pescador.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (senha.isNotEmpty && senha.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A senha deve ter no minimo 6 caracteres.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     final config = context.read<ConfigProvider>().config;
     if (config == null) return;

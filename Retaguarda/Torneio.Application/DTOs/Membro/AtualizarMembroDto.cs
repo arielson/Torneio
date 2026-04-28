@@ -11,5 +11,6 @@ public class AtualizarMembroDto
     public string? Celular { get; init; }
     public string? TamanhoCamisa { get; init; }
     public string? Usuario { get; init; }
+    [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
     public string? Senha { get; init; }
 }

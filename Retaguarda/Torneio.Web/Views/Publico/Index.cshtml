@@ -85,6 +85,10 @@
     </div>
 }
 <h1>@Model.NomeTorneio</h1>
+@if (!string.IsNullOrWhiteSpace(Model.Descricao))
+{
+    <p class="text-muted mb-2" style="max-width:840px;white-space:pre-line;">@Model.Descricao</p>
+}
 <p class="mt-2">
     <span class="badge @badgeClass">@Model.Status</span>
 </p>

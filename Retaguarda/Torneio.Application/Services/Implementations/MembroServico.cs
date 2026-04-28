@@ -75,6 +75,8 @@ public class MembroServico : IMembroServico
             ?? throw new KeyNotFoundException($"Membro '{id}' nao encontrado.");
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Membro '{id}' nao encontrado.");
+        if (!string.IsNullOrWhiteSpace(dto.Senha) && dto.Senha.Length < 6)
+            throw new InvalidOperationException("A senha deve ter pelo menos 6 caracteres.");
 
         entidade.AtualizarNome(dto.Nome);
         if (dto.FotoUrl is not null)
@@ -146,6 +148,8 @@ public class MembroServico : IMembroServico
     {
         if (string.IsNullOrWhiteSpace(dto.NovaSenha))
             throw new InvalidOperationException("Informe a nova senha.");
+        if (dto.NovaSenha.Length < 6)
+            throw new InvalidOperationException("A nova senha deve ter pelo menos 6 caracteres.");
 
         var membro = await _repositorio.ObterPorUsuario(torneioId, dto.Usuario)
             ?? throw new InvalidOperationException("Usuario ou celular invalido.");

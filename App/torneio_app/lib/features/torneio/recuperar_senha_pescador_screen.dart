@@ -57,6 +57,12 @@ class _RecuperarSenhaPescadorScreenState extends State<RecuperarSenhaPescadorScr
   Future<void> _confirmar() async {
     final config = context.read<ConfigProvider>().config;
     if (config == null) return;
+    if (_novaSenhaController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A nova senha deve ter no minimo 6 caracteres.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     setState(() => _confirmando = true);
     try {
