@@ -35,6 +35,8 @@ public class TorneioEntityConfiguration : IEntityTypeConfiguration<TorneioEntity
         builder.Property(e => e.ExibirParticipantesPublicos).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.ExibirNaListaInicialPublica).IsRequired().HasDefaultValue(true);
         builder.Property(e => e.ExibirNaPesquisaPublica).IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.DataPrimeiroVencimento).HasColumnType("date");
+        builder.Property(e => e.DataVencimentoTaxaInscricao).HasColumnType("date");
         builder.Property(e => e.ValorPorMembro).HasPrecision(18, 2).HasDefaultValue(0m);
         builder.Property(e => e.QuantidadeParcelas).HasDefaultValue(0);
         builder.Property(e => e.TaxaInscricaoValor).HasPrecision(18, 2).HasDefaultValue(0m);
