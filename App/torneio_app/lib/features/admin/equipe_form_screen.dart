@@ -254,6 +254,7 @@ class _EquipeFormScreenState extends State<EquipeFormScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _statusFinanceiro,
                 decoration: const InputDecoration(

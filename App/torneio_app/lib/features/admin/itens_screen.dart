@@ -115,7 +115,7 @@ class _ItensAdminScreenState extends State<ItensAdminScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _abrirFormulario(),
         icon: const Icon(Icons.add),
-        label: Text('Novo $label'),
+        label: Text('Adicionar $label'),
       ),
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
