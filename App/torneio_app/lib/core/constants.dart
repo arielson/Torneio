@@ -86,4 +86,5 @@ class StorageKeys {
   static const String userName = 'auth_user_name';
   static const String torneioId = 'auth_torneio_id';
   static const String ultimoSlug = 'ultimo_slug';
+  static const String torneioConfigPrefix = 'torneio_config_';
 }

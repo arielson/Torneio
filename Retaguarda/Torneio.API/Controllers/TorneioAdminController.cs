@@ -40,6 +40,7 @@ public class TorneioAdminController : BaseController
         return Ok(new TorneioAdminConfiguracaoDto
         {
             NomeTorneio = torneio.NomeTorneio,
+            DataTorneio = torneio.DataTorneio ?? DateTime.Today,
             LogoUrl = torneio.LogoUrl,
             Descricao = torneio.Descricao,
             ObservacoesInternas = torneio.ObservacoesInternas,
@@ -69,7 +70,7 @@ public class TorneioAdminController : BaseController
         await _torneioServico.Atualizar(torneioId, new AtualizarTorneioDto
         {
             NomeTorneio = dto.NomeTorneio,
-            DataTorneio = torneioAtual.DataTorneio,
+            DataTorneio = dto.DataTorneio,
             Descricao = dto.Descricao,
             ObservacoesInternas = dto.ObservacoesInternas,
             LogoUrl = logoUrl,
@@ -186,6 +187,7 @@ public class TorneioAdminController : BaseController
     {
         var alteracoes = new List<string>();
         Registrar(alteracoes, "Nome", atual.NomeTorneio, novo.NomeTorneio);
+        Registrar(alteracoes, "Data do torneio", FormatarData(atual.DataTorneio), novo.DataTorneio.ToString("yyyy-MM-dd"));
         Registrar(alteracoes, "Descricao", atual.Descricao, novo.Descricao);
         Registrar(alteracoes, "Observacoes internas", atual.ObservacoesInternas, novo.ObservacoesInternas);
         Registrar(alteracoes, "Quantidade de ganhadores", atual.QtdGanhadores.ToString(), novo.QtdGanhadores.ToString());
@@ -210,11 +212,14 @@ public class TorneioAdminController : BaseController
         if (!string.Equals(antes, depois, StringComparison.Ordinal))
             alteracoes.Add($"{campo}: '{antes}' -> '{depois}'");
     }
+
+    private static string FormatarData(DateTime? data) => data?.ToString("yyyy-MM-dd") ?? string.Empty;
 }
 
 public class TorneioAdminConfiguracaoDto
 {
     public string NomeTorneio { get; init; } = null!;
+    public DateTime DataTorneio { get; init; }
     public string? LogoUrl { get; init; }
     public string? Descricao { get; init; }
     public string? ObservacoesInternas { get; init; }
@@ -235,6 +240,8 @@ public class AtualizarTorneioAdminFormDto
 {
     [Required(ErrorMessage = "O nome do torneio e obrigatorio.")]
     public string NomeTorneio { get; init; } = null!;
+    [Required(ErrorMessage = "A data do torneio e obrigatoria.")]
+    public DateTime DataTorneio { get; init; }
     public IFormFile? Logo { get; init; }
     public string? Descricao { get; init; }
     public string? ObservacoesInternas { get; init; }

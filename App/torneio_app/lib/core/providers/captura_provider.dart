@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -39,40 +40,59 @@ class CapturaProvider extends ChangeNotifier {
   bool get sincronizando => _sincronizando;
   String? get erro => _erro;
   String? get mensagemSync => _mensagemSync;
+  bool get possuiDadosBasicos =>
+      _equipes.isNotEmpty && _membros.isNotEmpty && _itens.isNotEmpty;
+
+  Future<void> carregarDadosFiscal(
+    String slug,
+    String token, {
+    bool incluirCapturas = false,
+    String equipeId = '',
+  }) async {
+    _carregando = true;
+    _erro = null;
+    notifyListeners();
+
+    try {
+      final tarefas = <Future<dynamic>>[
+        _carregarEquipes(slug, token),
+        _carregarMembros(slug, token),
+        _carregarItens(slug, token),
+        _atualizarContadorPendentes(),
+      ];
+
+      if (incluirCapturas) {
+        tarefas.add(_carregarCapturas(slug, token, equipeId));
+      }
+
+      final resultados = await Future.wait<dynamic>(tarefas);
+      final colecoesCarregadas = resultados.whereType<bool>().any((carregado) => carregado);
+      if (!colecoesCarregadas && !possuiDadosBasicos) {
+        _erro = 'Erro ao carregar dados.';
+      }
+
+      await _sincronizarAutomaticasSePossivel(slug, token);
+    } catch (_) {
+      if (!possuiDadosBasicos) {
+        _erro = 'Erro ao carregar dados.';
+      }
+    } finally {
+      _carregando = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> carregarDadosEquipe(
     String slug,
     String token,
     String equipeId,
   ) async {
-    _carregando = true;
-    _erro = null;
-    notifyListeners();
-
-    try {
-      final resultados = await Future.wait<dynamic>([
-        _carregarEquipes(slug, token),
-        _carregarMembros(slug, token),
-        _carregarItens(slug, token),
-        _carregarCapturas(slug, token, equipeId),
-        _atualizarContadorPendentes(),
-      ]);
-
-      final colecoesCarregadas = resultados
-          .take(4)
-          .whereType<bool>()
-          .any((carregado) => carregado);
-      if (!colecoesCarregadas) {
-        _erro = 'Erro ao carregar dados.';
-      }
-
-      await _sincronizarAutomaticasSePossivel(slug, token);
-    } catch (e) {
-      _erro = 'Erro ao carregar dados.';
-    } finally {
-      _carregando = false;
-      notifyListeners();
-    }
+    await carregarDadosFiscal(
+      slug,
+      token,
+      incluirCapturas: true,
+      equipeId: equipeId,
+    );
   }
 
   Future<bool> _carregarEquipes(String slug, String token) async {
@@ -206,11 +226,29 @@ class CapturaProvider extends ChangeNotifier {
 
       if (online) {
         try {
-          final data = await _api.post(
-            ApiConstants.capturas(slug),
-            req.toJson(),
-            token: token,
-          );
+          final fotoExiste = await File(req.fotoUrl).exists();
+          final data =
+              fotoExiste
+                  ? await _api.postMultipart(
+                    ApiConstants.capturas(slug),
+                    fields: {
+                      'torneioId': req.torneioId,
+                      'itemId': req.itemId,
+                      'membroId': req.membroId,
+                      'equipeId': req.equipeId,
+                      'tamanhoMedida': req.tamanhoMedida,
+                      'dataHora': req.dataHora.toIso8601String(),
+                      'pendenteSync': req.pendenteSync,
+                      if (req.fonteFoto != null) 'fonteFoto': req.fonteFoto,
+                    },
+                    files: {'foto': req.fotoUrl},
+                    token: token,
+                  )
+                  : await _api.post(
+                    ApiConstants.capturas(slug),
+                    req.toJson(),
+                    token: token,
+                  );
           if (data != null) {
             _capturas.insert(0, Captura.fromJson(data as Map<String, dynamic>));
             notifyListeners();

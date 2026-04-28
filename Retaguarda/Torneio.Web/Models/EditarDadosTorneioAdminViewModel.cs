@@ -6,6 +6,11 @@ public class EditarDadosTorneioAdminViewModel
 {
     [Required(ErrorMessage = "O nome do torneio e obrigatorio.")]
     public string NomeTorneio { get; set; } = null!;
+
+    [DataType(DataType.Date)]
+    [Required(ErrorMessage = "A data do torneio e obrigatoria.")]
+    public DateTime DataTorneio { get; set; }
+
     public string? LogoUrl { get; set; }
     public IFormFile? LogoArquivo { get; set; }
 

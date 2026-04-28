@@ -288,7 +288,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          'Os custos das embarcacoes sao derivados do cadastro de embarcacoes. Os demais custos podem ser lancados aqui.',
+                          'Os custos das embarcações sao derivados do cadastro de embarcaões. Os demais custos podem ser lancados aqui.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),

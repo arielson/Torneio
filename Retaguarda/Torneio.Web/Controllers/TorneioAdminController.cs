@@ -46,6 +46,7 @@ public class TorneioAdminController : TorneioBaseController
         return View(new EditarDadosTorneioAdminViewModel
         {
             NomeTorneio = torneio.NomeTorneio,
+            DataTorneio = torneio.DataTorneio ?? DateTime.Today,
             LogoUrl = torneio.LogoUrl,
             Descricao = torneio.Descricao,
             ObservacoesInternas = torneio.ObservacoesInternas,
@@ -79,7 +80,7 @@ public class TorneioAdminController : TorneioBaseController
             var dto = new AtualizarTorneioDto
             {
                 NomeTorneio = model.NomeTorneio,
-                DataTorneio = torneioAtual.DataTorneio,
+                DataTorneio = model.DataTorneio,
                 Descricao = model.Descricao,
                 ObservacoesInternas = model.ObservacoesInternas,
                 LogoUrl = logoUrl,
@@ -266,6 +267,7 @@ public class TorneioAdminController : TorneioBaseController
         var alteracoes = new List<string>();
 
         Registrar(alteracoes, "Nome", atual.NomeTorneio, novo.NomeTorneio);
+        Registrar(alteracoes, "Data do torneio", FormatarData(atual.DataTorneio), novo.DataTorneio.ToString("yyyy-MM-dd"));
         Registrar(alteracoes, "Descricao", atual.Descricao, novo.Descricao);
         Registrar(alteracoes, "Observacoes internas", atual.ObservacoesInternas, novo.ObservacoesInternas);
         Registrar(alteracoes, "Quantidade de ganhadores", atual.QtdGanhadores.ToString(), novo.QtdGanhadores.ToString());
@@ -291,4 +293,6 @@ public class TorneioAdminController : TorneioBaseController
         if (!string.Equals(antes, depois, StringComparison.Ordinal))
             alteracoes.Add($"{campo}: '{antes}' -> '{depois}'");
     }
+
+    private static string FormatarData(DateTime? data) => data?.ToString("yyyy-MM-dd") ?? string.Empty;
 }

@@ -45,6 +45,12 @@ public class EquipeServico : IEquipeServico
         return lista.Select(ParaDto);
     }
 
+    public async Task<IEnumerable<EquipeDto>> ListarPorFiscal(Guid fiscalId)
+    {
+        var lista = await _repositorio.ListarPorFiscal(_tenantContext.TorneioId, fiscalId);
+        return lista.Select(ParaDto);
+    }
+
     public async Task<EquipeDto> Criar(CriarEquipeDto dto)
     {
         await _validador.ValidateAndThrowAsync(dto);

@@ -23,6 +23,19 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
             .SelectMany(e => e.Membros)
             .ToListAsync();
 
+    public async Task<IEnumerable<Membro>> ListarPorEquipes(IEnumerable<Guid> equipeIds)
+    {
+        var ids = equipeIds.Distinct().ToList();
+        if (ids.Count == 0) return [];
+
+        return await _context.Equipes
+            .IgnoreQueryFilters()
+            .Where(e => ids.Contains(e.Id))
+            .SelectMany(e => e.Membros)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<Membro?> ObterPorCelularNormalizado(Guid torneioId, string celularNormalizado)
     {
         var membros = await _dbSet.IgnoreQueryFilters()

@@ -154,24 +154,45 @@ class _SplashRedirect extends StatefulWidget {
 }
 
 class _SplashRedirectState extends State<_SplashRedirect> {
+  String _mensagem = 'Iniciando aplicativo...';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _redirecionar());
   }
 
+  void _definirMensagem(String mensagem) {
+    if (!mounted) return;
+    setState(() => _mensagem = mensagem);
+  }
+
   Future<void> _redirecionar() async {
     final auth = context.read<AuthProvider>();
     final configProvider = context.read<ConfigProvider>();
+    final capturaProvider = context.read<CapturaProvider>();
 
+    _definirMensagem('Verificando sessão...');
     await auth.restaurarSessao();
     if (!mounted) return;
 
     if (auth.autenticado && auth.usuario?.slug != null) {
+      _definirMensagem('Carregando configurações do torneio...');
       await configProvider.carregarConfig(auth.usuario!.slug!);
       if (!mounted) return;
+      if (auth.usuario!.perfil == 'Fiscal') {
+        _definirMensagem('Preparando dados do fiscal para uso offline...');
+        await capturaProvider.carregarDadosFiscal(
+          auth.usuario!.slug!,
+          auth.usuario!.token,
+          incluirCapturas: false,
+        );
+        if (!mounted) return;
+      }
+      _definirMensagem('Abrindo o aplicativo...');
       _irParaHome(auth.usuario!.perfil);
     } else {
+      _definirMensagem('Abrindo lista de torneios...');
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -207,6 +228,17 @@ class _SplashRedirectState extends State<_SplashRedirect> {
             const SizedBox(height: 16),
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(primary),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _mensagem,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade700,
+                ),
+              ),
             ),
           ],
         ),

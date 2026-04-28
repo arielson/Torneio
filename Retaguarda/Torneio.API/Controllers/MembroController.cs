@@ -14,17 +14,20 @@ namespace Torneio.API.Controllers;
 public class MembroController : BaseController
 {
     private readonly IMembroServico _servico;
+    private readonly IMembroRepositorio _membroRepositorio;
     private readonly TenantContext _tenantContext;
     private readonly IFileStorage _fileStorage;
     private readonly IEquipeRepositorio _equipeRepositorio;
 
     public MembroController(
         IMembroServico servico,
+        IMembroRepositorio membroRepositorio,
         TenantContext tenantContext,
         IFileStorage fileStorage,
         IEquipeRepositorio equipeRepositorio)
     {
         _servico = servico;
+        _membroRepositorio = membroRepositorio;
         _tenantContext = tenantContext;
         _fileStorage = fileStorage;
         _equipeRepositorio = equipeRepositorio;
@@ -37,8 +40,8 @@ public class MembroController : BaseController
         {
             var fiscalId = GetUserId();
             var equipes = await _equipeRepositorio.ListarPorFiscal(_tenantContext.TorneioId, fiscalId);
-            var membros = equipes
-                .SelectMany(e => e.Membros)
+            var equipeIds = equipes.Select(e => e.Id).Distinct().ToList();
+            var membros = (await _membroRepositorio.ListarPorEquipes(equipeIds))
                 .GroupBy(m => m.Id)
                 .Select(g => new MembroDto
                 {

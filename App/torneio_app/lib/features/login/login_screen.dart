@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usuarioController = TextEditingController();
   final _senhaController = TextEditingController();
   bool _senhaVisivel = false;
+  bool _preparandoAcesso = false;
   _Perfil _perfil = _Perfil.fiscal;
 
   Future<void> _login() async {
@@ -49,11 +50,21 @@ class _LoginScreenState extends State<LoginScreen> {
     // Rota baseada no perfil retornado pelo backend
     switch (auth.usuario!.perfil) {
       case 'Fiscal':
-        await context.read<CapturaProvider>().carregarDadosEquipe(
+        setState(() => _preparandoAcesso = true);
+        final capturaProvider = context.read<CapturaProvider>();
+        await capturaProvider.carregarDadosFiscal(
           config.slug,
           auth.usuario!.token,
-          '',
+          incluirCapturas: false,
         );
+        if (!mounted) return;
+        setState(() => _preparandoAcesso = false);
+        if (capturaProvider.erro != null && !capturaProvider.possuiDadosBasicos) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(capturaProvider.erro!), backgroundColor: Colors.red),
+          );
+          return;
+        }
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/fiscal/home');
         return;
@@ -195,9 +206,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
 
               FilledButton(
-                onPressed: auth.carregando ? null : _login,
+                onPressed: (auth.carregando || _preparandoAcesso) ? null : _login,
                 child:
-                    auth.carregando
+                    (auth.carregando || _preparandoAcesso)
                         ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -208,6 +219,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                         : const Text('Entrar'),
               ),
+              if (_preparandoAcesso) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Preparando dados para uso do fiscal, inclusive para funcionamento offline...',
+                  textAlign: TextAlign.center,
+                ),
+              ],
               if (_perfil == _Perfil.membro) ...[
                 const SizedBox(height: 16),
                 TextButton(

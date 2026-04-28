@@ -38,7 +38,7 @@ public class EquipeController : BaseController
     public async Task<IActionResult> Listar()
     {
         IEnumerable<EquipeDto> equipes = GetPerfil() == "Fiscal"
-            ? (await _servico.ListarTodos()).Where(e => e.FiscalIds.Contains(GetUserId()))
+            ? await _servico.ListarPorFiscal(GetUserId())
             : await _servico.ListarTodos();
 
         return Ok(equipes);

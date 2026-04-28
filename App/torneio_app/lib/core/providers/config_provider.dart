@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
@@ -22,20 +23,38 @@ class ConfigProvider extends ChangeNotifier {
     _erro = null;
     notifyListeners();
 
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = '${StorageKeys.torneioConfigPrefix}$slug';
+
     try {
       final data = await _api.get(ApiConstants.config(slug));
-      _config = TorneioConfig.fromJson(data as Map<String, dynamic>);
-
-      final prefs = await SharedPreferences.getInstance();
+      final map = Map<String, dynamic>.from(data as Map);
+      _config = TorneioConfig.fromJson(map);
+      await prefs.setString(cacheKey, jsonEncode(map));
       await prefs.setString(StorageKeys.ultimoSlug, slug);
     } on ApiException catch (e) {
-      _erro = e.message;
-    } catch (e) {
-      _erro = 'Não foi possível carregar a configuração do torneio.';
+      if (!await _restaurarCache(prefs, cacheKey)) {
+        _erro = e.message;
+      }
+    } catch (_) {
+      if (!await _restaurarCache(prefs, cacheKey)) {
+        _erro = 'Nao foi possivel carregar a configuracao do torneio.';
+      }
     } finally {
       _carregando = false;
       notifyListeners();
     }
+  }
+
+  Future<bool> _restaurarCache(SharedPreferences prefs, String cacheKey) async {
+    final cache = prefs.getString(cacheKey);
+    if (cache == null || cache.isEmpty) return false;
+
+    final data = jsonDecode(cache);
+    if (data is! Map) return false;
+
+    _config = TorneioConfig.fromJson(Map<String, dynamic>.from(data));
+    return true;
   }
 
   void limpar() {

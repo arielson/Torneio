@@ -7,6 +7,7 @@ public interface IEquipeServico
 {
     Task<EquipeDto?> ObterPorId(Guid id);
     Task<IEnumerable<EquipeDto>> ListarTodos();
+    Task<IEnumerable<EquipeDto>> ListarPorFiscal(Guid fiscalId);
     Task<EquipeDto> Criar(CriarEquipeDto dto);
     Task Atualizar(Guid id, AtualizarEquipeDto dto);
     Task Remover(Guid id);

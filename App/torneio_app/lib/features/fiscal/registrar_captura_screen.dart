@@ -104,8 +104,10 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
     final capProv = context.read<CapturaProvider>();
     final fiscalId = auth.usuario?.id ?? '';
 
-    final minhasEquipes =
+    final equipesFiltradas =
         capProv.equipes.where((e) => e.fiscalIds.contains(fiscalId)).toList();
+    final minhasEquipes =
+        equipesFiltradas.isNotEmpty ? equipesFiltradas : capProv.equipes;
 
     final equipeIdFinal =
         _equipeId ??
@@ -174,8 +176,10 @@ class _RegistrarCapturaScreenState extends State<RegistrarCapturaScreen> {
     final membros = capProv.membros;
     final itens = capProv.itens;
     final fiscalId = auth.usuario?.id ?? '';
-    final minhasEquipes =
+    final equipesFiltradas =
         capProv.equipes.where((e) => e.fiscalIds.contains(fiscalId)).toList();
+    final minhasEquipes =
+        equipesFiltradas.isNotEmpty ? equipesFiltradas : capProv.equipes;
     final equipeSelecionadaId =
         _equipeId ??
         (minhasEquipes.length == 1 ? minhasEquipes.first.id : null);

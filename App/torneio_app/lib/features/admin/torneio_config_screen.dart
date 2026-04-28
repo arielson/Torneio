@@ -20,6 +20,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
   final _nomeController = TextEditingController();
+  final _dataTorneioController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _observacoesController = TextEditingController();
   final _qtdGanhadoresController = TextEditingController();
@@ -76,6 +77,10 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
       ) as Map<String, dynamic>;
 
       _nomeController.text = data['nomeTorneio'] as String? ?? '';
+      final dataTorneioTexto = data['dataTorneio'] as String?;
+      if (dataTorneioTexto != null && dataTorneioTexto.isNotEmpty) {
+        _dataTorneioController.text = dataTorneioTexto.split('T').first;
+      }
       _descricaoController.text = data['descricao'] as String? ?? '';
       _observacoesController.text = data['observacoesInternas'] as String? ?? '';
       _qtdGanhadoresController.text = '${data['qtdGanhadores'] as int? ?? 3}';
@@ -241,6 +246,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
         ApiConstants.torneioConfiguracaoAdmin(auth!.slug!),
         fields: {
           'nomeTorneio': _nomeController.text.trim(),
+          'dataTorneio': _dataTorneioController.text.trim(),
           'descricao': _descricaoController.text.trim(),
           'observacoesInternas': _observacoesController.text.trim(),
           'qtdGanhadores': _qtdGanhadoresController.text.trim(),
@@ -303,6 +309,33 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
                         ),
                         validator: (value) =>
                             (value == null || value.trim().isEmpty) ? 'Informe o nome.' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _dataTorneioController,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Data do torneio',
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.calendar_today_outlined),
+                        ),
+                        validator: (value) =>
+                            (value == null || value.trim().isEmpty) ? 'Informe a data do torneio.' : null,
+                        onTap: () async {
+                          final base = _parseData(_dataTorneioController.text) ?? DateTime.now();
+                          final escolhida = await showDatePicker(
+                            context: context,
+                            initialDate: base,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                          );
+                          if (escolhida != null && mounted) {
+                            setState(() {
+                              _dataTorneioController.text =
+                                  '${escolhida.year.toString().padLeft(4, '0')}-${escolhida.month.toString().padLeft(2, '0')}-${escolhida.day.toString().padLeft(2, '0')}';
+                            });
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -466,6 +499,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
   @override
   void dispose() {
     _nomeController.dispose();
+    _dataTorneioController.dispose();
     _descricaoController.dispose();
     _observacoesController.dispose();
     _qtdGanhadoresController.dispose();
@@ -473,6 +507,13 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
     super.dispose();
   }
 }
+
+DateTime? _parseData(String valor) {
+  final texto = valor.trim();
+  if (texto.isEmpty) return null;
+  return DateTime.tryParse(texto);
+}
+
   int _canal(Color color, String canal) {
     switch (canal) {
       case 'r':

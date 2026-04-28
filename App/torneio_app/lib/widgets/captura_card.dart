@@ -41,60 +41,63 @@ class CapturaCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
       color: invalida ? Colors.red.shade50 : null,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ExpandableRectImage(
-            imageUrl: captura.fotoUrl,
-            fallbackIcon: iconData,
-            width: 72,
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-          ),
-          Expanded(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: bgColor,
-                child: Icon(iconData, color: iconColor),
-              ),
-              title: Text(
-                '${captura.nomeItem} - ${captura.nomeMembro}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  decoration: invalida ? TextDecoration.lineThrough : null,
-                  color: invalida ? Colors.red.shade700 : null,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExpandableRectImage(
+              imageUrl: captura.fotoUrl,
+              fallbackIcon: iconData,
+              width: 72,
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            ),
+            Expanded(
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: bgColor,
+                  child: Icon(iconData, color: iconColor),
                 ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${captura.tamanhoMedida.toStringAsFixed(1)} $medidaLabel'
-                    '${mostrarFator && captura.fatorMultiplicador != 1.0 ? ' x ${captura.fatorMultiplicador.toStringAsFixed(2)}' : ''}'
-                    ' = ${captura.pontuacao.toStringAsFixed(2)} pts',
-                    style: invalida ? TextStyle(color: Colors.red.shade400) : null,
+                title: Text(
+                  '${captura.nomeItem} - ${captura.nomeMembro}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    decoration: invalida ? TextDecoration.lineThrough : null,
+                    color: invalida ? Colors.red.shade700 : null,
                   ),
-                  Text(
-                    fmt.format(captura.dataHora.toLocal()),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  if (invalida && captura.motivoInvalidacao != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        'Invalidada: ${captura.motivoInvalidacao}',
-                        style: TextStyle(
-                          color: Colors.red.shade600,
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${captura.tamanhoMedida.toStringAsFixed(1)} $medidaLabel'
+                      '${mostrarFator && captura.fatorMultiplicador != 1.0 ? ' x ${captura.fatorMultiplicador.toStringAsFixed(2)}' : ''}'
+                      ' = ${captura.pontuacao.toStringAsFixed(2)} pts',
+                      style: invalida ? TextStyle(color: Colors.red.shade400) : null,
+                    ),
+                    Text(
+                      fmt.format(captura.dataHora.toLocal()),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    if (invalida && captura.motivoInvalidacao != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'Invalidada: ${captura.motivoInvalidacao}',
+                          style: TextStyle(
+                            color: Colors.red.shade600,
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+                isThreeLine: true,
               ),
-              isThreeLine: true,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

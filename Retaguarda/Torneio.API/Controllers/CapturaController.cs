@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Captura;
 using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Enums;
+using Torneio.Domain.Interfaces.Services;
 
 namespace Torneio.API.Controllers;
 
-/// <summary>
-/// /api/{slug}/capturas — Fiscal e AdminTorneio
-/// </summary>
 [Authorize]
 [Route("api/{slug}/capturas")]
 public class CapturaController : BaseController
@@ -16,18 +15,22 @@ public class CapturaController : BaseController
     private readonly ICapturaServico _servico;
     private readonly ILogAuditoriaServico _log;
     private readonly ITorneioServico _torneioServico;
+    private readonly IFileStorage _fileStorage;
 
-    public CapturaController(ICapturaServico servico, ILogAuditoriaServico log, ITorneioServico torneioServico)
+    public CapturaController(
+        ICapturaServico servico,
+        ILogAuditoriaServico log,
+        ITorneioServico torneioServico,
+        IFileStorage fileStorage)
     {
         _servico = servico;
         _log = log;
         _torneioServico = torneioServico;
+        _fileStorage = fileStorage;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Listar(
-        [FromQuery] Guid? equipeId,
-        [FromQuery] Guid? membroId)
+    public async Task<IActionResult> Listar([FromQuery] Guid? equipeId, [FromQuery] Guid? membroId)
     {
         if (equipeId.HasValue)
             return Ok(await _servico.ListarPorEquipe(equipeId.Value));
@@ -46,22 +49,34 @@ public class CapturaController : BaseController
     }
 
     [HttpPost]
+    [Consumes("application/json")]
     public async Task<IActionResult> Registrar([FromBody] RegistrarCapturaDto dto)
     {
         var criado = await _servico.Registrar(dto);
-        var torneio = dto.TorneioId != Guid.Empty
-            ? await _torneioServico.ObterPorId(dto.TorneioId)
-            : null;
-        await _log.Registrar(new RegistrarLogDto
+        await RegistrarLogCaptura(dto.TorneioId, criado);
+        return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
+    }
+
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> RegistrarComFoto([FromForm] RegistrarCapturaFormDto dto)
+    {
+        var fotoUrl = await SalvarFotoAsync(dto.Foto, "capturas");
+        var criado = await _servico.Registrar(new RegistrarCapturaDto
         {
-            TorneioId = dto.TorneioId != Guid.Empty ? dto.TorneioId : null,
-            NomeTorneio = torneio?.NomeTorneio,
-            Categoria = CategoriaLog.Capturas, Acao = "RegistrarCapturaApp",
-            Descricao = $"Captura registrada pelo app | Item: {criado.NomeItem} | Pescador: {criado.NomeMembro} | Equipe: {criado.NomeEquipe} | Medida: {criado.TamanhoMedida} | Data: {criado.DataHora:dd/MM/yyyy HH:mm}",
-            UsuarioNome = User.Identity?.Name ?? "—",
-            UsuarioPerfil = GetPerfil(),
-            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+            TorneioId = dto.TorneioId,
+            ItemId = dto.ItemId,
+            MembroId = dto.MembroId,
+            EquipeId = dto.EquipeId,
+            TamanhoMedida = dto.TamanhoMedida,
+            FotoUrl = fotoUrl,
+            DataHora = dto.DataHora,
+            PendenteSync = dto.PendenteSync,
+            Origem = OrigemCaptura.App,
+            FonteFoto = dto.FonteFoto
         });
+
+        await RegistrarLogCaptura(dto.TorneioId, criado);
         return CreatedAtAction(nameof(ObterPorId), new { slug = RouteData.Values["slug"], id = criado.Id }, criado);
     }
 
@@ -108,4 +123,45 @@ public class CapturaController : BaseController
         await _servico.Remover(id);
         return NoContent();
     }
+
+    private async Task RegistrarLogCaptura(Guid torneioId, CapturaDto criado)
+    {
+        var torneio = torneioId != Guid.Empty
+            ? await _torneioServico.ObterPorId(torneioId)
+            : null;
+
+        await _log.Registrar(new RegistrarLogDto
+        {
+            TorneioId = torneioId != Guid.Empty ? torneioId : null,
+            NomeTorneio = torneio?.NomeTorneio,
+            Categoria = CategoriaLog.Capturas,
+            Acao = "RegistrarCapturaApp",
+            Descricao = $"Captura registrada pelo app | Item: {criado.NomeItem} | Pescador: {criado.NomeMembro} | Equipe: {criado.NomeEquipe} | Medida: {criado.TamanhoMedida} | Data: {criado.DataHora:dd/MM/yyyy HH:mm}",
+            UsuarioNome = User.Identity?.Name ?? "-",
+            UsuarioPerfil = GetPerfil(),
+            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        });
+    }
+
+    private async Task<string?> SalvarFotoAsync(IFormFile? foto, string subpasta)
+    {
+        if (foto == null || foto.Length == 0) return null;
+
+        var ext = Path.GetExtension(foto.FileName).ToLowerInvariant();
+        await using var stream = foto.OpenReadStream();
+        return await _fileStorage.SalvarAsync(stream, $"{Guid.NewGuid()}{ext}", subpasta);
+    }
+}
+
+public class RegistrarCapturaFormDto
+{
+    public Guid TorneioId { get; init; }
+    public Guid ItemId { get; init; }
+    public Guid MembroId { get; init; }
+    public Guid EquipeId { get; init; }
+    public decimal TamanhoMedida { get; init; }
+    public DateTime DataHora { get; init; }
+    public bool PendenteSync { get; init; }
+    public FonteFoto? FonteFoto { get; init; }
+    public IFormFile? Foto { get; init; }
 }

@@ -29,6 +29,11 @@
             <span asp-validation-for="NomeTorneio" class="text-danger small"></span>
         </div>
         <div class="mb-3">
+            <label asp-for="DataTorneio" class="form-label">Data do Torneio</label>
+            <input asp-for="DataTorneio" class="form-control" type="date" />
+            <span asp-validation-for="DataTorneio" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
             <label asp-for="Descricao" class="form-label">Descricao</label>
             <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
             <span asp-validation-for="Descricao" class="text-danger small"></span>
