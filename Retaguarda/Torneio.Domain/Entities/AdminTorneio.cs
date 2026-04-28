@@ -37,5 +37,11 @@ public class AdminTorneio
         DeveAlterarSenha = false;
     }
 
+    public void RedefinirSenha(string novaSenhaHash)
+    {
+        SenhaHash = novaSenhaHash;
+        DeveAlterarSenha = true;
+    }
+
     public void AtualizarNome(string nome) => Nome = nome;
 }

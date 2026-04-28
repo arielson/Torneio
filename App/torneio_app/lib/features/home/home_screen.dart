@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Torneios'),
+        title: const Text('Torvia'),
         centerTitle: false,
       ),
       body: prov.carregando

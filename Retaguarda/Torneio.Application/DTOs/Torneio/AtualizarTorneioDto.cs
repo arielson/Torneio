@@ -7,6 +7,9 @@ public class AtualizarTorneioDto
 {
     [Required(ErrorMessage = "O nome do torneio é obrigatório.")]
     public string NomeTorneio { get; init; } = null!;
+    public DateTime? DataTorneio { get; init; }
+    public string? Descricao { get; init; }
+    public string? ObservacoesInternas { get; init; }
 
     public string? LogoUrl { get; set; }
 

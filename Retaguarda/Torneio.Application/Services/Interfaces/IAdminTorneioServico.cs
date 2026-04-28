@@ -9,5 +9,6 @@ public interface IAdminTorneioServico
     Task<IEnumerable<AdminTorneioDto>> ListarPorTorneio(Guid torneioId);
     Task<AdminTorneioDto> Criar(CriarAdminTorneioDto dto);
     Task AtualizarSenha(Guid id, AtualizarSenhaDto dto);
+    Task RedefinirSenha(Guid id, RedefinirSenhaDto dto);
     Task Remover(Guid id);
 }

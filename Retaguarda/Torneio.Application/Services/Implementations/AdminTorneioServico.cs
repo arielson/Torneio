@@ -65,6 +65,15 @@ public class AdminTorneioServico : IAdminTorneioServico
         await _repositorio.Atualizar(entidade);
     }
 
+    public async Task RedefinirSenha(Guid id, RedefinirSenhaDto dto)
+    {
+        var entidade = await _repositorio.ObterPorId(id)
+            ?? throw new KeyNotFoundException($"AdminTorneio '{id}' nao encontrado.");
+
+        entidade.RedefinirSenha(_passwordHasher.Hash(dto.NovaSenha));
+        await _repositorio.Atualizar(entidade);
+    }
+
     public async Task Remover(Guid id)
     {
         var entidade = await _repositorio.ObterPorId(id)
@@ -78,6 +87,7 @@ public class AdminTorneioServico : IAdminTorneioServico
         UsuarioId = e.UsuarioId,
         TorneioId = e.TorneioId,
         Nome = e.Nome,
-        Usuario = e.Usuario
+        Usuario = e.Usuario,
+        DeveAlterarSenha = e.DeveAlterarSenha
     };
 }

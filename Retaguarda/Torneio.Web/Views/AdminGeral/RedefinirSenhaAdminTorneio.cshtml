@@ -1,0 +1,45 @@
+@model RedefinirSenhaDto
+@{
+    var admin = (AdminTorneioDto)ViewBag.Admin;
+    var torneio = (TorneioDto)ViewBag.Torneio;
+    ViewData["Title"] = $"Redefinir Senha - {admin.Nome}";
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Redefinir Senha - @admin.Nome</h1>
+    </div>
+</div>
+<a asp-action="AdminsTorneio" asp-route-torneioId="@torneio.Id" class="back-link">
+    <i class="bi bi-arrow-left"></i> Admins do Torneio
+</a>
+
+<div class="form-card">
+    <form asp-action="RedefinirSenhaAdminTorneio" asp-route-torneioId="@torneio.Id" asp-route-id="@admin.Id" method="post">
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger py-2 mb-3 small"></div>
+        }
+
+        <div class="alert alert-warning">
+            A senha será redefinida por um administrador geral. No próximo login, este admin do torneio será obrigado a criar uma nova senha pessoal.
+        </div>
+
+        <div class="form-section-title">Nova Senha Temporária</div>
+        <div class="mb-3">
+            <label asp-for="NovaSenha" class="form-label">Nova Senha</label>
+            <input asp-for="NovaSenha" class="form-control" type="password" autocomplete="new-password" />
+            <span asp-validation-for="NovaSenha" class="text-danger small"></span>
+        </div>
+        <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-key me-1"></i>Redefinir Senha
+            </button>
+            <a asp-action="AdminsTorneio" asp-route-torneioId="@torneio.Id" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

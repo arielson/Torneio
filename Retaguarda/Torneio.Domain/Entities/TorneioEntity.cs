@@ -7,6 +7,9 @@ public class TorneioEntity
     public Guid Id { get; private set; }
     public string Slug { get; private set; } = null!;
     public string NomeTorneio { get; private set; } = null!;
+    public DateTime? DataTorneio { get; private set; }
+    public string? Descricao { get; private set; }
+    public string? ObservacoesInternas { get; private set; }
     public string? LogoUrl { get; private set; }
     public bool Ativo { get; private set; }
 
@@ -64,6 +67,9 @@ public class TorneioEntity
     public static TorneioEntity Criar(
         string slug,
         string nomeTorneio,
+        DateTime? dataTorneio,
+        string? descricao,
+        string? observacoesInternas,
         string labelEquipe,
         string labelEquipePlural,
         string labelMembro,
@@ -99,6 +105,9 @@ public class TorneioEntity
             Id = Guid.NewGuid(),
             Slug = slug,
             NomeTorneio = nomeTorneio,
+            DataTorneio = dataTorneio,
+            Descricao = descricao,
+            ObservacoesInternas = observacoesInternas,
             LogoUrl = logoUrl,
             Ativo = true,
             Status = StatusTorneio.Aberto,
@@ -161,6 +170,9 @@ public class TorneioEntity
 
     public void AtualizarConfiguracoes(
         string nomeTorneio,
+        DateTime? dataTorneio,
+        string? descricao,
+        string? observacoesInternas,
         string labelEquipe,
         string labelEquipePlural,
         string labelMembro,
@@ -189,6 +201,9 @@ public class TorneioEntity
         DateTime? dataPrimeiroVencimento = null)
     {
         NomeTorneio = nomeTorneio;
+        DataTorneio = dataTorneio;
+        Descricao = descricao;
+        ObservacoesInternas = observacoesInternas;
         LabelEquipe = labelEquipe;
         LabelEquipePlural = labelEquipePlural;
         LabelMembro = labelMembro;

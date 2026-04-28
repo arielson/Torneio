@@ -39,6 +39,22 @@
             <span asp-validation-for="NomeTorneio" class="text-danger small"></span>
         </div>
         <div class="mb-3">
+            <label asp-for="DataTorneio" class="form-label">Data do Torneio</label>
+            <input asp-for="DataTorneio" type="date" class="form-control" />
+            <span asp-validation-for="DataTorneio" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Descricao" class="form-label">Descrição</label>
+            <textarea asp-for="Descricao" class="form-control" rows="4" placeholder="Resumo público ou descrição geral do torneio"></textarea>
+            <span asp-validation-for="Descricao" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ObservacoesInternas" class="form-label">Observações Internas</label>
+            <textarea asp-for="ObservacoesInternas" class="form-control" rows="4" placeholder="Informações internas do torneio, visíveis apenas na administração"></textarea>
+            <div class="form-text">Este campo é interno e não deve ser exibido publicamente.</div>
+            <span asp-validation-for="ObservacoesInternas" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Logo <small class="text-muted fw-normal">(opcional)</small></label>
             <input type="file" name="logoArquivo" class="form-control" accept="image/*" />
             <div class="form-text">Ou informe uma URL externa abaixo, o upload tem prioridade.</div>

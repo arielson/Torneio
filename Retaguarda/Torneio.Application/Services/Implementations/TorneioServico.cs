@@ -79,7 +79,7 @@ public class TorneioServico : ITorneioServico
             throw new InvalidOperationException($"Já existe um torneio com o slug '{dto.Slug}'.");
 
         var entidade = TorneioEntity.Criar(
-            dto.Slug, dto.NomeTorneio,
+            dto.Slug, dto.NomeTorneio, dto.DataTorneio, dto.Descricao, dto.ObservacoesInternas,
             dto.LabelEquipe, dto.LabelEquipePlural,
             dto.LabelMembro, dto.LabelMembroPlural,
             dto.LabelSupervisor, dto.LabelSupervisorPlural,
@@ -105,7 +105,7 @@ public class TorneioServico : ITorneioServico
             ?? throw new KeyNotFoundException($"Torneio '{id}' não encontrado.");
 
         entidade.AtualizarConfiguracoes(
-            dto.NomeTorneio,
+            dto.NomeTorneio, dto.DataTorneio, dto.Descricao, dto.ObservacoesInternas,
             dto.LabelEquipe, dto.LabelEquipePlural,
             dto.LabelMembro, dto.LabelMembroPlural,
             dto.LabelSupervisor, dto.LabelSupervisorPlural,
@@ -216,7 +216,7 @@ public class TorneioServico : ITorneioServico
             throw new InvalidOperationException($"Já existe um torneio com o slug '{novoSlug}'.");
 
         var novoTorneio = TorneioEntity.Criar(
-            novoSlug.Trim(), novoNome.Trim(),
+            novoSlug.Trim(), novoNome.Trim(), origem.DataTorneio, origem.Descricao, origem.ObservacoesInternas,
             origem.LabelEquipe, origem.LabelEquipePlural,
             origem.LabelMembro, origem.LabelMembroPlural,
             origem.LabelSupervisor, origem.LabelSupervisorPlural,
@@ -298,6 +298,9 @@ public class TorneioServico : ITorneioServico
         Id = e.Id,
         Slug = e.Slug,
         NomeTorneio = e.NomeTorneio,
+        DataTorneio = e.DataTorneio,
+        Descricao = e.Descricao,
+        ObservacoesInternas = e.ObservacoesInternas,
         LogoUrl = e.LogoUrl,
         Ativo = e.Ativo,
         Status = e.Status.ToString(),

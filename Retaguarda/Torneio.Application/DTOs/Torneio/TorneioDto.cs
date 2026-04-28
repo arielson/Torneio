@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Torneio.Domain.Enums;
 
 namespace Torneio.Application.DTOs.Torneio;
@@ -7,6 +8,10 @@ public class TorneioDto
     public Guid Id { get; init; }
     public string Slug { get; init; } = null!;
     public string NomeTorneio { get; init; } = null!;
+    public DateTime? DataTorneio { get; init; }
+    public string? Descricao { get; init; }
+    [JsonIgnore]
+    public string? ObservacoesInternas { get; init; }
     public string? LogoUrl { get; init; }
     public bool Ativo { get; init; }
     public string Status { get; init; } = null!;

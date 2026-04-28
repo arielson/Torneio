@@ -14,6 +14,9 @@ public class TorneioEntityConfiguration : IEntityTypeConfiguration<TorneioEntity
 
         builder.Property(e => e.Slug).IsRequired().HasMaxLength(100);
         builder.Property(e => e.NomeTorneio).IsRequired().HasMaxLength(200);
+        builder.Property(e => e.DataTorneio).HasColumnType("date");
+        builder.Property(e => e.Descricao).HasColumnType("text");
+        builder.Property(e => e.ObservacoesInternas).HasColumnType("text");
         builder.Property(e => e.LogoUrl).HasMaxLength(500);
         builder.Property(e => e.Status).IsRequired();
         builder.Property(e => e.LabelEquipe).IsRequired().HasMaxLength(50);

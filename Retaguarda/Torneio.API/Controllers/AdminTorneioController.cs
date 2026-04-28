@@ -54,6 +54,13 @@ public class AdminTorneioController : BaseController
         return NoContent();
     }
 
+    [HttpPut("{id:guid}/redefinir-senha")]
+    public async Task<IActionResult> RedefinirSenha(Guid id, [FromBody] RedefinirSenhaDto dto)
+    {
+        await _servico.RedefinirSenha(id, dto);
+        return NoContent();
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(Guid id)
     {

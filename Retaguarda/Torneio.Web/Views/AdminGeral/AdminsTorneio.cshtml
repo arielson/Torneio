@@ -2,12 +2,12 @@
 @{
     ViewData["Title"] = "Admins do Torneio";
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var lista   = Model.ToList();
+    var lista = Model.ToList();
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Admins — @torneio.NomeTorneio</h1>
+        <h1>Admins - @torneio.NomeTorneio</h1>
     </div>
     <div class="page-header-actions">
         <a asp-action="CriarAdminTorneio" asp-route-torneioId="@torneio.Id" class="btn btn-primary btn-sm">
@@ -34,8 +34,9 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Usuário</th>
-                        <th class="text-end">Ações</th>
+                        <th>Usuario</th>
+                        <th>Status</th>
+                        <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +45,24 @@
                         <tr>
                             <td class="fw-semibold">@a.Nome</td>
                             <td><code class="text-muted small">@a.Usuario</code></td>
+                            <td>
+                                @if (a.DeveAlterarSenha)
+                                {
+                                    <span class="badge bg-warning text-dark">Troca pendente</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Ativo</span>
+                                }
+                            </td>
                             <td class="text-end">
+                                <a asp-action="RedefinirSenhaAdminTorneio"
+                                   asp-route-torneioId="@torneio.Id"
+                                   asp-route-id="@a.Id"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="Redefinir senha">
+                                    <i class="bi bi-key"></i>
+                                </a>
                                 <form asp-action="RemoverAdminTorneio" asp-route-torneioId="@torneio.Id" asp-route-id="@a.Id"
                                       method="post" class="d-inline">
                                     @Html.AntiForgeryToken()

@@ -76,6 +76,7 @@ public class AdminGeralController : Controller
         var p = TorneioPresets.Get(TipoTorneio.Pesca);
         return View(new CriarTorneioDto
         {
+            DataTorneio = DateTime.Today,
             LabelEquipe          = p.LabelEquipe,
             LabelEquipePlural    = p.LabelEquipePlural,
             LabelMembro          = p.LabelMembro,
@@ -139,6 +140,9 @@ public class AdminGeralController : Controller
         var dto = new AtualizarTorneioDto
         {
             NomeTorneio = torneio.NomeTorneio,
+            DataTorneio = torneio.DataTorneio,
+            Descricao = torneio.Descricao,
+            ObservacoesInternas = torneio.ObservacoesInternas,
             LogoUrl = torneio.LogoUrl,
             LabelEquipe = torneio.LabelEquipe,
             LabelEquipePlural = torneio.LabelEquipePlural,
@@ -496,5 +500,54 @@ public class AdminGeralController : Controller
             UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
         });
         return RedirectToAction(nameof(AdminsTorneio), new { torneioId });
+    }
+
+    [HttpGet("torneios/{torneioId:guid}/admins/{id:guid}/redefinir-senha")]
+    public async Task<IActionResult> RedefinirSenhaAdminTorneio(Guid torneioId, Guid id)
+    {
+        var admin = await _adminTorneioServico.ObterPorId(id);
+        var torneio = await _torneioServico.ObterPorId(torneioId);
+        if (admin is null || torneio is null || admin.TorneioId != torneioId) return NotFound();
+
+        ViewBag.Admin = admin;
+        ViewBag.Torneio = torneio;
+        return View(new RedefinirSenhaDto());
+    }
+
+    [HttpPost("torneios/{torneioId:guid}/admins/{id:guid}/redefinir-senha")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RedefinirSenhaAdminTorneio(Guid torneioId, Guid id, RedefinirSenhaDto dto)
+    {
+        var admin = await _adminTorneioServico.ObterPorId(id);
+        var torneio = await _torneioServico.ObterPorId(torneioId);
+        if (admin is null || torneio is null || admin.TorneioId != torneioId) return NotFound();
+
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Admin = admin;
+            ViewBag.Torneio = torneio;
+            return View(dto);
+        }
+
+        try
+        {
+            await _adminTorneioServico.RedefinirSenha(id, dto);
+            TempData["Sucesso"] = "Senha redefinida. No próximo login, o administrador deverá alterá-la.";
+            await _log.Registrar(new RegistrarLogDto
+            {
+                TorneioId = torneioId, NomeTorneio = torneio.NomeTorneio,
+                Categoria = CategoriaLog.Usuarios, Acao = "RedefinirSenhaAdminTorneio",
+                Descricao = $"Senha redefinida para Admin do Torneio: {admin.Nome} ({admin.Usuario}) | Troca obrigatória no próximo login.",
+                UsuarioNome = AdminNome, UsuarioPerfil = AdminPerfil, IpAddress = AdminIp
+            });
+            return RedirectToAction(nameof(AdminsTorneio), new { torneioId });
+        }
+        catch (Exception ex)
+        {
+            ViewBag.Admin = admin;
+            ViewBag.Torneio = torneio;
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(dto);
+        }
     }
 }

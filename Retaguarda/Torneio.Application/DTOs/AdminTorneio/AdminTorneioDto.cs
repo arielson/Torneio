@@ -7,4 +7,5 @@ public class AdminTorneioDto
     public Guid TorneioId { get; init; }
     public string Nome { get; init; } = null!;
     public string Usuario { get; init; } = null!;
+    public bool DeveAlterarSenha { get; init; }
 }
