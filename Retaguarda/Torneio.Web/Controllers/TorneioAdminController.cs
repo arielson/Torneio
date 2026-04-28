@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Log;
+using Torneio.Application.DTOs.Torneio;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
+using Torneio.Web.Models;
 
 namespace Torneio.Web.Controllers;
 
@@ -12,15 +15,18 @@ public class TorneioAdminController : TorneioBaseController
 {
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _logAuditoriaServico;
+    private readonly IFileStorage _fileStorage;
 
     public TorneioAdminController(
         TenantContext tenantContext,
         ITorneioServico torneioServico,
-        ILogAuditoriaServico logAuditoriaServico)
+        ILogAuditoriaServico logAuditoriaServico,
+        IFileStorage fileStorage)
         : base(tenantContext)
     {
         _torneioServico = torneioServico;
         _logAuditoriaServico = logAuditoriaServico;
+        _fileStorage = fileStorage;
     }
 
     [HttpGet("")]
@@ -29,6 +35,97 @@ public class TorneioAdminController : TorneioBaseController
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
         return View(torneio);
+    }
+
+    [HttpGet("editar")]
+    public async Task<IActionResult> Editar()
+    {
+        var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneio is null) return NotFound();
+
+        return View(new EditarDadosTorneioAdminViewModel
+        {
+            NomeTorneio = torneio.NomeTorneio,
+            LogoUrl = torneio.LogoUrl,
+            Descricao = torneio.Descricao,
+            ObservacoesInternas = torneio.ObservacoesInternas,
+            QtdGanhadores = torneio.QtdGanhadores,
+            UsarFatorMultiplicador = torneio.UsarFatorMultiplicador,
+            PermitirCapturaOffline = torneio.PermitirCapturaOffline,
+            ExibirModuloFinanceiro = torneio.ExibirModuloFinanceiro,
+            ExibirParticipantesPublicos = torneio.ExibirParticipantesPublicos,
+            PremiacaoPorEquipe = torneio.PremiacaoPorEquipe,
+            PremiacaoPorMembro = torneio.PremiacaoPorMembro,
+            ApenasMaiorCapturaPorPescador = torneio.ApenasMaiorCapturaPorPescador,
+            CorPrimaria = torneio.CorPrimaria
+        });
+    }
+
+    [HttpPost("editar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Editar(EditarDadosTorneioAdminViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var torneioAtual = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+        if (torneioAtual is null) return NotFound();
+
+        try
+        {
+            var logoUrl = await ResolverLogoAsync(model.LogoArquivo, model.LogoUrl) ?? torneioAtual.LogoUrl;
+            var dto = new AtualizarTorneioDto
+            {
+                NomeTorneio = model.NomeTorneio,
+                DataTorneio = torneioAtual.DataTorneio,
+                Descricao = model.Descricao,
+                ObservacoesInternas = model.ObservacoesInternas,
+                LogoUrl = logoUrl,
+                LabelEquipe = torneioAtual.LabelEquipe,
+                LabelEquipePlural = torneioAtual.LabelEquipePlural,
+                LabelMembro = torneioAtual.LabelMembro,
+                LabelMembroPlural = torneioAtual.LabelMembroPlural,
+                LabelSupervisor = torneioAtual.LabelSupervisor,
+                LabelSupervisorPlural = torneioAtual.LabelSupervisorPlural,
+                LabelItem = torneioAtual.LabelItem,
+                LabelItemPlural = torneioAtual.LabelItemPlural,
+                LabelCaptura = torneioAtual.LabelCaptura,
+                LabelCapturaPlural = torneioAtual.LabelCapturaPlural,
+                UsarFatorMultiplicador = model.UsarFatorMultiplicador,
+                MedidaCaptura = torneioAtual.MedidaCaptura,
+                PermitirCapturaOffline = model.PermitirCapturaOffline,
+                ExibirModuloFinanceiro = model.ExibirModuloFinanceiro,
+                PermitirRegistroPublicoMembro = torneioAtual.PermitirRegistroPublicoMembro,
+                ExibirParticipantesPublicos = model.ExibirParticipantesPublicos,
+                ModoSorteio = Enum.Parse<Domain.Enums.ModoSorteio>(torneioAtual.ModoSorteio),
+                QtdGanhadores = model.QtdGanhadores,
+                PremiacaoPorEquipe = model.PremiacaoPorEquipe,
+                PremiacaoPorMembro = model.PremiacaoPorMembro,
+                ApenasMaiorCapturaPorPescador = model.ApenasMaiorCapturaPorPescador,
+                CorPrimaria = string.IsNullOrWhiteSpace(model.CorPrimaria) ? null : model.CorPrimaria.Trim()
+            };
+
+            await _torneioServico.Atualizar(TenantContext.TorneioId, dto);
+            var alteracoes = DescreverAlteracoes(torneioAtual, model, logoUrl);
+            await _logAuditoriaServico.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = torneioAtual.NomeTorneio,
+                Categoria = CategoriaLog.Torneios,
+                Acao = "EditarDadosTorneio",
+                Descricao = $"Dados do torneio atualizados via retaguarda web. Alteracoes: {alteracoes}",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
+            TempData["Sucesso"] = "Dados do torneio atualizados com sucesso.";
+            return RedirectToAction(nameof(Index), new { slug = Slug });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
     }
 
     [HttpPost("liberar")]
@@ -135,5 +232,47 @@ public class TorneioAdminController : TorneioBaseController
             TempData["Erro"] = ex.Message;
             return View();
         }
+    }
+
+    private async Task<string?> ResolverLogoAsync(IFormFile? arquivo, string? urlTexto)
+    {
+        if (arquivo != null && arquivo.Length > 0)
+        {
+            var ext = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
+            await using var stream = arquivo.OpenReadStream();
+            var path = await _fileStorage.SalvarAsync(stream, $"{Guid.NewGuid()}{ext}", "logos");
+            return _fileStorage.ObterUrlPublica(path);
+        }
+
+        return string.IsNullOrWhiteSpace(urlTexto) ? null : urlTexto.Trim();
+    }
+
+    private static string DescreverAlteracoes(TorneioDto atual, EditarDadosTorneioAdminViewModel novo, string? logoUrl)
+    {
+        var alteracoes = new List<string>();
+
+        Registrar(alteracoes, "Nome", atual.NomeTorneio, novo.NomeTorneio);
+        Registrar(alteracoes, "Descricao", atual.Descricao, novo.Descricao);
+        Registrar(alteracoes, "Observacoes internas", atual.ObservacoesInternas, novo.ObservacoesInternas);
+        Registrar(alteracoes, "Quantidade de ganhadores", atual.QtdGanhadores.ToString(), novo.QtdGanhadores.ToString());
+        Registrar(alteracoes, "Usar fator multiplicador", atual.UsarFatorMultiplicador ? "Sim" : "Nao", novo.UsarFatorMultiplicador ? "Sim" : "Nao");
+        Registrar(alteracoes, "Permitir captura offline", atual.PermitirCapturaOffline ? "Sim" : "Nao", novo.PermitirCapturaOffline ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir modulo financeiro", atual.ExibirModuloFinanceiro ? "Sim" : "Nao", novo.ExibirModuloFinanceiro ? "Sim" : "Nao");
+        Registrar(alteracoes, "Exibir participantes publicos", atual.ExibirParticipantesPublicos ? "Sim" : "Nao", novo.ExibirParticipantesPublicos ? "Sim" : "Nao");
+        Registrar(alteracoes, "Premiacao por equipe", atual.PremiacaoPorEquipe ? "Sim" : "Nao", novo.PremiacaoPorEquipe ? "Sim" : "Nao");
+        Registrar(alteracoes, "Premiacao por membro", atual.PremiacaoPorMembro ? "Sim" : "Nao", novo.PremiacaoPorMembro ? "Sim" : "Nao");
+        Registrar(alteracoes, "Apenas maior captura por pescador", atual.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao", novo.ApenasMaiorCapturaPorPescador ? "Sim" : "Nao");
+        Registrar(alteracoes, "Cor primaria", atual.CorPrimaria, novo.CorPrimaria);
+        Registrar(alteracoes, "Logo", atual.LogoUrl, logoUrl);
+
+        return alteracoes.Count == 0 ? "nenhuma alteracao relevante detectada" : string.Join("; ", alteracoes);
+    }
+
+    private static void Registrar(List<string> alteracoes, string campo, string? anterior, string? atual)
+    {
+        var antes = (anterior ?? string.Empty).Trim();
+        var depois = (atual ?? string.Empty).Trim();
+        if (!string.Equals(antes, depois, StringComparison.Ordinal))
+            alteracoes.Add($"{campo}: '{antes}' -> '{depois}'");
     }
 }

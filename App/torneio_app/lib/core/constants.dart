@@ -67,6 +67,7 @@ class ApiConstants {
   static String torneioLiberar(String slug) => '$_base/api/$slug/admin/liberar';
   static String torneioFinalizar(String slug) => '$_base/api/$slug/admin/finalizar';
   static String torneioReabrir(String slug) => '$_base/api/$slug/admin/reabrir';
+  static String torneioConfiguracaoAdmin(String slug) => '$_base/api/$slug/admin/configuracao';
   static String sorteioGrupo(String slug) => '$_base/api/$slug/sorteio-grupo';
   static String sorteioGrupoConfirmar(String slug) => '$_base/api/$slug/sorteio-grupo/confirmar';
   static String sorteioGrupoPreCondicoes(String slug) => '$_base/api/$slug/sorteio-grupo/pre-condicoes';

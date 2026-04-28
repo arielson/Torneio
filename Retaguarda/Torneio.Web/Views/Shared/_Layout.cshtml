@@ -90,6 +90,11 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-house"></i> Painel
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/admin/editar") ? "active" : "")" href="/@effectiveSlug/admin/editar">
+                                <i class="bi bi-sliders"></i> Dados do Torneio
+                            </a>
+                        </li>
                         <hr class="sidebar-divider" />
                         <li class="sidebar-section-label">Cadastros</li>
                         <li>
