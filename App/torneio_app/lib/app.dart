@@ -89,7 +89,7 @@ class _TorneioAppState extends State<TorneioApp> {
         builder:
             (context, configProvider, _) => MaterialApp(
               navigatorKey: _navigatorKey,
-              title: 'Torneio',
+              title: 'Torvia',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.fromConfig(configProvider.config),
               initialRoute: '/',
@@ -183,8 +183,9 @@ class _SplashRedirectState extends State<_SplashRedirect> {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -192,13 +193,11 @@ class _SplashRedirectState extends State<_SplashRedirect> {
             Icon(
               Icons.emoji_events,
               size: 80,
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: primary,
             ),
             const SizedBox(height: 16),
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.onPrimary,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(primary),
             ),
           ],
         ),

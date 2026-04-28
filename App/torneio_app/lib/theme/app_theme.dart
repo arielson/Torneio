@@ -4,8 +4,8 @@ import '../core/models/torneio_config.dart';
 class AppTheme {
   AppTheme._();
 
-  static const _defaultPrimary = Color(0xFF1976D2);
-  static const _defaultSecondary = Color(0xFF0288D1);
+  static const _defaultPrimary = Color(0xFF106962);
+  static const _defaultSecondary = Color(0xFF0E5B55);
 
   static ThemeData get theme => _build(_defaultPrimary);
 
