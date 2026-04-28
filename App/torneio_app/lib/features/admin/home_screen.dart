@@ -182,6 +182,19 @@ class _HomeAdminScreenState extends State<HomeAdminScreen> {
                 ),
               ],
               const SizedBox(height: 20),
+              Text('Torneio', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              _NavGrid(
+                items: [
+                  _NavItem(
+                    icon: Icons.tune,
+                    label: 'Dados do torneio',
+                    color: Colors.blueGrey,
+                    onTap: () => _abrirSecao('/admin/torneio'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               Text('Cadastros', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               _NavGrid(

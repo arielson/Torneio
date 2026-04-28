@@ -212,11 +212,9 @@ public class TorneioAdminController : TorneioBaseController
         return RedirectToAction(nameof(Index), new { slug = Slug });
     }
 
-    [Authorize(Policy = "AdminGeral")]
     [HttpGet("clonar")]
     public IActionResult Clonar() => View();
 
-    [Authorize(Policy = "AdminGeral")]
     [HttpPost("clonar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Clonar(string novoSlug, string novoNome)
@@ -224,6 +222,18 @@ public class TorneioAdminController : TorneioBaseController
         try
         {
             var novo = await _torneioServico.ClonarTorneio(TenantContext.TorneioId, novoSlug, novoNome);
+            var origem = await _torneioServico.ObterPorId(TenantContext.TorneioId);
+            await _logAuditoriaServico.Registrar(new RegistrarLogDto
+            {
+                TorneioId = TenantContext.TorneioId,
+                NomeTorneio = origem?.NomeTorneio,
+                Categoria = CategoriaLog.Torneios,
+                Acao = "ClonarTorneio",
+                Descricao = $"Torneio clonado via retaguarda web | Origem: {origem?.NomeTorneio} ({Slug}) | Novo: {novo.NomeTorneio} ({novo.Slug})",
+                UsuarioNome = UsuarioNome,
+                UsuarioPerfil = UsuarioPerfil,
+                IpAddress = IpAddress
+            });
             TempData["Sucesso"] = $"Torneio \"{novo.NomeTorneio}\" criado a partir desta edição.";
             return RedirectToAction(nameof(Index), new { slug = Slug });
         }

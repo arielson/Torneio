@@ -18,17 +18,13 @@
         <h1>@Model.NomeTorneio</h1>
         <span class="badge border @badgeClass ms-2">@Model.Status</span>
     </div>
-    @if (User.HasClaim("perfil", "AdminGeral"))
-    {
     <div class="page-header-actions">
         <a href="/@slug/admin/clonar" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-copy me-1"></i>Clonar
         </a>
     </div>
-    }
 </div>
 
-<!-- Status actions -->
 <div class="content-card mb-4">
     <div class="card-header-bar">
         <h5><i class="bi bi-toggles me-2"></i>Status do Torneio</h5>
@@ -79,7 +75,6 @@
     </div>
 </div>
 
-<!-- Quick actions -->
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-sm-6">
         <a href="/@slug/admin/editar" class="action-card">
@@ -154,7 +149,7 @@
                 <div class="action-icon gray"><i class="bi bi-cash-coin"></i></div>
                 <div>
                     <div class="action-label">Financeiro</div>
-                    <div class="action-desc">Cobranças, custos e checklist</div>
+                    <div class="action-desc">Cobrancas, custos e checklist</div>
                 </div>
             </a>
         </div>
@@ -184,8 +179,8 @@
         <a href="/@slug/premios" class="action-card">
             <div class="action-icon amber"><i class="bi bi-trophy"></i></div>
             <div>
-                <div class="action-label">Prêmios</div>
-                <div class="action-desc">Gerenciar premiação</div>
+                <div class="action-label">Premios</div>
+                <div class="action-desc">Gerenciar premiacao</div>
             </div>
         </a>
     </div>
@@ -193,7 +188,7 @@
         <a href="/@slug/relatorios" class="action-card">
             <div class="action-icon gray"><i class="bi bi-file-earmark-bar-graph"></i></div>
             <div>
-                <div class="action-label">Relatórios</div>
+                <div class="action-label">Relatorios</div>
                 <div class="action-desc">Gerar PDFs</div>
             </div>
         </a>
@@ -204,7 +199,7 @@
             <a href="/@slug/equipes/reorganizacao-emergencial" class="action-card">
                 <div class="action-icon red"><i class="bi bi-exclamation-triangle"></i></div>
                 <div>
-                    <div class="action-label">Reorganização Emergencial</div>
+                    <div class="action-label">Reorganizacao Emergencial</div>
                     <div class="action-desc">Uso somente em casos extremos</div>
                 </div>
             </a>
