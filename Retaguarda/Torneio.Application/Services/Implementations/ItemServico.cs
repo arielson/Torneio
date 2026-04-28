@@ -41,6 +41,9 @@ public class ItemServico : IItemServico
     public async Task<ItemDto> Criar(CriarItemDto dto)
     {
         await _validador.ValidateAndThrowAsync(dto);
+        var existentes = await _repositorio.ListarPorTorneio(dto.TorneioId);
+        if (existentes.Any(i => i.EspeciePeixeId == dto.EspeciePeixeId))
+            throw new InvalidOperationException("Esta especie ja esta cadastrada no torneio.");
 
         var entidade = Item.Criar(dto.TorneioId, dto.EspeciePeixeId, dto.Comprimento, dto.FatorMultiplicador);
         await _repositorio.Adicionar(entidade);
@@ -56,6 +59,8 @@ public class ItemServico : IItemServico
             ?? throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
         if (entidade.TorneioId != _tenantContext.TorneioId)
             throw new KeyNotFoundException($"Item '{id}' nao encontrado.");
+        if (entidade.EspeciePeixeId != dto.EspeciePeixeId)
+            throw new InvalidOperationException("Nao e permitido alterar a especie do item.");
 
         entidade.Atualizar(dto.EspeciePeixeId, dto.Comprimento, dto.FatorMultiplicador);
         await _repositorio.Atualizar(entidade);
