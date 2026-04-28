@@ -39,6 +39,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
   bool _premiacaoPorEquipe = true;
   bool _premiacaoPorMembro = false;
   bool _apenasMaiorCapturaPorPescador = false;
+  String _modoSorteio = 'Sorteio';
 
   Color _corSelecionada() {
     final texto = _corPrimariaController.text.trim();
@@ -81,6 +82,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
       _corPrimariaController.text = data['corPrimaria'] as String? ?? '';
       _logoUrl = AppConfig.resolverUrl(data['logoUrl'] as String?);
       _usarFatorMultiplicador = data['usarFatorMultiplicador'] as bool? ?? false;
+      _modoSorteio = data['modoSorteio'] as String? ?? 'Sorteio';
       _permitirCapturaOffline = data['permitirCapturaOffline'] as bool? ?? false;
       _exibirModuloFinanceiro = data['exibirModuloFinanceiro'] as bool? ?? true;
       _exibirParticipantesPublicos = data['exibirParticipantesPublicos'] as bool? ?? false;
@@ -278,6 +280,7 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final exibirQtdGanhadores = _modoSorteio == 'Nenhum';
     return Scaffold(
       appBar: AppBar(title: const Text('Dados do torneio')),
       body: _carregando
@@ -335,22 +338,24 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _qtdGanhadoresController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Quantidade de ganhadores',
-                          border: OutlineInputBorder(),
+                      if (exibirQtdGanhadores) ...[
+                        TextFormField(
+                          controller: _qtdGanhadoresController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Quantidade de ganhadores',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            final numero = int.tryParse((value ?? '').trim());
+                            if (numero == null || numero < 1 || numero > 100) {
+                              return 'Informe entre 1 e 100 ganhadores.';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          final numero = int.tryParse((value ?? '').trim());
-                          if (numero == null || numero < 1 || numero > 100) {
-                            return 'Informe entre 1 e 100 ganhadores.';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      ],
                       InkWell(
                         onTap: _abrirSeletorCor,
                         borderRadius: BorderRadius.circular(12),

@@ -2,23 +2,24 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    ViewData["Title"] = "Relatório dos Ganhadores";
+    var exibirQtdGanhadores = string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = "Relatorio dos Ganhadores";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Relatório dos Ganhadores</h1>
+        <h1>Relatorio dos Ganhadores</h1>
     </div>
 </div>
 <a href="/@slug/relatorios" class="back-link">
-    <i class="bi bi-arrow-left"></i> Relatórios
+    <i class="bi bi-arrow-left"></i> Relatorios
 </a>
 
 @if (!Model.Equipes.Any() && !Model.Membros.Any())
 {
     <div class="alert alert-info d-flex gap-2 align-items-center">
         <i class="bi bi-info-circle-fill"></i>
-        Nenhum ganhador encontrado com base nas informações atuais.
+        Nenhum ganhador encontrado com base nas informacoes atuais.
     </div>
 }
 
@@ -26,36 +27,46 @@
 {
     <div class="content-card mb-4">
         <div class="card-header-bar">
-            <h5><i class="bi bi-trophy me-2"></i>Top @torneio.QtdGanhadores @torneio.LabelEquipePlural</h5>
+            <h5>
+                <i class="bi bi-trophy me-2"></i>
+                @if (exibirQtdGanhadores)
+                {
+                    @:Top @torneio.QtdGanhadores @torneio.LabelEquipePlural
+                }
+                else
+                {
+                    @:Ganhadores por @torneio.LabelEquipe
+                }
+            </h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Posição</th>
+                        <th>Posicao</th>
                         <th>@torneio.LabelEquipe</th>
-                        <th>Capitão</th>
+                        <th>Capitao</th>
                         <th>Pontos</th>
-                        <th class="text-end">Relatórios</th>
+                        <th class="text-end">Relatorios</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var g in Model.Equipes)
                     {
                         <tr>
-                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "º")</span></td>
+                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "o")</span></td>
                             <td class="fw-semibold">@g.NomeEquipe</td>
                             <td class="text-muted">@g.Capitao</td>
                             <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=false"
-                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintético">
-                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintético
+                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
                                     </a>
                                     <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=true"
-                                       class="btn btn-sm btn-primary" target="_blank" title="Analítico">
-                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analítico
+                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
+                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
                                     </a>
                                 </div>
                             </td>
@@ -71,34 +82,44 @@
 {
     <div class="content-card">
         <div class="card-header-bar">
-            <h5><i class="bi bi-person-badge me-2"></i>Top @torneio.QtdGanhadores @torneio.LabelMembroPlural</h5>
+            <h5>
+                <i class="bi bi-person-badge me-2"></i>
+                @if (exibirQtdGanhadores)
+                {
+                    @:Top @torneio.QtdGanhadores @torneio.LabelMembroPlural
+                }
+                else
+                {
+                    @:Ganhadores por @torneio.LabelMembro
+                }
+            </h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Posição</th>
+                        <th>Posicao</th>
                         <th>@torneio.LabelMembro</th>
                         <th>Pontos</th>
-                        <th class="text-end">Relatórios</th>
+                        <th class="text-end">Relatorios</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var g in Model.Membros)
                     {
                         <tr>
-                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "º")</span></td>
+                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "o")</span></td>
                             <td class="fw-semibold">@g.NomeMembro</td>
                             <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=false"
-                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintético">
-                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintético
+                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
                                     </a>
                                     <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=true"
-                                       class="btn btn-sm btn-primary" target="_blank" title="Analítico">
-                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analítico
+                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
+                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
                                     </a>
                                 </div>
                             </td>

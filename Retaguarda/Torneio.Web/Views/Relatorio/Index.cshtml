@@ -2,12 +2,13 @@
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
     var exibirMaioresCapturas = string.Equals(torneio.TipoTorneio.ToString(), "Pesca", StringComparison.OrdinalIgnoreCase);
-    ViewData["Title"] = "Relatórios";
+    var exibirQtdGanhadores = string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = "Relatorios";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Relatórios</h1>
+        <h1>Relatorios</h1>
     </div>
 </div>
 <a href="/@slug/admin" class="back-link">
@@ -21,7 +22,7 @@
                 <h5><i class="bi bi-people me-2"></i>Por @torneio.LabelEquipe</h5>
             </div>
             <div class="card-body-pad">
-                <p class="text-muted small mb-3">Selecione uma @torneio.LabelEquipe.ToLower() para gerar o relatório sintético ou analítico.</p>
+                <p class="text-muted small mb-3">Selecione uma @torneio.LabelEquipe.ToLower() para gerar o relatorio sintetico ou analitico.</p>
                 <a href="/@slug/relatorios/equipe" class="btn btn-outline-primary">
                     <i class="bi bi-file-earmark-bar-graph me-1"></i>Selecionar @torneio.LabelEquipe
                 </a>
@@ -34,7 +35,7 @@
                 <h5><i class="bi bi-person me-2"></i>Por @torneio.LabelMembro</h5>
             </div>
             <div class="card-body-pad">
-                <p class="text-muted small mb-3">Selecione um @torneio.LabelMembro.ToLower() para gerar o relatório sintético ou analítico.</p>
+                <p class="text-muted small mb-3">Selecione um @torneio.LabelMembro.ToLower() para gerar o relatorio sintetico ou analitico.</p>
                 <a href="/@slug/relatorios/membro" class="btn btn-outline-secondary">
                     <i class="bi bi-file-earmark-person me-1"></i>Selecionar @torneio.LabelMembro
                 </a>
@@ -47,7 +48,16 @@
                 <h5><i class="bi bi-trophy me-2"></i>Ganhadores</h5>
             </div>
             <div class="card-body-pad">
-                <p class="text-muted small mb-3">Gere os mesmos relatórios por embarcação para os @torneio.QtdGanhadores ganhadores do torneio.</p>
+                <p class="text-muted small mb-3">
+                    @if (exibirQtdGanhadores)
+                    {
+                        @:Gere os mesmos relatorios por embarcacao para os @torneio.QtdGanhadores ganhadores do torneio.
+                    }
+                    else
+                    {
+                        @:Gere os mesmos relatorios por embarcacao para os ganhadores do torneio.
+                    }
+                </p>
                 <a href="/@slug/relatorios/ganhadores" class="btn btn-outline-warning">
                     <i class="bi bi-award me-1"></i>Selecionar Ganhadores
                 </a>
@@ -64,7 +74,7 @@
                 <div class="card-body-pad">
                     <p class="text-muted small mb-3">Informe quantas maiores capturas deseja incluir e gere o ranking do torneio.</p>
                     <a href="/@slug/relatorios/maiores-capturas" class="btn btn-outline-dark">
-                        <i class="bi bi-file-earmark-arrow-down me-1"></i>Emitir Relatório
+                        <i class="bi bi-file-earmark-arrow-down me-1"></i>Emitir Relatorio
                     </a>
                 </div>
             </div>

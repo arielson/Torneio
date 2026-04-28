@@ -231,4 +231,18 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const modoSorteioSelect = document.getElementById('ModoSorteio');
+        const qtdGanhadoresInput = document.getElementById('QtdGanhadores');
+
+        function atualizarVisibilidadeQtdGanhadores() {
+            const container = qtdGanhadoresInput?.closest('.mb-3');
+            if (!modoSorteioSelect || !container) return;
+            const textoSelecionado = modoSorteioSelect.options[modoSorteioSelect.selectedIndex]?.text || '';
+            container.style.display = textoSelecionado === 'Nenhum' ? '' : 'none';
+        }
+
+        modoSorteioSelect?.addEventListener('change', atualizarVisibilidadeQtdGanhadores);
+        atualizarVisibilidadeQtdGanhadores();
+    </script>
 }

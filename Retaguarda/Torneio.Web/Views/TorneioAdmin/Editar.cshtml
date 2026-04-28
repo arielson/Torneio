@@ -124,4 +124,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const modoSorteio = '@(((TorneioDto?)ViewBag.Torneio)?.ModoSorteio ?? "")';
+            const qtdGanhadoresInput = document.getElementById('QtdGanhadores');
+            const container = qtdGanhadoresInput?.closest('.mb-3');
+            if (!container) return;
+            container.style.display = modoSorteio === 'Nenhum' ? '' : 'none';
+        })();
+    </script>
 }
