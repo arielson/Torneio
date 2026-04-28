@@ -562,14 +562,41 @@ class _StatusParcelaChip extends StatelessWidget {
 
   const _StatusParcelaChip({required this.parcela});
 
+  Chip _buildChip(String label, Color backgroundColor, Color foregroundColor, Color borderColor) {
+    return Chip(
+      label: Text(label),
+      backgroundColor: backgroundColor,
+      side: BorderSide(color: borderColor),
+      labelStyle: TextStyle(
+        color: foregroundColor,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (parcela.pago) {
-      return const Chip(label: Text('Pago'), backgroundColor: Color(0xFFDFF5E1));
+      return _buildChip(
+        'Pago',
+        const Color(0xFFDFF5E1),
+        const Color(0xFF135D1E),
+        const Color(0xFF8DCB97),
+      );
     }
     if (parcela.inadimplente) {
-      return const Chip(label: Text('Inadimplente'), backgroundColor: Color(0xFFFDE2E1));
+      return _buildChip(
+        'Inadimplente',
+        const Color(0xFFFDE2E1),
+        const Color(0xFF9F1D1D),
+        const Color(0xFFF1A7A4),
+      );
     }
-    return const Chip(label: Text('Em aberto'), backgroundColor: Color(0xFFFFF1D6));
+    return _buildChip(
+      'Em aberto',
+      const Color(0xFFFFF1D6),
+      const Color(0xFF8A5300),
+      const Color(0xFFE4BF76),
+    );
   }
 }

@@ -17,9 +17,9 @@ class CustosAdminScreen extends StatefulWidget {
 class _CustosAdminScreenState extends State<CustosAdminScreen> {
   static const _categorias = <Map<String, String>>[
     {'value': 'Camisas', 'label': 'Camisas'},
-    {'value': 'Alimentacao', 'label': 'Alimentação'},
-    {'value': 'Combustivel', 'label': 'Combustível'},
-    {'value': 'Premiacoes', 'label': 'Premiações'},
+    {'value': 'Alimentacao', 'label': 'Alimentacao'},
+    {'value': 'Combustivel', 'label': 'Combustivel'},
+    {'value': 'Premiacoes', 'label': 'Premiacoes'},
     {'value': 'Outros', 'label': 'Outros'},
   ];
 
@@ -109,7 +109,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                 TextField(
                   controller: descricaoController,
                   decoration: const InputDecoration(
-                    labelText: 'Descrição',
+                    labelText: 'Descricao',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -127,7 +127,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   controller: valorUnitarioController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: const InputDecoration(
-                    labelText: 'Valor unitário',
+                    labelText: 'Valor unitario',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -155,7 +155,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                 TextField(
                   controller: responsavelController,
                   decoration: const InputDecoration(
-                    labelText: 'Responsável',
+                    labelText: 'Responsavel',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -164,7 +164,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   controller: observacaoController,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: 'Observação',
+                    labelText: 'Observacao',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -186,7 +186,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     final valorUnitario = double.tryParse(valorUnitarioController.text.replaceAll(',', '.'));
     if (descricaoController.text.trim().isEmpty || quantidade == null || quantidade <= 0 || valorUnitario == null || valorUnitario < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha descrição, quantidade e valor unitário corretamente.')),
+        const SnackBar(content: Text('Preencha descricao, quantidade e valor unitario corretamente.')),
       );
       return;
     }
@@ -254,6 +254,18 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
     }
   }
 
+  Widget _buildIndicadorCustoDerivado() {
+    return const Chip(
+      label: Text('Embarcacao'),
+      backgroundColor: Color(0xFFE2ECFF),
+      side: BorderSide(color: Color(0xFF9BB8F3)),
+      labelStyle: TextStyle(
+        color: Color(0xFF163D8F),
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,7 +288,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          'Os custos das embarcações são derivados do cadastro de embarcações. Os demais custos podem ser lançados aqui.',
+                          'Os custos das embarcacoes sao derivados do cadastro de embarcacoes. Os demais custos podem ser lancados aqui.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -284,7 +296,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                   if (_erro == null && _custos.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 24),
-                      child: Text('Nenhum custo lançado.', textAlign: TextAlign.center),
+                      child: Text('Nenhum custo lancado.', textAlign: TextAlign.center),
                     ),
                   ..._custos.map(
                     (custo) => Card(
@@ -296,7 +308,7 @@ class _CustosAdminScreenState extends State<CustosAdminScreen> {
                         ),
                         isThreeLine: (custo.observacao ?? '').trim().isNotEmpty,
                         trailing: custo.derivadoDaEmbarcacao
-                            ? const Chip(label: Text('Embarcação'))
+                            ? _buildIndicadorCustoDerivado()
                             : Wrap(
                                 spacing: 4,
                                 children: [

@@ -40,6 +40,19 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
   bool _premiacaoPorMembro = false;
   bool _apenasMaiorCapturaPorPescador = false;
 
+  Color _corSelecionada() {
+    final texto = _corPrimariaController.text.trim();
+    if (RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(texto)) {
+      return Color(int.parse(texto.substring(1), radix: 16) | 0xFF000000);
+    }
+    return const Color(0xFF106962);
+  }
+
+  String _hexColor(Color color) {
+    final rgb = color.toARGB32() & 0x00FFFFFF;
+    return '#${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,6 +139,93 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _abrirSeletorCor() async {
+    var corAtual = _corSelecionada();
+    final cor = await showDialog<Color>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Cor primária'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: corAtual,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.black12),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Text(
+                        _hexColor(corAtual),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Vermelho: ${_canal(corAtual, 'r')}'),
+                    Slider(
+                      value: _canal(corAtual, 'r').toDouble(),
+                      min: 0,
+                      max: 255,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          corAtual = corAtual.withRed(value.round());
+                        });
+                      },
+                    ),
+                    Text('Verde: ${_canal(corAtual, 'g')}'),
+                    Slider(
+                      value: _canal(corAtual, 'g').toDouble(),
+                      min: 0,
+                      max: 255,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          corAtual = corAtual.withGreen(value.round());
+                        });
+                      },
+                    ),
+                    Text('Azul: ${_canal(corAtual, 'b')}'),
+                    Slider(
+                      value: _canal(corAtual, 'b').toDouble(),
+                      min: 0,
+                      max: 255,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          corAtual = corAtual.withBlue(value.round());
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, corAtual),
+                  child: const Text('Aplicar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (cor != null && mounted) {
+      setState(() => _corPrimariaController.text = _hexColor(cor));
+    }
   }
 
   Future<void> _salvar() async {
@@ -251,22 +351,38 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _corPrimariaController,
-                        decoration: const InputDecoration(
-                          labelText: 'Cor primaria',
-                          hintText: '#106962',
-                          border: OutlineInputBorder(),
+                      InkWell(
+                        onTap: _abrirSeletorCor,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Cor primaria',
+                            hintText: '#106962',
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: _corSelecionada(),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.black12),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _corPrimariaController.text.trim().isEmpty
+                                      ? '#106962'
+                                      : _corPrimariaController.text.trim().toUpperCase(),
+                                ),
+                              ),
+                              const Icon(Icons.color_lens_outlined),
+                            ],
+                          ),
                         ),
-                        validator: (value) {
-                          final cor = (value ?? '').trim();
-                          if (cor.isEmpty) return null;
-                          final regex = RegExp(r'^#[0-9A-Fa-f]{6}$');
-                          if (!regex.hasMatch(cor)) {
-                            return 'Use o formato #RRGGBB.';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 8),
                       AdminPhotoPicker(
@@ -352,3 +468,13 @@ class _TorneioConfigScreenState extends State<TorneioConfigScreen> {
     super.dispose();
   }
 }
+  int _canal(Color color, String canal) {
+    switch (canal) {
+      case 'r':
+        return (color.r * 255.0).round().clamp(0, 255);
+      case 'g':
+        return (color.g * 255.0).round().clamp(0, 255);
+      default:
+        return (color.b * 255.0).round().clamp(0, 255);
+    }
+  }
