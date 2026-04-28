@@ -107,8 +107,8 @@
                 const uniformes = divisaoUniforme(total, qtd);
 
                 for (let i = 0; i < qtd; i++) {
-                    const salvo = valoresSalvos.find(v => v.numeroParcela === i + 1);
-                    const valorInicial = (salvo !== undefined) ? salvo.valor : uniformes[i];
+                    const salvo = valoresSalvos.find(v => v.NumeroParcela === i + 1);
+                    const valorInicial = (salvo !== undefined) ? salvo.Valor : uniformes[i];
 
                     const row = document.createElement('div');
                     row.className = 'd-flex align-items-center gap-2 mb-2';
@@ -131,10 +131,6 @@
             }
 
             inputQtd.addEventListener('input', onQtdChange);
-            inputValor.addEventListener('change', () => {
-                const qtd = parseInt(inputQtd.value, 10) || 0;
-                if (qtd > 0) renderizarValores(qtd);
-            });
 
             // Renderizar ao carregar
             onQtdChange();
@@ -147,7 +143,7 @@
                 const confirmar = window.confirm('Ja existe uma configuração financeira salva. Deseja limpar a configuração anterior e criar uma nova?');
                 if (!confirmar) return;
                 confirmarInput.value = 'true';
-                form.requestSubmit();
+                form.submit();
             });
         })();
     </script>
