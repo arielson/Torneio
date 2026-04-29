@@ -1,5 +1,5 @@
 name: torneio_app
-description: "App de gerenciamento de torneios — perfis Fiscal e Telespectador."
+description: "App de gerenciamento de torneios"
 publish_to: 'none'
 
 version: 1.0.0+1
