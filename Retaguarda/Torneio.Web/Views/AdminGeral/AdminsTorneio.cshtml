@@ -35,6 +35,8 @@
                     <tr>
                         <th>Nome</th>
                         <th>Usuario</th>
+                        <th>Ultimo acesso</th>
+                        <th>Troca de senha</th>
                         <th>Status</th>
                         <th class="text-end">Acoes</th>
                     </tr>
@@ -45,6 +47,26 @@
                         <tr>
                             <td class="fw-semibold">@a.Nome</td>
                             <td><code class="text-muted small">@a.Usuario</code></td>
+                            <td>
+                                @if (a.UltimoAcessoEm.HasValue)
+                                {
+                                    <span>@a.UltimoAcessoEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Nunca acessou</span>
+                                }
+                            </td>
+                            <td>
+                                @if (a.SenhaAlteradaEm.HasValue)
+                                {
+                                    <span>@a.SenhaAlteradaEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sem registro</span>
+                                }
+                            </td>
                             <td>
                                 @if (a.DeveAlterarSenha)
                                 {

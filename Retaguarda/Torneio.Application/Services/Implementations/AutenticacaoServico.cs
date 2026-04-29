@@ -52,6 +52,9 @@ public class AutenticacaoServico : IAutenticacaoServico
         if (entidade is null || !_passwordHasher.Verificar(senha, entidade.SenhaHash))
             return null;
 
+        entidade.RegistrarAcesso();
+        await _adminTorneioRepositorio.Atualizar(entidade);
+
         var torneio = await _torneioRepositorio.ObterPorId(torneioId);
 
         return new UsuarioAutenticadoDto

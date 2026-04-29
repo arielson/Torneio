@@ -88,6 +88,8 @@ public class AdminTorneioServico : IAdminTorneioServico
         TorneioId = e.TorneioId,
         Nome = e.Nome,
         Usuario = e.Usuario,
-        DeveAlterarSenha = e.DeveAlterarSenha
+        DeveAlterarSenha = e.DeveAlterarSenha,
+        UltimoAcessoEm = e.UltimoAcessoEm,
+        SenhaAlteradaEm = e.SenhaAlteradaEm
     };
 }

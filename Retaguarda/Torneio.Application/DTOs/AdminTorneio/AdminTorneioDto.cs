@@ -8,4 +8,6 @@ public class AdminTorneioDto
     public string Nome { get; init; } = null!;
     public string Usuario { get; init; } = null!;
     public bool DeveAlterarSenha { get; init; }
+    public DateTime? UltimoAcessoEm { get; init; }
+    public DateTime? SenhaAlteradaEm { get; init; }
 }

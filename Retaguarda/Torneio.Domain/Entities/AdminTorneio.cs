@@ -9,6 +9,8 @@ public class AdminTorneio
     public string Usuario { get; private set; } = null!;
     public string SenhaHash { get; private set; } = null!;
     public bool DeveAlterarSenha { get; private set; }
+    public DateTime? UltimoAcessoEm { get; private set; }
+    public DateTime? SenhaAlteradaEm { get; private set; }
 
     private AdminTorneio() { }
 
@@ -35,13 +37,17 @@ public class AdminTorneio
     {
         SenhaHash = novaSenhaHash;
         DeveAlterarSenha = false;
+        SenhaAlteradaEm = DateTime.UtcNow;
     }
 
     public void RedefinirSenha(string novaSenhaHash)
     {
         SenhaHash = novaSenhaHash;
         DeveAlterarSenha = true;
+        SenhaAlteradaEm = DateTime.UtcNow;
     }
+
+    public void RegistrarAcesso() => UltimoAcessoEm = DateTime.UtcNow;
 
     public void AtualizarNome(string nome) => Nome = nome;
 }
