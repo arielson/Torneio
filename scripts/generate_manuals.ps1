@@ -1,3 +1,7 @@
+param(
+  [string[]]$OnlyPdfNames
+)
+
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -345,6 +349,7 @@ $adminTorneioBody = @"
       <h4>Campos e significado</h4>
       <ul>
         <li><strong>Nome</strong>: t&iacute;tulo oficial do torneio.</li>
+        <li><strong>Data do torneio</strong>: data principal do evento, usada na organiza&ccedil;&atilde;o e na comunica&ccedil;&atilde;o.</li>
         <li><strong>Logo</strong>: imagem principal do evento.</li>
         <li><strong>Descri&ccedil;&atilde;o</strong>: texto p&uacute;blico logo abaixo do nome.</li>
         <li><strong>Observa&ccedil;&otilde;es internas</strong>: informa&ccedil;&otilde;es administrativas n&atilde;o p&uacute;blicas.</li>
@@ -360,6 +365,8 @@ $adminTorneioBody = @"
         <li><strong>Captura offline</strong>: permite ao fiscal operar sem internet.</li>
         <li><strong>Exibir m&oacute;dulo financeiro</strong>: mostra ou esconde toda a &aacute;rea financeira.</li>
         <li><strong>Exibir participantes</strong>: mostra ou esconde a se&ccedil;&atilde;o de participantes na tela p&uacute;blica.</li>
+        <li><strong>Exibir na lista inicial p&uacute;blica</strong>: controla se o torneio aparece na lista inicial aberta ao p&uacute;blico.</li>
+        <li><strong>Exibir na pesquisa p&uacute;blica</strong>: controla se o torneio pode ser encontrado pela busca p&uacute;blica.</li>
       </ul>
     </div>
     <div class='block'>
@@ -576,6 +583,29 @@ $adminTorneioBody = @"
         <li>Para formalizar sa&iacute;das para equipe, patrocinadores ou p&uacute;blico.</li>
       </ul>
     </div>
+  </div>
+  <div class='grid'>
+    <div class='block'>
+      <h4>Relat&oacute;rio de ganhadores</h4>
+      <p>Permite escolher manualmente quantos ganhadores ser&atilde;o considerados em cada grupo de premia&ccedil;&atilde;o.</p>
+      <ul>
+        <li><strong>Embarca&ccedil;&otilde;es ganhadoras</strong>: quantidade de embarca&ccedil;&otilde;es premiadas, considerando o capit&atilde;o como respons&aacute;vel pelo trof&eacute;u.</li>
+        <li><strong>Pescadores por pontua&ccedil;&atilde;o</strong>: quantidade de pescadores premiados pelo ranking de pontos.</li>
+        <li><strong>Pescadores por maior captura</strong>: quantidade de pescadores premiados pela maior medida.</li>
+        <li><strong>Exibir pescadores das embarca&ccedil;&otilde;es</strong>: mostra os integrantes das embarca&ccedil;&otilde;es ganhadoras na tela e nos PDFs.</li>
+      </ul>
+    </div>
+    <div class='block'>
+      <h4>Sa&iacute;das dispon&iacute;veis</h4>
+      <ul>
+        <li><strong>Visualiza&ccedil;&atilde;o em tela</strong>: mostra os ganhadores antes da emiss&atilde;o do documento.</li>
+        <li><strong>PDF sint&eacute;tico</strong>: resumo dos ganhadores por categoria.</li>
+        <li><strong>PDF anal&iacute;tico</strong>: detalha os ganhadores e, quando existir, as capturas usadas na forma&ccedil;&atilde;o do resultado.</li>
+      </ul>
+    </div>
+  </div>
+  <div class='note'>
+    Todos os relat&oacute;rios exibem data e hora de emiss&atilde;o. As imagens de embarca&ccedil;&otilde;es participantes e de patrocinadores podem aparecer no encerramento do PDF quando houver arquivos cadastrados para essas entidades.
   </div>
 </div>
 
@@ -1110,6 +1140,10 @@ $manuals = @(
     @{ FileName = 'manual_fiscal_app.html'; PdfName = 'Manual de Fiscal (App).pdf'; Title = 'Manual de Fiscal (App)'; Body = $fiscalBody },
     @{ FileName = 'informacoes_espectador.html'; PdfName = $publicPdfTempName; Title = 'Informacoes para Espectador (acesso publico)'; Body = $espectadorBody }
 )
+
+if ($OnlyPdfNames -and $OnlyPdfNames.Count -gt 0) {
+    $manuals = $manuals | Where-Object { $OnlyPdfNames -contains $_.PdfName }
+}
 
 foreach ($manual in $manuals) {
     $htmlPath = Join-Path $outDir $manual.FileName
