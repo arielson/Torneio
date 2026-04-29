@@ -47,7 +47,7 @@ public class RelatorioServico : IRelatorioServico
         var equipe = await _equipeServico.ObterPorId(equipeId);
         var capturas = (await _capturaServico.ListarPorEquipe(equipeId)).ToList();
         var patrocinadores = await ObterPatrocinadoresRelatorio();
-        var equipesRodape = equipe is null ? new List<EquipeDto>() : await ObterEquipesRelatorio([equipe.Id]);
+        var equipesRodape = await ObterEquipesRelatorio();
 
         if (torneio is null || equipe is null)
             throw new InvalidOperationException("Dados não encontrados para geração do relatório.");
@@ -131,7 +131,7 @@ public class RelatorioServico : IRelatorioServico
         var membro = await _membroServico.ObterPorId(membroId);
         var capturas = (await _capturaServico.ListarPorMembro(membroId)).ToList();
         var patrocinadores = await ObterPatrocinadoresRelatorio();
-        var equipesRodape = await ObterEquipesRelatorio(capturas.Select(c => c.EquipeId));
+        var equipesRodape = await ObterEquipesRelatorio();
 
         if (torneio is null || membro is null)
             throw new InvalidOperationException("Dados não encontrados para geração do relatório.");
@@ -320,7 +320,7 @@ public class RelatorioServico : IRelatorioServico
 
         var titulo = $"Relatório dos Ganhadores - {(analitico ? "Analítico" : "Sintético")}";
         var usarFator = torneio.UsarFatorMultiplicador;
-        var equipesRodape = await ObterEquipesRelatorio(equipes.Select(e => e.EquipeId));
+        var equipesRodape = await ObterEquipesRelatorio();
 
         var doc = Document.Create(container =>
         {
@@ -385,7 +385,7 @@ public class RelatorioServico : IRelatorioServico
             .Take(quantidade)
             .ToList();
         var patrocinadores = await ObterPatrocinadoresRelatorio();
-        var equipesRodape = await ObterEquipesRelatorio(capturas.Select(c => c.EquipeId));
+        var equipesRodape = await ObterEquipesRelatorio();
 
         var titulo = "Relatório das Maiores Capturas";
 
@@ -502,15 +502,11 @@ public class RelatorioServico : IRelatorioServico
             .ToList();
     }
 
-    private async Task<List<EquipeDto>> ObterEquipesRelatorio(IEnumerable<Guid> equipeIds)
+    private async Task<List<EquipeDto>> ObterEquipesRelatorio()
     {
-        var ids = equipeIds.Distinct().ToHashSet();
-        if (ids.Count == 0)
-            return [];
-
         var equipes = await _equipeServico.ListarTodos();
         return equipes
-            .Where(e => ids.Contains(e.Id) && !string.IsNullOrWhiteSpace(e.FotoUrl))
+            .Where(e => !string.IsNullOrWhiteSpace(e.FotoUrl))
             .OrderBy(e => e.Nome)
             .ToList();
     }
@@ -521,6 +517,7 @@ public class RelatorioServico : IRelatorioServico
         string titulo,
         string? subtitulo = null)
     {
+        var emitidoEm = DateTime.Now;
         var logoPath = string.IsNullOrWhiteSpace(torneio.LogoUrl)
             ? null
             : ResolverCaminhoFoto(torneio.LogoUrl);
@@ -541,6 +538,7 @@ public class RelatorioServico : IRelatorioServico
                     texto.Item().Text(titulo).FontSize(12).Italic();
                     if (!string.IsNullOrWhiteSpace(subtitulo))
                         texto.Item().Text(subtitulo).FontSize(10);
+                    texto.Item().Text($"Emitido em: {emitidoEm:dd/MM/yyyy HH:mm}").FontSize(9);
                 });
             });
 
