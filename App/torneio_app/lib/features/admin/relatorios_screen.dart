@@ -69,7 +69,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao emitir relatorio: $e')),
+        SnackBar(content: Text('Erro ao emitir relatório: $e')),
       );
     }
   }
@@ -77,12 +77,12 @@ class RelatoriosAdminScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
-    final labelEquipe = config?.labelEquipe ?? 'Embarcacao';
+    final labelEquipe = config?.labelEquipe ?? 'Embarcação';
     final labelMembro = config?.labelMembro ?? 'Pescador';
     final exibirMaioresCapturas = config?.tipoTorneio == 'Pesca';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatorios')),
+      appBar: AppBar(title: const Text('Relatórios')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -91,7 +91,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.groups_outlined),
               title: Text('Por $labelEquipe'),
               subtitle: Text(
-                'Selecione uma ${labelEquipe.toLowerCase()} para gerar o relatorio sintetico ou analitico.',
+                'Selecione uma ${labelEquipe.toLowerCase()} para gerar o relatório sintético ou analítico.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/equipes'),
@@ -102,7 +102,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.person_outline),
               title: Text('Por $labelMembro'),
               subtitle: Text(
-                'Selecione um ${labelMembro.toLowerCase()} para gerar o relatorio sintetico ou analitico.',
+                'Selecione um ${labelMembro.toLowerCase()} para gerar o relatório sintético ou analítico.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/membros'),
@@ -113,7 +113,7 @@ class RelatoriosAdminScreen extends StatelessWidget {
               leading: const Icon(Icons.emoji_events_outlined),
               title: const Text('Ganhadores'),
               subtitle: const Text(
-                'Defina quantas embarcacoes ganhadoras, quantos pescadores por pontuacao e quantos pescadores por maior captura deseja considerar. Depois disso, emita um PDF sintetico ou analitico consolidado.',
+                'Defina quantas embarcações ganhadoras, quantos pescadores por pontuação e quantos pescadores por maior captura deseja considerar. Depois disso, emita um PDF sintético ou analítico consolidado.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/ganhadores'),

@@ -20,13 +20,14 @@ public class RelatorioController : BaseController
     [Authorize(Policy = "AdminTorneio")]
     [HttpGet("ganhadores")]
     public async Task<IActionResult> Ganhadores(
-        [FromQuery] int? quantidadeEquipes,
-        [FromQuery] int? quantidadeMembrosPontuacao,
-        [FromQuery] int? quantidadeMembrosMaiorCaptura,
         [FromServices] ITorneioServico torneioServico,
         [FromServices] IEquipeServico equipeServico,
         [FromServices] IMembroServico membroServico,
-        [FromServices] ICapturaServico capturaServico)
+        [FromServices] ICapturaServico capturaServico,
+        [FromQuery] int? quantidadeEquipes = null,
+        [FromQuery] int? quantidadeMembrosPontuacao = null,
+        [FromQuery] int? quantidadeMembrosMaiorCaptura = null,
+        [FromQuery] bool exibirPescadoresDasEmbarcacoes = false)
     {
         var torneioId = GetTorneioIdClaim();
         if (torneioId is null)
@@ -59,18 +60,25 @@ public class RelatorioController : BaseController
         if (qtdEquipes > 0)
         {
             var equipes = (await equipeServico.ListarTodos()).ToList();
+            var membros = (await membroServico.ListarTodos()).ToList();
             equipesGanhadoras = equipes
                 .Select(e => new
                 {
                     EquipeId        = e.Id,
                     NomeEquipe      = e.Nome,
                     Capitao         = e.Capitao,
+                    Pescadores      = e.MembroIds
+                        .Select(membroId => membros.FirstOrDefault(m => m.Id == membroId)?.Nome)
+                        .Where(nome => !string.IsNullOrWhiteSpace(nome))
+                        .Cast<string>()
+                        .OrderBy(nome => nome)
+                        .ToList(),
                     TotalPontos     = capturas.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao),
                     PrimeiraCaptura = capturas.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
                 .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeEquipe)
                 .Take(qtdEquipes)
-                .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.Capitao, x.TotalPontos })
+                .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.Capitao, x.Pescadores, x.TotalPontos })
                 .ToList();
         }
 
@@ -123,6 +131,7 @@ public class RelatorioController : BaseController
             QuantidadeEquipes = qtdEquipes,
             QuantidadeMembrosPontuacao = qtdMembrosPontuacao,
             QuantidadeMembrosMaiorCaptura = qtdMembrosMaiorCaptura,
+            ExibirPescadoresDasEmbarcacoes = exibirPescadoresDasEmbarcacoes,
             ExibirMaiorCaptura = exibirMaiorCaptura,
             EquipesGanhadoras = equipesGanhadoras,
             MembrosGanhadores = membrosGanhadores,
@@ -136,6 +145,7 @@ public class RelatorioController : BaseController
         [FromQuery] int quantidadeEquipes = 3,
         [FromQuery] int quantidadeMembrosPontuacao = 3,
         [FromQuery] int quantidadeMembrosMaiorCaptura = 3,
+        [FromQuery] bool exibirPescadoresDasEmbarcacoes = false,
         [FromQuery] bool analitico = false)
     {
         try
@@ -144,6 +154,7 @@ public class RelatorioController : BaseController
                 quantidadeEquipes,
                 quantidadeMembrosPontuacao,
                 quantidadeMembrosMaiorCaptura,
+                exibirPescadoresDasEmbarcacoes,
                 analitico);
             var tipo = analitico ? "analitico" : "sintetico";
             return File(bytes, "application/pdf", $"ganhadores_{tipo}.pdf");

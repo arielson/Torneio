@@ -21,6 +21,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
   int _quantidadeEquipes = 3;
   int _quantidadeMembrosPontuacao = 3;
   int _quantidadeMembrosMaiorCaptura = 3;
+  bool _exibirPescadoresDasEmbarcacoes = false;
 
   Future<void> _selecionarFiltros() async {
     final config = context.read<ConfigProvider>().config;
@@ -28,6 +29,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
     final membrosController = TextEditingController(text: _quantidadeMembrosPontuacao.toString());
     final maiorCapturaController = TextEditingController(text: _quantidadeMembrosMaiorCaptura.toString());
     final exibirMaiorCaptura = config?.tipoTorneio == 'Pesca';
+    var exibirPescadoresDasEmbarcacoes = _exibirPescadoresDasEmbarcacoes;
 
     final confirmado = await showDialog<bool>(
       context: context,
@@ -38,7 +40,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Informe quantas embarcacoes, pescadores por pontuacao e pescadores por maior captura devem entrar no relatorio.',
+                'Informe quantas embarcações, pescadores por pontuação e pescadores por maior captura devem entrar no relatório.',
               ),
               const SizedBox(height: 12),
               TextField(
@@ -46,7 +48,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                 keyboardType: TextInputType.number,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  labelText: 'Embarcacoes ganhadoras',
+                  labelText: 'Embarcações ganhadoras',
                   helperText: 'Informe de 0 a 999.',
                 ),
               ),
@@ -55,7 +57,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                 controller: membrosController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Pescadores por pontuacao',
+                  labelText: 'Pescadores por pontuação',
                   helperText: 'Informe de 0 a 999.',
                 ),
               ),
@@ -70,6 +72,20 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                   ),
                 ),
               ],
+              const SizedBox(height: 12),
+              StatefulBuilder(
+                builder: (context, setStateDialog) => CheckboxListTile(
+                  value: exibirPescadoresDasEmbarcacoes,
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Exibir pescadores das embarcações'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  onChanged: (value) {
+                    setStateDialog(() {
+                      exibirPescadoresDasEmbarcacoes = value ?? false;
+                    });
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -102,6 +118,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                 _quantidadeEquipes = qtdEquipes;
                 _quantidadeMembrosPontuacao = qtdMembros;
                 _quantidadeMembrosMaiorCaptura = exibirMaiorCaptura ? qtdMaiorCaptura! : 0;
+                _exibirPescadoresDasEmbarcacoes = exibirPescadoresDasEmbarcacoes;
               });
               Navigator.of(dialogContext).pop(true);
             },
@@ -125,6 +142,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
         quantidadeEquipes: 0,
         quantidadeMembrosPontuacao: 0,
         quantidadeMembrosMaiorCaptura: 0,
+        exibirPescadoresDasEmbarcacoes: false,
         exibirMaiorCaptura: false,
         equipesGanhadoras: [],
         membrosGanhadores: [],
@@ -138,6 +156,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
         quantidadeEquipes: _quantidadeEquipes,
         quantidadeMembrosPontuacao: _quantidadeMembrosPontuacao,
         quantidadeMembrosMaiorCaptura: _quantidadeMembrosMaiorCaptura,
+        exibirPescadoresDasEmbarcacoes: _exibirPescadoresDasEmbarcacoes,
       ),
       token: auth.token,
     );
@@ -147,6 +166,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
         quantidadeEquipes: 0,
         quantidadeMembrosPontuacao: 0,
         quantidadeMembrosMaiorCaptura: 0,
+        exibirPescadoresDasEmbarcacoes: false,
         exibirMaiorCaptura: false,
         equipesGanhadoras: [],
         membrosGanhadores: [],
@@ -169,6 +189,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
         quantidadeEquipes: _quantidadeEquipes,
         quantidadeMembrosPontuacao: _quantidadeMembrosPontuacao,
         quantidadeMembrosMaiorCaptura: _quantidadeMembrosMaiorCaptura,
+        exibirPescadoresDasEmbarcacoes: _exibirPescadoresDasEmbarcacoes,
         analitico: analitico,
       ),
       token: token,
@@ -184,12 +205,12 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
-    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcacoes';
+    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcações';
     final labelMembroPlural = config?.labelMembroPlural ?? 'Pescadores';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Relatorios dos Ganhadores'),
+        title: const Text('Relatórios dos Ganhadores'),
         actions: [
           IconButton(
             onPressed: _selecionarFiltros,
@@ -208,7 +229,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                     const Icon(Icons.emoji_events_outlined, size: 64, color: Colors.amber),
                     const SizedBox(height: 16),
                     const Text(
-                      'Defina quantas embarcacoes e pescadores deseja considerar em cada categoria do relatorio.',
+                      'Defina quantas embarcações e pescadores deseja considerar em cada categoria do relatório.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -261,12 +282,12 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                         OutlinedButton.icon(
                           onPressed: () => _abrirPdfGanhadores(analitico: false),
                           icon: const Icon(Icons.picture_as_pdf_outlined),
-                          label: const Text('PDF sintetico'),
+                          label: const Text('PDF sintético'),
                         ),
                         FilledButton.icon(
                           onPressed: () => _abrirPdfGanhadores(analitico: true),
                           icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text('PDF analitico'),
+                          label: const Text('PDF analítico'),
                         ),
                       ],
                     ),
@@ -286,7 +307,7 @@ class _RelatoriosGanhadoresScreenState extends State<RelatoriosGanhadoresScreen>
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
-                          'Top ${resp.quantidadeMembrosPontuacao} $labelMembroPlural por pontuacao',
+                          'Top ${resp.quantidadeMembrosPontuacao} $labelMembroPlural por pontuação',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
@@ -339,7 +360,11 @@ class _CardGanhadorEquipe extends StatelessWidget {
           children: [
             Text('${item.posicao}o - ${item.nomeEquipe}', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
-            Text('Capitao: ${item.capitao}'),
+            Text('Capitão: ${item.capitao}'),
+            if (item.pescadores.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('Pescadores: ${item.pescadores.join(', ')}'),
+            ],
             Text('Pontos: ${item.totalPontos.toStringAsFixed(2)}'),
           ],
         ),

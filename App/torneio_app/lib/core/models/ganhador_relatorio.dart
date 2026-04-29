@@ -4,6 +4,7 @@ class GanhadorEquipe {
   final String nomeEquipe;
   final String capitao;
   final double totalPontos;
+  final List<String> pescadores;
 
   const GanhadorEquipe({
     required this.posicao,
@@ -11,6 +12,7 @@ class GanhadorEquipe {
     required this.nomeEquipe,
     required this.capitao,
     required this.totalPontos,
+    required this.pescadores,
   });
 
   factory GanhadorEquipe.fromJson(Map<String, dynamic> json) => GanhadorEquipe(
@@ -19,6 +21,7 @@ class GanhadorEquipe {
         nomeEquipe: json['nomeEquipe'] as String,
         capitao: json['capitao'] as String? ?? '',
         totalPontos: (json['totalPontos'] as num).toDouble(),
+        pescadores: (json['pescadores'] as List? ?? []).map((e) => e.toString()).toList(),
       );
 }
 
@@ -53,6 +56,7 @@ class GanhadoresResponse {
   final int quantidadeEquipes;
   final int quantidadeMembrosPontuacao;
   final int quantidadeMembrosMaiorCaptura;
+  final bool exibirPescadoresDasEmbarcacoes;
   final bool exibirMaiorCaptura;
   final List<GanhadorEquipe> equipesGanhadoras;
   final List<GanhadorMembro> membrosGanhadores;
@@ -62,6 +66,7 @@ class GanhadoresResponse {
     required this.quantidadeEquipes,
     required this.quantidadeMembrosPontuacao,
     required this.quantidadeMembrosMaiorCaptura,
+    required this.exibirPescadoresDasEmbarcacoes,
     required this.exibirMaiorCaptura,
     required this.equipesGanhadoras,
     required this.membrosGanhadores,
@@ -72,6 +77,7 @@ class GanhadoresResponse {
         quantidadeEquipes: json['quantidadeEquipes'] as int? ?? 0,
         quantidadeMembrosPontuacao: json['quantidadeMembrosPontuacao'] as int? ?? 0,
         quantidadeMembrosMaiorCaptura: json['quantidadeMembrosMaiorCaptura'] as int? ?? 0,
+        exibirPescadoresDasEmbarcacoes: json['exibirPescadoresDasEmbarcacoes'] as bool? ?? false,
         exibirMaiorCaptura: json['exibirMaiorCaptura'] as bool? ?? false,
         equipesGanhadoras: (json['equipesGanhadoras'] as List? ?? [])
             .map((e) => GanhadorEquipe.fromJson(e as Map<String, dynamic>))

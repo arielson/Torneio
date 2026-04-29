@@ -10,6 +10,7 @@ public interface IRelatorioServico
         int quantidadeEquipes,
         int quantidadeMembrosPontuacao,
         int quantidadeMembrosMaiorCaptura,
+        bool exibirPescadoresDasEmbarcacoes,
         bool analitico);
 
     Task<byte[]> GerarRelatorioMaioresCapturas(int quantidade);

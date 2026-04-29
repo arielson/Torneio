@@ -7,6 +7,7 @@ public class GanhadorRelatorioViewModel
     public Guid? EquipeId { get; init; }
     public string? NomeEquipe { get; init; }
     public string? Capitao { get; init; }
+    public List<string> Pescadores { get; init; } = [];
     // Membro
     public Guid? MembroId { get; init; }
     public string? NomeMembro { get; init; }
@@ -22,6 +23,7 @@ public class GanhadoresPageViewModel
     public int QuantidadeEquipes { get; set; }
     public int QuantidadeMembrosPontuacao { get; set; }
     public int QuantidadeMembrosMaiorCaptura { get; set; }
+    public bool ExibirPescadoresDasEmbarcacoes { get; set; }
     public bool ExibirMaiorCaptura { get; set; }
     public bool FiltrosInformados { get; set; }
     public List<GanhadorRelatorioViewModel> Equipes { get; init; } = [];

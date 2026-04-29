@@ -56,6 +56,7 @@ class ApiConstants {
     int? quantidadeEquipes,
     int? quantidadeMembrosPontuacao,
     int? quantidadeMembrosMaiorCaptura,
+    bool? exibirPescadoresDasEmbarcacoes,
   }) {
     final params = <String>[
       if (quantidadeEquipes != null) 'quantidadeEquipes=$quantidadeEquipes',
@@ -63,6 +64,8 @@ class ApiConstants {
         'quantidadeMembrosPontuacao=$quantidadeMembrosPontuacao',
       if (quantidadeMembrosMaiorCaptura != null)
         'quantidadeMembrosMaiorCaptura=$quantidadeMembrosMaiorCaptura',
+      if (exibirPescadoresDasEmbarcacoes != null)
+        'exibirPescadoresDasEmbarcacoes=$exibirPescadoresDasEmbarcacoes',
     ];
     final query = params.isEmpty ? '' : '?${params.join('&')}';
     return '$_base/api/$slug/relatorios/ganhadores$query';
@@ -72,12 +75,14 @@ class ApiConstants {
     required int quantidadeEquipes,
     required int quantidadeMembrosPontuacao,
     required int quantidadeMembrosMaiorCaptura,
+    bool exibirPescadoresDasEmbarcacoes = false,
     bool analitico = false,
   }) {
     final params = [
       'quantidadeEquipes=$quantidadeEquipes',
       'quantidadeMembrosPontuacao=$quantidadeMembrosPontuacao',
       'quantidadeMembrosMaiorCaptura=$quantidadeMembrosMaiorCaptura',
+      'exibirPescadoresDasEmbarcacoes=$exibirPescadoresDasEmbarcacoes',
       'analitico=$analitico',
     ];
     return '$_base/api/$slug/relatorios/ganhadores/pdf?${params.join('&')}';

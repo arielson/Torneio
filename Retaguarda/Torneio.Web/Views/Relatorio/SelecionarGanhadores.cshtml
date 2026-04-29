@@ -2,30 +2,30 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    ViewData["Title"] = "Relatorio dos Ganhadores";
+    ViewData["Title"] = "Relatório dos Ganhadores";
 }
 
 <div class="page-header">
     <div class="page-header-left">
-        <h1>Relatorio dos Ganhadores</h1>
+        <h1>Relatório dos Ganhadores</h1>
     </div>
 </div>
 <a href="/@slug/relatorios" class="back-link">
-    <i class="bi bi-arrow-left"></i> Relatorios
+    <i class="bi bi-arrow-left"></i> Relatórios
 </a>
 
 <div class="content-card mb-4">
     <div class="card-header-bar">
-        <h5><i class="bi bi-sliders me-2"></i>Filtros do Relatorio</h5>
+        <h5><i class="bi bi-sliders me-2"></i>Filtros do Relatório</h5>
     </div>
     <div class="card-body-pad">
         <form method="get" class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">Quantidade de embarcacoes ganhadoras</label>
+                <label class="form-label">Quantidade de embarcações ganhadoras</label>
                 <input type="number" min="0" max="999" name="quantidadeEquipes" value="@Model.QuantidadeEquipes" class="form-control" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">Quantidade de @torneio.LabelMembroPlural por pontuacao</label>
+                <label class="form-label">Quantidade de @torneio.LabelMembroPlural por pontuação</label>
                 <input type="number" min="0" max="999" name="quantidadeMembrosPontuacao" value="@Model.QuantidadeMembrosPontuacao" class="form-control" />
             </div>
             @if (Model.ExibirMaiorCaptura)
@@ -35,6 +35,14 @@
                     <input type="number" min="0" max="999" name="quantidadeMembrosMaiorCaptura" value="@Model.QuantidadeMembrosMaiorCaptura" class="form-control" />
                 </div>
             }
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="exibirPescadoresDasEmbarcacoes" value="true" id="exibirPescadoresDasEmbarcacoes" @(Model.ExibirPescadoresDasEmbarcacoes ? "checked" : null) />
+                    <label class="form-check-label" for="exibirPescadoresDasEmbarcacoes">
+                        Exibir pescadores das embarcações
+                    </label>
+                </div>
+            </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-warning">
                     <i class="bi bi-funnel me-1"></i>Aplicar
@@ -48,14 +56,14 @@
 {
     <div class="alert alert-info d-flex gap-2 align-items-center">
         <i class="bi bi-info-circle-fill"></i>
-        Informe as quantidades desejadas para gerar os relatorios de ganhadores.
+        Informe as quantidades desejadas para gerar os relatórios de ganhadores.
     </div>
 }
 else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.MembrosMaiorCaptura.Any())
 {
     <div class="alert alert-info d-flex gap-2 align-items-center">
         <i class="bi bi-info-circle-fill"></i>
-        Nenhum ganhador encontrado com base nas informacoes atuais.
+        Nenhum ganhador encontrado com base nas informações atuais.
     </div>
 }
 
@@ -63,16 +71,16 @@ else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.Membros
 {
     <div class="content-card mb-4">
         <div class="card-header-bar">
-            <h5><i class="bi bi-file-earmark-pdf me-2"></i>Emissao do Relatorio</h5>
+            <h5><i class="bi bi-file-earmark-pdf me-2"></i>Emissão do Relatório</h5>
         </div>
         <div class="card-body-pad d-flex flex-wrap gap-2">
-            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&analitico=false"
+            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&exibirPescadoresDasEmbarcacoes=@Model.ExibirPescadoresDasEmbarcacoes&analitico=false"
                class="btn btn-outline-primary" target="_blank">
-                <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
+                <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintético
             </a>
-            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&analitico=true"
+            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&exibirPescadoresDasEmbarcacoes=@Model.ExibirPescadoresDasEmbarcacoes&analitico=true"
                class="btn btn-primary" target="_blank">
-                <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
+                <i class="bi bi-file-earmark-richtext me-1"></i>Analítico
             </a>
         </div>
     </div>
@@ -91,9 +99,13 @@ else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.Membros
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Posicao</th>
+                        <th>Posição</th>
                         <th>@torneio.LabelEquipe</th>
-                        <th>Capitao</th>
+                        <th>Capitão</th>
+                        @if (Model.ExibirPescadoresDasEmbarcacoes)
+                        {
+                            <th>@torneio.LabelMembroPlural</th>
+                        }
                         <th>Pontos</th>
                     </tr>
                 </thead>
@@ -104,6 +116,10 @@ else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.Membros
                             <td><span class="badge bg-warning text-dark">@(g.Posicao + "o")</span></td>
                             <td class="fw-semibold">@g.NomeEquipe</td>
                             <td class="text-muted">@g.Capitao</td>
+                            @if (Model.ExibirPescadoresDasEmbarcacoes)
+                            {
+                                <td class="text-muted">@(g.Pescadores.Any() ? string.Join(", ", g.Pescadores) : "-")</td>
+                            }
                             <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
                         </tr>
                     }
@@ -119,14 +135,14 @@ else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.Membros
         <div class="card-header-bar">
             <h5>
                 <i class="bi bi-person-badge me-2"></i>
-                Top @Model.QuantidadeMembrosPontuacao @torneio.LabelMembroPlural por pontuacao
+                Top @Model.QuantidadeMembrosPontuacao @torneio.LabelMembroPlural por pontuação
             </h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Posicao</th>
+                        <th>Posição</th>
                         <th>@torneio.LabelMembro</th>
                         <th>Pontos</th>
                     </tr>
@@ -159,7 +175,7 @@ else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.Membros
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Posicao</th>
+                        <th>Posição</th>
                         <th>@torneio.LabelMembro</th>
                         <th>Maior captura</th>
                     </tr>

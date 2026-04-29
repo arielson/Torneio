@@ -207,18 +207,19 @@ public class RelatorioServico : IRelatorioServico
         int quantidadeEquipes,
         int quantidadeMembrosPontuacao,
         int quantidadeMembrosMaiorCaptura,
+        bool exibirPescadoresDasEmbarcacoes,
         bool analitico)
     {
         if (quantidadeEquipes is < 0 or > 999)
-            throw new InvalidOperationException("A quantidade de embarcacoes deve estar entre 0 e 999.");
+            throw new InvalidOperationException("A quantidade de embarcações deve estar entre 0 e 999.");
         if (quantidadeMembrosPontuacao is < 0 or > 999)
-            throw new InvalidOperationException("A quantidade de pescadores por pontuacao deve estar entre 0 e 999.");
+            throw new InvalidOperationException("A quantidade de pescadores por pontuação deve estar entre 0 e 999.");
         if (quantidadeMembrosMaiorCaptura is < 0 or > 999)
             throw new InvalidOperationException("A quantidade de pescadores por maior captura deve estar entre 0 e 999.");
 
         var torneio = await _torneioServico.ObterPorId(_tenant.TorneioId);
         if (torneio is null)
-            throw new InvalidOperationException("Dados nao encontrados para geracao do relatorio.");
+            throw new InvalidOperationException("Dados nao encontrados para geração do relatório.");
 
         var patrocinadores = await ObterPatrocinadoresRelatorio();
         var todasCapturas = (await _capturaServico.ListarTodos())
@@ -231,6 +232,7 @@ public class RelatorioServico : IRelatorioServico
                 .ToList()
             : todasCapturas;
         var exibirMaiorCaptura = string.Equals(torneio.TipoTorneio, nameof(TipoTorneio.Pesca), StringComparison.OrdinalIgnoreCase);
+        var membros = (await _membroServico.ListarTodos()).ToList();
 
         var equipes = quantidadeEquipes > 0
             ? (await _equipeServico.ListarTodos())
@@ -240,6 +242,12 @@ public class RelatorioServico : IRelatorioServico
                     EquipeId = e.Id,
                     NomeEquipe = e.Nome,
                     Capitao = e.Capitao,
+                    Pescadores = e.MembroIds
+                        .Select(membroId => membros.FirstOrDefault(m => m.Id == membroId)?.Nome)
+                        .Where(nome => !string.IsNullOrWhiteSpace(nome))
+                        .Cast<string>()
+                        .OrderBy(nome => nome)
+                        .ToList(),
                     TotalPontos = capturasPontuacao.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao),
                     PrimeiraCaptura = capturasPontuacao.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
@@ -336,15 +344,15 @@ public class RelatorioServico : IRelatorioServico
                     }
                     else
                     {
-                        AdicionarResumoEquipes(col, equipes, torneio);
+                        AdicionarResumoEquipes(col, equipes, torneio, exibirPescadoresDasEmbarcacoes);
                         AdicionarResumoMembrosPontuacao(col, membrosPontuacao, torneio);
                         if (exibirMaiorCaptura)
                             AdicionarResumoMembrosMaiorCaptura(col, membrosMaiorCaptura, torneio);
 
                         if (analitico)
                         {
-                            AdicionarDetalhamentoEquipes(col, equipes, capturasPontuacao, torneio, usarFator);
-                            AdicionarDetalhamentoMembros(col, membrosPontuacao, capturasPontuacao, torneio, usarFator, "Detalhamento dos Ganhadores por Pontuacao");
+                            AdicionarDetalhamentoEquipes(col, equipes, capturasPontuacao, torneio, usarFator, exibirPescadoresDasEmbarcacoes);
+                            AdicionarDetalhamentoMembros(col, membrosPontuacao, capturasPontuacao, torneio, usarFator, "Detalhamento dos Ganhadores por Pontuação");
                             if (exibirMaiorCaptura)
                                 AdicionarDetalhamentoMembrosMaiorCaptura(col, membrosMaiorCaptura, todasCapturas, torneio, usarFator);
                         }
@@ -677,7 +685,11 @@ public class RelatorioServico : IRelatorioServico
         return null;
     }
 
-    private static void AdicionarResumoEquipes(ColumnDescriptor col, IReadOnlyCollection<ResumoEquipeGanhadora> equipes, TorneioDto torneio)
+    private static void AdicionarResumoEquipes(
+        ColumnDescriptor col,
+        IReadOnlyCollection<ResumoEquipeGanhadora> equipes,
+        TorneioDto torneio,
+        bool exibirPescadoresDasEmbarcacoes)
     {
         if (equipes.Count == 0)
             return;
@@ -690,6 +702,7 @@ public class RelatorioServico : IRelatorioServico
                 cols.ConstantColumn(36);
                 cols.RelativeColumn(3);
                 cols.RelativeColumn(3);
+                if (exibirPescadoresDasEmbarcacoes) cols.RelativeColumn(4);
                 cols.ConstantColumn(65);
             });
 
@@ -697,7 +710,8 @@ public class RelatorioServico : IRelatorioServico
             {
                 header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("#").Bold();
                 header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(torneio.LabelEquipe).Bold();
-                header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Capitao").Bold();
+                header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Capitão").Bold();
+                if (exibirPescadoresDasEmbarcacoes) header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(torneio.LabelMembroPlural).Bold();
                 header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Pontos").Bold();
             });
 
@@ -707,6 +721,7 @@ public class RelatorioServico : IRelatorioServico
                 table.Cell().Background(bg).Padding(4).Text(equipe.Posicao.ToString());
                 table.Cell().Background(bg).Padding(4).Text(equipe.NomeEquipe);
                 table.Cell().Background(bg).Padding(4).Text(equipe.Capitao);
+                if (exibirPescadoresDasEmbarcacoes) table.Cell().Background(bg).Padding(4).Text(string.Join(", ", equipe.Pescadores));
                 table.Cell().Background(bg).Padding(4).Text($"{equipe.TotalPontos:F2}");
             }
         });
@@ -787,12 +802,13 @@ public class RelatorioServico : IRelatorioServico
         IReadOnlyCollection<ResumoEquipeGanhadora> equipes,
         IReadOnlyCollection<CapturaDto> capturas,
         TorneioDto torneio,
-        bool usarFator)
+        bool usarFator,
+        bool exibirPescadoresDasEmbarcacoes)
     {
         if (equipes.Count == 0)
             return;
 
-        col.Item().PaddingTop(8).Text("Detalhamento das Embarcacoes Ganhadoras").Bold().FontSize(12);
+        col.Item().PaddingTop(8).Text("Detalhamento das Embarcações Ganhadoras").Bold().FontSize(12);
         foreach (var equipe in equipes)
         {
             var capturasEquipe = capturas
@@ -802,7 +818,9 @@ public class RelatorioServico : IRelatorioServico
                 .ToList();
 
             col.Item().PaddingTop(10).Text($"{equipe.Posicao}o lugar - {equipe.NomeEquipe}").Bold();
-            col.Item().Text($"Capitao: {equipe.Capitao}");
+            col.Item().Text($"Capitão: {equipe.Capitao}");
+            if (exibirPescadoresDasEmbarcacoes && equipe.Pescadores.Count > 0)
+                col.Item().Text($"{torneio.LabelMembroPlural}: {string.Join(", ", equipe.Pescadores)}");
             col.Item().Text($"Pontos: {equipe.TotalPontos:F2}");
             AdicionarTabelaCapturas(col, capturasEquipe, torneio, usarFator, exibirEquipe: false, exibirMembro: true);
         }
@@ -918,6 +936,7 @@ public class RelatorioServico : IRelatorioServico
         public Guid EquipeId { get; set; }
         public string NomeEquipe { get; set; } = string.Empty;
         public string Capitao { get; set; } = string.Empty;
+        public List<string> Pescadores { get; set; } = [];
         public decimal TotalPontos { get; set; }
         public DateTime PrimeiraCaptura { get; set; }
     }

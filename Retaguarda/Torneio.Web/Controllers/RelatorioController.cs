@@ -103,7 +103,8 @@ public class RelatorioController : TorneioBaseController
     public async Task<IActionResult> SelecionarGanhadores(
         [FromQuery] int? quantidadeEquipes,
         [FromQuery] int? quantidadeMembrosPontuacao,
-        [FromQuery] int? quantidadeMembrosMaiorCaptura)
+        [FromQuery] int? quantidadeMembrosMaiorCaptura,
+        [FromQuery] bool exibirPescadoresDasEmbarcacoes = false)
     {
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         if (torneio is null) return NotFound();
@@ -113,8 +114,9 @@ public class RelatorioController : TorneioBaseController
             QuantidadeEquipes = quantidadeEquipes ?? 3,
             QuantidadeMembrosPontuacao = quantidadeMembrosPontuacao ?? 3,
             QuantidadeMembrosMaiorCaptura = quantidadeMembrosMaiorCaptura ?? 3,
+            ExibirPescadoresDasEmbarcacoes = exibirPescadoresDasEmbarcacoes,
             ExibirMaiorCaptura = string.Equals(torneio.TipoTorneio, nameof(TipoTorneio.Pesca), StringComparison.OrdinalIgnoreCase),
-            FiltrosInformados = quantidadeEquipes.HasValue || quantidadeMembrosPontuacao.HasValue || quantidadeMembrosMaiorCaptura.HasValue
+            FiltrosInformados = quantidadeEquipes.HasValue || quantidadeMembrosPontuacao.HasValue || quantidadeMembrosMaiorCaptura.HasValue || exibirPescadoresDasEmbarcacoes
         };
 
         if (!vm.FiltrosInformados)
@@ -137,12 +139,19 @@ public class RelatorioController : TorneioBaseController
         if (vm.QuantidadeEquipes > 0)
         {
             var equipes = (await _equipeServico.ListarTodos()).ToList();
+            var membros = (await _membroServico.ListarTodos()).ToList();
             vm.Equipes.AddRange(equipes
                 .Select(e => new GanhadorRelatorioViewModel
                 {
                     EquipeId        = e.Id,
                     NomeEquipe      = e.Nome,
                     Capitao         = e.Capitao,
+                    Pescadores      = e.MembroIds
+                        .Select(membroId => membros.FirstOrDefault(m => m.Id == membroId)?.Nome)
+                        .Where(nome => !string.IsNullOrWhiteSpace(nome))
+                        .Cast<string>()
+                        .OrderBy(nome => nome)
+                        .ToList(),
                     TotalPontos     = capturasPontuacao.Where(c => c.EquipeId == e.Id).Sum(c => c.Pontuacao),
                     PrimeiraCaptura = capturasPontuacao.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
@@ -152,6 +161,7 @@ public class RelatorioController : TorneioBaseController
                 {
                     Posicao = i + 1, EquipeId = x.EquipeId,
                     NomeEquipe = x.NomeEquipe, Capitao = x.Capitao,
+                    Pescadores = x.Pescadores,
                     TotalPontos = x.TotalPontos
                 }));
         }
@@ -219,6 +229,7 @@ public class RelatorioController : TorneioBaseController
         [FromQuery] int quantidadeEquipes = 3,
         [FromQuery] int quantidadeMembrosPontuacao = 3,
         [FromQuery] int quantidadeMembrosMaiorCaptura = 3,
+        [FromQuery] bool exibirPescadoresDasEmbarcacoes = false,
         [FromQuery] bool analitico = false)
     {
         try
@@ -227,6 +238,7 @@ public class RelatorioController : TorneioBaseController
                 quantidadeEquipes,
                 quantidadeMembrosPontuacao,
                 quantidadeMembrosMaiorCaptura,
+                exibirPescadoresDasEmbarcacoes,
                 analitico);
             var tipo = analitico ? "analitico" : "sintetico";
             return File(bytes, "application/pdf", $"ganhadores_{tipo}.pdf");
@@ -239,7 +251,8 @@ public class RelatorioController : TorneioBaseController
                 slug = Slug,
                 quantidadeEquipes,
                 quantidadeMembrosPontuacao,
-                quantidadeMembrosMaiorCaptura
+                quantidadeMembrosMaiorCaptura,
+                exibirPescadoresDasEmbarcacoes
             });
         }
     }
