@@ -464,16 +464,16 @@ public class RelatorioServico : IRelatorioServico
     {
         foreach (var c in capturas.OrderBy(x => x.DataHora))
         {
-            var fotoBytes = string.IsNullOrWhiteSpace(c.FotoUrl)
+            var fotoPath = string.IsNullOrWhiteSpace(c.FotoUrl)
                 ? null
-                : ResolverConteudoImagem(c.FotoUrl);
+                : ResolverCaminhoFoto(c.FotoUrl);
             col.Item().PaddingTop(8).Row(row =>
             {
                 row.AutoItem().Width(140).Column(inner =>
                 {
-                    if (fotoBytes != null)
+                    if (!string.IsNullOrWhiteSpace(fotoPath) && File.Exists(fotoPath))
                     {
-                        inner.Item().Image(fotoBytes).FitArea();
+                        inner.Item().Image(fotoPath).FitArea();
                     }
                     else
                     {
@@ -522,17 +522,17 @@ public class RelatorioServico : IRelatorioServico
         string titulo,
         string? subtitulo = null)
     {
-        var logoBytes = string.IsNullOrWhiteSpace(torneio.LogoUrl)
+        var logoPath = string.IsNullOrWhiteSpace(torneio.LogoUrl)
             ? null
-            : ResolverConteudoImagem(torneio.LogoUrl);
+            : ResolverCaminhoFoto(torneio.LogoUrl);
 
         container.Column(col =>
         {
             col.Item().Row(row =>
             {
-                if (logoBytes != null)
+                if (!string.IsNullOrWhiteSpace(logoPath) && File.Exists(logoPath))
                 {
-                    row.ConstantItem(72).Height(64).AlignLeft().AlignMiddle().Image(logoBytes).FitArea();
+                    row.ConstantItem(72).Height(64).AlignLeft().AlignMiddle().Image(logoPath).FitArea();
                     row.ConstantItem(12);
                 }
 
@@ -561,15 +561,17 @@ public class RelatorioServico : IRelatorioServico
 
         if (equipes.Count > 0)
         {
-            col.Item().PaddingTop(8).Element(area => AdicionarGaleriaImagensRodape(
+            col.Item().PaddingTop(8).Element(area => AdicionarSecaoMidiasFinais(
                 area,
+                "Embarcações",
                 equipes.Select(e => (e.Nome, (string?)e.FotoUrl)).ToList()));
         }
 
         if (patrocinadores.Count > 0)
         {
-            col.Item().PaddingTop(equipes.Count > 0 ? 10 : 8).Element(area => AdicionarGaleriaImagensRodape(
+            col.Item().PaddingTop(equipes.Count > 0 ? 10 : 8).Element(area => AdicionarSecaoMidiasFinais(
                 area,
+                "Patrocinadores",
                 patrocinadores.Select(p => (p.Nome, (string?)p.FotoUrl)).ToList()));
         }
     }
@@ -590,8 +592,8 @@ public class RelatorioServico : IRelatorioServico
         IReadOnlyCollection<(string Nome, string? FotoUrl)> imagens)
     {
         var imagensValidas = imagens
-            .Select(x => (x.Nome, Conteudo: string.IsNullOrWhiteSpace(x.FotoUrl) ? null : ResolverConteudoImagem(x.FotoUrl)))
-            .Where(x => x.Conteudo != null)
+            .Select(x => (x.Nome, Caminho: string.IsNullOrWhiteSpace(x.FotoUrl) ? null : ResolverCaminhoFoto(x.FotoUrl)))
+            .Where(x => !string.IsNullOrWhiteSpace(x.Caminho) && File.Exists(x.Caminho))
             .ToList();
 
         if (imagensValidas.Count == 0)
@@ -609,7 +611,7 @@ public class RelatorioServico : IRelatorioServico
             var indice = 0;
             foreach (var imagem in imagensValidas)
             {
-                table.Cell().Padding(2).Height(38).AlignCenter().AlignMiddle().Image(imagem.Conteudo!).FitArea();
+                table.Cell().Padding(2).Height(38).AlignCenter().AlignMiddle().Image(imagem.Caminho!).FitArea();
 
                 indice++;
                 if (indice % colunas != 0)
@@ -620,6 +622,23 @@ public class RelatorioServico : IRelatorioServico
             for (var i = 0; i < faltantes; i++)
                 table.Cell().Padding(2).Text(string.Empty);
         });
+    }
+
+    private void AdicionarSecaoMidiasFinais(
+        IContainer container,
+        string titulo,
+        IReadOnlyCollection<(string Nome, string? FotoUrl)> imagens)
+    {
+        container
+            .Border(1)
+            .BorderColor(Colors.Grey.Lighten1)
+            .CornerRadius(8, Unit.Point)
+            .Padding(10)
+            .Column(col =>
+            {
+                col.Item().Text(titulo).Bold().FontSize(10);
+                col.Item().PaddingTop(10).Element(area => AdicionarGaleriaImagensRodape(area, imagens));
+            });
     }
 
     private void AdicionarPatrocinadores(
@@ -643,12 +662,12 @@ public class RelatorioServico : IRelatorioServico
             foreach (var patrocinador in patrocinadores)
             {
                 var bg = index % 2 == 0 ? Colors.White : Colors.Grey.Lighten5;
-                var fotoBytes = ResolverConteudoImagem(patrocinador.FotoUrl);
+                var fotoPath = ResolverCaminhoFoto(patrocinador.FotoUrl);
                 table.Cell().Background(bg).Padding(6).Element(cell =>
                 {
-                    if (fotoBytes != null)
+                    if (!string.IsNullOrWhiteSpace(fotoPath) && File.Exists(fotoPath))
                     {
-                        cell.Height(52).Image(fotoBytes).FitArea();
+                        cell.Height(52).Image(fotoPath).FitArea();
                     }
                     else
                     {
