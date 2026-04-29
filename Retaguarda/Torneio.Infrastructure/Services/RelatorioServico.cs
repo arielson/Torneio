@@ -15,6 +15,7 @@ namespace Torneio.Infrastructure.Services;
 
 public class RelatorioServico : IRelatorioServico
 {
+    private static readonly HttpClient HttpClient = new();
     private readonly ICapturaServico _capturaServico;
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
@@ -64,10 +65,10 @@ public class RelatorioServico : IRelatorioServico
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(10));
 
-                page.Header().Element(header => AdicionarCabecalhoRelatorio(header, torneio, titulo));
-
-                page.Content().PaddingTop(12).Column(col =>
+                page.Content().Column(col =>
                 {
+                    col.Item().Element(header => AdicionarCabecalhoRelatorio(header, torneio, titulo));
+                    col.Item().PaddingTop(12);
                     col.Item().Text($"{torneio.LabelEquipe}: {equipe.Nome}").Bold().FontSize(12);
                     col.Item().Text($"Capitão: {equipe.Capitao}").FontSize(10);
                     col.Item().PaddingTop(4).Text($"Total de pontos: {totalPontos:F2}").Bold();
@@ -115,9 +116,10 @@ public class RelatorioServico : IRelatorioServico
                         AdicionarFotos(col, capturas);
                     }
 
+                    AdicionarMidiasFinaisRelatorio(col, equipesRodape, patrocinadores);
                 });
 
-                page.Footer().Element(footer => AdicionarRodapeRelatorio(footer, equipesRodape, patrocinadores));
+                page.Footer().Element(AdicionarRodapeRelatorio);
             });
         });
 
@@ -147,10 +149,10 @@ public class RelatorioServico : IRelatorioServico
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(10));
 
-                page.Header().Element(header => AdicionarCabecalhoRelatorio(header, torneio, titulo));
-
-                page.Content().PaddingTop(12).Column(col =>
+                page.Content().Column(col =>
                 {
+                    col.Item().Element(header => AdicionarCabecalhoRelatorio(header, torneio, titulo));
+                    col.Item().PaddingTop(12);
                     col.Item().Text($"{torneio.LabelMembro}: {membro.Nome}").Bold().FontSize(12);
                     col.Item().PaddingTop(4).Text($"Total de pontos: {totalPontos:F2}").Bold();
                     col.Item().PaddingTop(8).Text($"Capturas ({capturas.Count}):").Bold();
@@ -194,9 +196,10 @@ public class RelatorioServico : IRelatorioServico
                         AdicionarFotos(col, capturas);
                     }
 
+                    AdicionarMidiasFinaisRelatorio(col, equipesRodape, patrocinadores);
                 });
 
-                page.Footer().Element(footer => AdicionarRodapeRelatorio(footer, equipesRodape, patrocinadores));
+                page.Footer().Element(AdicionarRodapeRelatorio);
             });
         });
 
@@ -328,15 +331,15 @@ public class RelatorioServico : IRelatorioServico
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(10));
 
-                page.Header().Element(header => AdicionarCabecalhoRelatorio(
-                    header,
-                    torneio,
-                    titulo,
-                    $"Embarcacoes: {quantidadeEquipes} | {torneio.LabelMembroPlural} por pontuacao: {quantidadeMembrosPontuacao}" +
-                    (exibirMaiorCaptura ? $" | {torneio.LabelMembroPlural} por maior captura: {quantidadeMembrosMaiorCaptura}" : string.Empty)));
-
-                page.Content().PaddingTop(12).Column(col =>
+                page.Content().Column(col =>
                 {
+                    col.Item().Element(header => AdicionarCabecalhoRelatorio(
+                        header,
+                        torneio,
+                        titulo,
+                        $"Embarcacoes: {quantidadeEquipes} | {torneio.LabelMembroPlural} por pontuacao: {quantidadeMembrosPontuacao}" +
+                        (exibirMaiorCaptura ? $" | {torneio.LabelMembroPlural} por maior captura: {quantidadeMembrosMaiorCaptura}" : string.Empty)));
+                    col.Item().PaddingTop(12);
                     if (!equipes.Any() && !membrosPontuacao.Any() && !membrosMaiorCaptura.Any())
                     {
                         col.Item().Text("Nenhum ganhador foi encontrado com base nas capturas atuais.")
@@ -357,10 +360,10 @@ public class RelatorioServico : IRelatorioServico
                                 AdicionarDetalhamentoMembrosMaiorCaptura(col, membrosMaiorCaptura, todasCapturas, torneio, usarFator);
                         }
                     }
-
+                    AdicionarMidiasFinaisRelatorio(col, equipesRodape, patrocinadores);
                 });
 
-                page.Footer().Element(footer => AdicionarRodapeRelatorio(footer, equipesRodape, patrocinadores));
+                page.Footer().Element(AdicionarRodapeRelatorio);
             });
         });
 
@@ -395,14 +398,14 @@ public class RelatorioServico : IRelatorioServico
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(10));
 
-                page.Header().Element(header => AdicionarCabecalhoRelatorio(
-                    header,
-                    torneio,
-                    titulo,
-                    $"Quantidade solicitada: {quantidade}"));
-
-                page.Content().PaddingTop(12).Column(col =>
+                page.Content().Column(col =>
                 {
+                    col.Item().Element(header => AdicionarCabecalhoRelatorio(
+                        header,
+                        torneio,
+                        titulo,
+                        $"Quantidade solicitada: {quantidade}"));
+                    col.Item().PaddingTop(12);
                     if (!capturas.Any())
                     {
                         col.Item().Text("Nenhuma captura valida foi encontrada para o torneio.")
@@ -447,10 +450,10 @@ public class RelatorioServico : IRelatorioServico
                             table.Cell().Background(bg).Padding(4).Text(captura.DataHora.ToString("dd/MM/yyyy HH:mm"));
                         }
                     });
-
+                    AdicionarMidiasFinaisRelatorio(col, equipesRodape, patrocinadores);
                 });
 
-                page.Footer().Element(footer => AdicionarRodapeRelatorio(footer, equipesRodape, patrocinadores));
+                page.Footer().Element(AdicionarRodapeRelatorio);
             });
         });
 
@@ -461,16 +464,16 @@ public class RelatorioServico : IRelatorioServico
     {
         foreach (var c in capturas.OrderBy(x => x.DataHora))
         {
-            var fotoPath = string.IsNullOrWhiteSpace(c.FotoUrl)
+            var fotoBytes = string.IsNullOrWhiteSpace(c.FotoUrl)
                 ? null
-                : ResolverCaminhoFoto(c.FotoUrl);
+                : ResolverConteudoImagem(c.FotoUrl);
             col.Item().PaddingTop(8).Row(row =>
             {
                 row.AutoItem().Width(140).Column(inner =>
                 {
-                    if (fotoPath != null && File.Exists(fotoPath))
+                    if (fotoBytes != null)
                     {
-                        inner.Item().Image(fotoPath).FitArea();
+                        inner.Item().Image(fotoBytes).FitArea();
                     }
                     else
                     {
@@ -519,17 +522,17 @@ public class RelatorioServico : IRelatorioServico
         string titulo,
         string? subtitulo = null)
     {
-        var logoPath = string.IsNullOrWhiteSpace(torneio.LogoUrl)
+        var logoBytes = string.IsNullOrWhiteSpace(torneio.LogoUrl)
             ? null
-            : ResolverCaminhoFoto(torneio.LogoUrl);
+            : ResolverConteudoImagem(torneio.LogoUrl);
 
         container.Column(col =>
         {
             col.Item().Row(row =>
             {
-                if (logoPath != null && File.Exists(logoPath))
+                if (logoBytes != null)
                 {
-                    row.AutoItem().Width(64).Height(64).Image(logoPath).FitArea();
+                    row.ConstantItem(72).Height(64).AlignLeft().AlignMiddle().Image(logoBytes).FitArea();
                     row.ConstantItem(12);
                 }
 
@@ -546,36 +549,39 @@ public class RelatorioServico : IRelatorioServico
         });
     }
 
-    private void AdicionarRodapeRelatorio(
-        IContainer container,
+    private void AdicionarMidiasFinaisRelatorio(
+        ColumnDescriptor col,
         IReadOnlyCollection<EquipeDto> equipes,
         IReadOnlyCollection<PatrocinadorDto> patrocinadores)
     {
-        container.Column(col =>
+        if (equipes.Count == 0 && patrocinadores.Count == 0)
+            return;
+
+        col.Item().PaddingTop(18).BorderTop(1).BorderColor(Colors.Grey.Lighten1);
+
+        if (equipes.Count > 0)
         {
-            if (equipes.Count > 0)
-            {
-                col.Item().Text("Embarcacoes").Bold().FontSize(9);
-                col.Item().PaddingTop(4).Element(area => AdicionarGaleriaImagensRodape(
-                    area,
-                    equipes.Select(e => (e.Nome, (string?)e.FotoUrl)).ToList()));
-            }
+            col.Item().PaddingTop(8).Element(area => AdicionarGaleriaImagensRodape(
+                area,
+                equipes.Select(e => (e.Nome, (string?)e.FotoUrl)).ToList()));
+        }
 
-            if (patrocinadores.Count > 0)
-            {
-                col.Item().PaddingTop(equipes.Count > 0 ? 6 : 0).Text("Patrocinadores").Bold().FontSize(9);
-                col.Item().PaddingTop(4).Element(area => AdicionarGaleriaImagensRodape(
-                    area,
-                    patrocinadores.Select(p => (p.Nome, (string?)p.FotoUrl)).ToList()));
-            }
+        if (patrocinadores.Count > 0)
+        {
+            col.Item().PaddingTop(equipes.Count > 0 ? 10 : 8).Element(area => AdicionarGaleriaImagensRodape(
+                area,
+                patrocinadores.Select(p => (p.Nome, (string?)p.FotoUrl)).ToList()));
+        }
+    }
 
-            col.Item().PaddingTop(6).AlignCenter().Text(x =>
-            {
-                x.Span("Pagina ");
-                x.CurrentPageNumber();
-                x.Span(" de ");
-                x.TotalPages();
-            });
+    private void AdicionarRodapeRelatorio(IContainer container)
+    {
+        container.AlignCenter().Text(x =>
+        {
+            x.Span("Pagina ");
+            x.CurrentPageNumber();
+            x.Span(" de ");
+            x.TotalPages();
         });
     }
 
@@ -584,8 +590,8 @@ public class RelatorioServico : IRelatorioServico
         IReadOnlyCollection<(string Nome, string? FotoUrl)> imagens)
     {
         var imagensValidas = imagens
-            .Select(x => (x.Nome, Caminho: string.IsNullOrWhiteSpace(x.FotoUrl) ? null : ResolverCaminhoFoto(x.FotoUrl)))
-            .Where(x => x.Caminho != null && File.Exists(x.Caminho))
+            .Select(x => (x.Nome, Conteudo: string.IsNullOrWhiteSpace(x.FotoUrl) ? null : ResolverConteudoImagem(x.FotoUrl)))
+            .Where(x => x.Conteudo != null)
             .ToList();
 
         if (imagensValidas.Count == 0)
@@ -603,11 +609,7 @@ public class RelatorioServico : IRelatorioServico
             var indice = 0;
             foreach (var imagem in imagensValidas)
             {
-                table.Cell().Padding(2).Column(inner =>
-                {
-                    inner.Item().Height(36).AlignCenter().Image(imagem.Caminho!).FitArea();
-                    inner.Item().AlignCenter().Text(imagem.Nome).FontSize(7);
-                });
+                table.Cell().Padding(2).Height(38).AlignCenter().AlignMiddle().Image(imagem.Conteudo!).FitArea();
 
                 indice++;
                 if (indice % colunas != 0)
@@ -641,12 +643,12 @@ public class RelatorioServico : IRelatorioServico
             foreach (var patrocinador in patrocinadores)
             {
                 var bg = index % 2 == 0 ? Colors.White : Colors.Grey.Lighten5;
-                var fotoPath = ResolverCaminhoFoto(patrocinador.FotoUrl);
+                var fotoBytes = ResolverConteudoImagem(patrocinador.FotoUrl);
                 table.Cell().Background(bg).Padding(6).Element(cell =>
                 {
-                    if (fotoPath != null && File.Exists(fotoPath))
+                    if (fotoBytes != null)
                     {
-                        cell.Height(52).Image(fotoPath).FitArea();
+                        cell.Height(52).Image(fotoBytes).FitArea();
                     }
                     else
                     {
@@ -674,15 +676,125 @@ public class RelatorioServico : IRelatorioServico
     {
         if (string.IsNullOrWhiteSpace(fotoUrl)) return null;
 
+        fotoUrl = fotoUrl.Trim();
+
+        var caminhoMedia = TentarResolverCaminhoMedia(fotoUrl);
+        if (!string.IsNullOrWhiteSpace(caminhoMedia))
+            return caminhoMedia;
+
+        if (Uri.TryCreate(fotoUrl, UriKind.Absolute, out var absoluteUri))
+        {
+            if (absoluteUri.IsFile)
+                return absoluteUri.LocalPath;
+
+            var caminhoRelativo = UrlPublicaParaCaminhoRelativo(fotoUrl)
+                ?? NormalizarCaminhoRelativoStorage(absoluteUri.AbsolutePath);
+            if (!string.IsNullOrWhiteSpace(caminhoRelativo) && !string.IsNullOrWhiteSpace(_storage.BasePath))
+                return Path.Combine(_storage.BasePath, caminhoRelativo.Replace('/', Path.DirectorySeparatorChar));
+
+            return null;
+        }
+
         if (Path.IsPathRooted(fotoUrl)) return fotoUrl;
 
         if (!string.IsNullOrWhiteSpace(_storage.BasePath))
         {
-            var relative = fotoUrl.TrimStart('/', '\\');
+            var relative = NormalizarCaminhoRelativoStorage(fotoUrl);
+            if (string.IsNullOrWhiteSpace(relative))
+                return null;
+
             return Path.Combine(_storage.BasePath, relative);
         }
 
         return null;
+    }
+
+    private string? TentarResolverCaminhoMedia(string caminho)
+    {
+        if (string.IsNullOrWhiteSpace(_storage.BasePath))
+            return null;
+
+        var normalizado = caminho.Trim();
+        var indiceMedia = normalizado.IndexOf("/media/", StringComparison.OrdinalIgnoreCase);
+        if (indiceMedia >= 0)
+        {
+            var relativoMedia = normalizado[(indiceMedia + "/media/".Length)..]
+                .TrimStart('/', '\\')
+                .Replace('/', Path.DirectorySeparatorChar);
+            return Path.Combine(_storage.BasePath, relativoMedia);
+        }
+
+        if (normalizado.StartsWith("media/", StringComparison.OrdinalIgnoreCase) ||
+            normalizado.StartsWith("media\\", StringComparison.OrdinalIgnoreCase))
+        {
+            var relativoMedia = normalizado["media/".Length..]
+                .TrimStart('/', '\\')
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+            return Path.Combine(_storage.BasePath, relativoMedia);
+        }
+
+        return null;
+    }
+
+    private byte[]? ResolverConteudoImagem(string? fotoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(fotoUrl))
+            return null;
+
+        var caminho = ResolverCaminhoFoto(fotoUrl);
+        if (!string.IsNullOrWhiteSpace(caminho) && File.Exists(caminho))
+            return File.ReadAllBytes(caminho);
+
+        if (!Uri.TryCreate(fotoUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return null;
+        }
+
+        try
+        {
+            return HttpClient.GetByteArrayAsync(uri).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private string? UrlPublicaParaCaminhoRelativo(string? urlPublica)
+    {
+        if (string.IsNullOrWhiteSpace(urlPublica) || string.IsNullOrWhiteSpace(_storage.BaseUrl))
+            return null;
+
+        var prefixo = _storage.BaseUrl.TrimEnd('/') + "/";
+        if (!urlPublica.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return urlPublica[prefixo.Length..];
+    }
+
+    private string? NormalizarCaminhoRelativoStorage(string? caminho)
+    {
+        if (string.IsNullOrWhiteSpace(caminho))
+            return null;
+
+        var normalizado = caminho
+            .Replace("~/", string.Empty)
+            .TrimStart('/', '\\');
+
+        var baseUrlPath = _storage.BaseUrl?
+            .Trim()
+            .TrimStart('/', '\\')
+            .TrimEnd('/', '\\');
+
+        if (!string.IsNullOrWhiteSpace(baseUrlPath) &&
+            normalizado.StartsWith(baseUrlPath + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            normalizado = normalizado[(baseUrlPath.Length + 1)..];
+        }
+
+        return normalizado.Replace('\\', '/').Replace('/', Path.DirectorySeparatorChar);
     }
 
     private static void AdicionarResumoEquipes(
