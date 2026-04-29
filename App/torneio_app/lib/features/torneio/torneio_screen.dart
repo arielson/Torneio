@@ -776,55 +776,59 @@ class _ParticipantesSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: participantes.map((participante) {
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 150,
+                    childAspectRatio: 2 / 3,
+                    crossAxisSpacing: 6,
+                    mainAxisSpacing: 6,
+                  ),
+                  itemCount: participantes.length,
+                  itemBuilder: (context, index) {
+                    final participante = participantes[index];
                     final posicaoRanking = posicoesRanking[participante.id];
-                    return SizedBox(
-                      width: 120,
-                      height: 180,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: (participante.fotoUrl ?? '').isNotEmpty
-                                  ? () => _abrirFoto(context, participante.fotoUrl!)
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: (participante.fotoUrl ?? '').isNotEmpty
+                                ? () => _abrirFoto(context, participante.fotoUrl!)
+                                : null,
+                            child: _Avatar(
+                              fotoUrl: participante.fotoUrl ?? '',
+                              icon: Icons.person,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            participante.nome,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            height: 42,
+                            child: Center(
+                              child: posicaoRanking != null && posicaoRanking > 0
+                                  ? _Medalha(posicaoRanking)
                                   : null,
-                              child: _Avatar(
-                                fotoUrl: participante.fotoUrl ?? '',
-                                icon: Icons.person,
-                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              participante.nome,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 4),
-                            SizedBox(
-                              height: 42,
-                              child: Center(
-                                child: posicaoRanking != null && posicaoRanking > 0
-                                    ? _Medalha(posicaoRanking)
-                                    : null,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
-                  }).toList(),
+                  },
                 ),
               ],
             ),
