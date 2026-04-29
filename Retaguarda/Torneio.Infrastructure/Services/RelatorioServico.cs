@@ -15,7 +15,6 @@ namespace Torneio.Infrastructure.Services;
 
 public class RelatorioServico : IRelatorioServico
 {
-    private static readonly HttpClient HttpClient = new();
     private readonly ICapturaServico _capturaServico;
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
@@ -319,7 +318,7 @@ public class RelatorioServico : IRelatorioServico
                 .ToList()
             : [];
 
-        var titulo = $"Relatorio dos Ganhadores - {(analitico ? "Analitico" : "Sintetico")}";
+        var titulo = $"Relatório dos Ganhadores - {(analitico ? "Analítico" : "Sintético")}";
         var usarFator = torneio.UsarFatorMultiplicador;
         var equipesRodape = await ObterEquipesRelatorio(equipes.Select(e => e.EquipeId));
 
@@ -337,7 +336,7 @@ public class RelatorioServico : IRelatorioServico
                         header,
                         torneio,
                         titulo,
-                        $"Embarcacoes: {quantidadeEquipes} | {torneio.LabelMembroPlural} por pontuacao: {quantidadeMembrosPontuacao}" +
+                        $"Embarcações: {quantidadeEquipes} | {torneio.LabelMembroPlural} por pontuação: {quantidadeMembrosPontuacao}" +
                         (exibirMaiorCaptura ? $" | {torneio.LabelMembroPlural} por maior captura: {quantidadeMembrosMaiorCaptura}" : string.Empty)));
                     col.Item().PaddingTop(12);
                     if (!equipes.Any() && !membrosPontuacao.Any() && !membrosMaiorCaptura.Any())
@@ -377,7 +376,7 @@ public class RelatorioServico : IRelatorioServico
 
         var torneio = await _torneioServico.ObterPorId(_tenant.TorneioId);
         if (torneio is null)
-            throw new InvalidOperationException("Dados nao encontrados para geracao do relatorio.");
+            throw new InvalidOperationException("Dados não encontrados para geração do relatório.");
 
         var capturas = (await _capturaServico.ListarTodos())
             .Where(c => !c.Invalidada)
@@ -388,7 +387,7 @@ public class RelatorioServico : IRelatorioServico
         var patrocinadores = await ObterPatrocinadoresRelatorio();
         var equipesRodape = await ObterEquipesRelatorio(capturas.Select(c => c.EquipeId));
 
-        var titulo = "Relatorio das Maiores Capturas";
+        var titulo = "Relatório das Maiores Capturas";
 
         var doc = Document.Create(container =>
         {
@@ -408,7 +407,7 @@ public class RelatorioServico : IRelatorioServico
                     col.Item().PaddingTop(12);
                     if (!capturas.Any())
                     {
-                        col.Item().Text("Nenhuma captura valida foi encontrada para o torneio.")
+                        col.Item().Text("Nenhuma captura válida foi encontrada para o torneio.")
                             .FontColor(Colors.Grey.Darken1);
                         return;
                     }
@@ -494,7 +493,7 @@ public class RelatorioServico : IRelatorioServico
         }
     }
 
-    private async Task<List<Application.DTOs.Patrocinador.PatrocinadorDto>> ObterPatrocinadoresRelatorio()
+    private async Task<List<PatrocinadorDto>> ObterPatrocinadoresRelatorio()
     {
         var lista = await _patrocinadorServico.ListarPorTorneio(_tenant.TorneioId);
         return lista
@@ -564,7 +563,7 @@ public class RelatorioServico : IRelatorioServico
             col.Item().PaddingTop(8).Element(area => AdicionarSecaoMidiasFinais(
                 area,
                 "Embarcações",
-                equipes.Select(e => (e.Nome, (string?)e.FotoUrl)).ToList()));
+                equipes.Select(e => (e.Nome, e.FotoUrl)).ToList()));
         }
 
         if (patrocinadores.Count > 0)
@@ -580,7 +579,7 @@ public class RelatorioServico : IRelatorioServico
     {
         container.AlignCenter().Text(x =>
         {
-            x.Span("Pagina ");
+            x.Span("Página ");
             x.CurrentPageNumber();
             x.Span(" de ");
             x.TotalPages();
@@ -607,15 +606,10 @@ public class RelatorioServico : IRelatorioServico
                 for (var i = 0; i < colunas; i++)
                     cols.RelativeColumn();
             });
-
-            var indice = 0;
+            
             foreach (var imagem in imagensValidas)
             {
                 table.Cell().Padding(2).Height(38).AlignCenter().AlignMiddle().Image(imagem.Caminho!).FitArea();
-
-                indice++;
-                if (indice % colunas != 0)
-                    continue;
             }
 
             var faltantes = (colunas - (imagensValidas.Count % colunas)) % colunas;
@@ -632,63 +626,13 @@ public class RelatorioServico : IRelatorioServico
         container
             .Border(1)
             .BorderColor(Colors.Grey.Lighten1)
-            .CornerRadius(8, Unit.Point)
+            .CornerRadius(8)
             .Padding(10)
             .Column(col =>
             {
                 col.Item().Text(titulo).Bold().FontSize(10);
                 col.Item().PaddingTop(10).Element(area => AdicionarGaleriaImagensRodape(area, imagens));
             });
-    }
-
-    private void AdicionarPatrocinadores(
-        ColumnDescriptor col,
-        IReadOnlyCollection<Application.DTOs.Patrocinador.PatrocinadorDto> patrocinadores)
-    {
-        if (patrocinadores.Count == 0)
-            return;
-
-        col.Item().PaddingTop(18).Text("Patrocinadores").Bold().FontSize(12);
-        col.Item().PaddingTop(8).Table(table =>
-        {
-            table.ColumnsDefinition(cols =>
-            {
-                cols.ConstantColumn(70);
-                cols.RelativeColumn(3);
-                cols.RelativeColumn(4);
-            });
-
-            var index = 0;
-            foreach (var patrocinador in patrocinadores)
-            {
-                var bg = index % 2 == 0 ? Colors.White : Colors.Grey.Lighten5;
-                var fotoPath = ResolverCaminhoFoto(patrocinador.FotoUrl);
-                table.Cell().Background(bg).Padding(6).Element(cell =>
-                {
-                    if (!string.IsNullOrWhiteSpace(fotoPath) && File.Exists(fotoPath))
-                    {
-                        cell.Height(52).Image(fotoPath).FitArea();
-                    }
-                    else
-                    {
-                        cell.Height(52).AlignCenter().AlignMiddle().Text("Sem imagem").FontSize(8).FontColor(Colors.Grey.Medium);
-                    }
-                });
-                table.Cell().Background(bg).Padding(6).Text(patrocinador.Nome).Bold();
-                table.Cell().Background(bg).Padding(6).Column(inner =>
-                {
-                    if (!string.IsNullOrWhiteSpace(patrocinador.Site))
-                        inner.Item().Text($"Site: {patrocinador.Site}");
-                    if (!string.IsNullOrWhiteSpace(patrocinador.Instagram))
-                        inner.Item().Text($"Instagram: {patrocinador.Instagram}");
-                    if (!string.IsNullOrWhiteSpace(patrocinador.Facebook))
-                        inner.Item().Text($"Facebook: {patrocinador.Facebook}");
-                    if (!string.IsNullOrWhiteSpace(patrocinador.Zap))
-                        inner.Item().Text($"Zap: {patrocinador.Zap}");
-                });
-                index++;
-            }
-        });
     }
 
     private string? ResolverCaminhoFoto(string fotoUrl)
@@ -756,31 +700,6 @@ public class RelatorioServico : IRelatorioServico
         return null;
     }
 
-    private byte[]? ResolverConteudoImagem(string? fotoUrl)
-    {
-        if (string.IsNullOrWhiteSpace(fotoUrl))
-            return null;
-
-        var caminho = ResolverCaminhoFoto(fotoUrl);
-        if (!string.IsNullOrWhiteSpace(caminho) && File.Exists(caminho))
-            return File.ReadAllBytes(caminho);
-
-        if (!Uri.TryCreate(fotoUrl, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            return null;
-        }
-
-        try
-        {
-            return HttpClient.GetByteArrayAsync(uri).GetAwaiter().GetResult();
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private string? UrlPublicaParaCaminhoRelativo(string? urlPublica)
     {
         if (string.IsNullOrWhiteSpace(urlPublica) || string.IsNullOrWhiteSpace(_storage.BaseUrl))
@@ -802,7 +721,7 @@ public class RelatorioServico : IRelatorioServico
             .Replace("~/", string.Empty)
             .TrimStart('/', '\\');
 
-        var baseUrlPath = _storage.BaseUrl?
+        var baseUrlPath = _storage.BaseUrl
             .Trim()
             .TrimStart('/', '\\')
             .TrimEnd('/', '\\');
@@ -864,7 +783,7 @@ public class RelatorioServico : IRelatorioServico
         if (membros.Count == 0)
             return;
 
-        col.Item().Text($"Ranking de {torneio.LabelMembroPlural} por Pontuacao").Bold().FontSize(12);
+        col.Item().Text($"Ranking de {torneio.LabelMembroPlural} por Pontuação").Bold().FontSize(12);
         col.Item().PaddingTop(6).Table(table =>
         {
             table.ColumnsDefinition(cols =>
@@ -1018,7 +937,7 @@ public class RelatorioServico : IRelatorioServico
     {
         if (capturas.Count == 0)
         {
-            col.Item().Text("Nenhuma captura valida encontrada para este registro.").FontColor(Colors.Grey.Darken1);
+            col.Item().Text("Nenhuma captura válida encontrada para este registro.").FontColor(Colors.Grey.Darken1);
             return;
         }
 
