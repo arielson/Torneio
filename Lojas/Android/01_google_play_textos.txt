@@ -1,0 +1,63 @@
+Google Play - Textos de Listing
+
+Aplicativo
+
+Nome do app: Torvia
+Application ID: br.net.ari.torvia
+Idioma base sugerido: Português (Brasil)
+Categoria sugerida: Esportes
+
+Descrição curta
+
+Gerencie torneios, embarcações, capturas, financeiro e relatórios em um só app.
+
+Descrição completa
+
+Torvia é a plataforma de operação e acompanhamento de torneios, com suporte para organização administrativa, fiscalização em campo e acesso público ao evento.
+
+Com o app, a equipe do torneio pode centralizar o cadastro de embarcações, pescadores, fiscais, espécies, patrocinadores, prêmios e regras do evento. Durante a operação, o sistema permite registrar capturas com foto, acompanhar rankings e manter o torneio atualizado em tempo real.
+
+Principais recursos
+
+- Gestão de dados do torneio com identidade visual própria
+- Cadastro de embarcações, pescadores e fiscais
+- Registro de capturas com foto
+- Operação offline para fiscais, com sincronização posterior
+- Acompanhamento de ranking por pontuação e maior captura
+- Emissão de relatórios em PDF
+- Gestão financeira do torneio, quando habilitada
+- Exibição pública de torneios, participantes, patrocinadores e premiações
+
+Torvia é indicada para organizações que precisam de controle operacional, histórico e comunicação centralizada do torneio em web e app.
+
+Texto promocional opcional
+
+Controle torneios com operação em campo, ranking, financeiro e relatórios em uma única plataforma.
+
+Palavras-chave internas sugeridas
+
+- torneio
+- pesca
+- competição
+- ranking
+- captura
+- embarcação
+- fiscalização
+- gestão esportiva
+
+Público-alvo resumido
+
+- organizadores de torneios
+- administradores do torneio
+- fiscais de campo
+- participantes que acompanham informações públicas
+
+URLs sugeridas para cadastro
+
+URL pública principal: https://torvia.ari.net.br
+URL de suporte: https://torvia.ari.net.br/suporte
+URL da política de privacidade: https://torvia.ari.net.br/politica-de-privacidade
+
+E-mail de suporte
+
+arielson.c.ferreira@gmail.com

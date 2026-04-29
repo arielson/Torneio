@@ -1,0 +1,49 @@
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Política de Privacidade";
+    var applicationName = Configuration["Branding:ApplicationName"] ?? "Torvia";
+    var suporteEmail = "arielson.c.ferreira@gmail.com";
+}
+
+<div class="legal-page">
+    <div class="legal-card">
+        <h1>Política de Privacidade</h1>
+        <p class="text-muted mb-4">Última atualização: @DateTime.Now.ToString("dd/MM/yyyy")</p>
+
+        <h2>1. Finalidade</h2>
+        <p>O @applicationName é uma plataforma de operação e acompanhamento de torneios. Esta política descreve como os dados podem ser tratados no uso do aplicativo e do ambiente web relacionados à plataforma.</p>
+
+        <h2>2. Dados que podem ser tratados</h2>
+        <p>Dependendo da configuração do torneio, a plataforma pode tratar:</p>
+        <ul>
+            <li>dados de identificação de usuários e participantes;</li>
+            <li>credenciais de acesso;</li>
+            <li>imagens de capturas e cadastros;</li>
+            <li>dados de embarcações, pescadores, fiscais e patrocinadores;</li>
+            <li>informações financeiras do torneio, quando o módulo estiver habilitado;</li>
+            <li>dados operacionais e históricos necessários à gestão do evento.</li>
+        </ul>
+
+        <h2>3. Uso dos dados</h2>
+        <p>Os dados são utilizados para autenticação, operação do torneio, registro de capturas, sincronização entre app e retaguarda, emissão de relatórios e exibição pública das informações que forem configuradas como públicas pela organização do evento.</p>
+
+        <h2>4. Armazenamento local e operação offline</h2>
+        <p>O aplicativo pode manter dados localmente no dispositivo para permitir funcionamento offline e sincronização posterior, especialmente em fluxos de fiscalização e captura.</p>
+
+        <h2>5. Compartilhamento</h2>
+        <p>Os dados são tratados pela infraestrutura da plataforma e pelos responsáveis pela operação do torneio. Qualquer compartilhamento adicional deve seguir a política operacional da organização responsável pelo evento.</p>
+
+        <h2>6. Segurança</h2>
+        <p>A comunicação entre aplicativo, web e backend utiliza conexões seguras compatíveis com HTTPS. Ainda assim, a organização responsável deve manter boas práticas de controle de acesso e gestão de credenciais.</p>
+
+        <h2>7. Direitos e contato</h2>
+        <p>Solicitações de correção, exclusão ou esclarecimento podem ser encaminhadas para:</p>
+        <ul>
+            <li><strong>E-mail de suporte:</strong> <a href="mailto:@suporteEmail">@suporteEmail</a></li>
+            <li><strong>Página de suporte:</strong> <a href="/suporte">/suporte</a></li>
+        </ul>
+
+        <h2>8. Abrangência</h2>
+        <p>Esta política se aplica às páginas públicas, ao ambiente administrativo web e ao aplicativo vinculados ao @applicationName.</p>
+    </div>
+</div>

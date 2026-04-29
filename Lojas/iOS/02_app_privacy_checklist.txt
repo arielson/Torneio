@@ -1,0 +1,30 @@
+App Store - App Privacy Checklist
+
+Objetivo
+
+Usar este arquivo como checklist antes do preenchimento da seção App Privacy no App Store Connect.
+
+Dados possivelmente tratados
+
+- Identificadores de conta do usuário autenticado
+- Nome de pessoas vinculadas ao torneio
+- Fotos de capturas
+- Conteúdo operacional do evento
+
+Confirmar antes do envio
+
+- Se os dados são usados apenas para funcionamento do produto
+- Se não existe rastreamento para publicidade
+- Se não existe compartilhamento com data brokers
+- Se toda comunicação externa ocorre com HTTPS
+- Se a política de privacidade publicada está alinhada com a versão atual
+
+Direção geral esperada
+
+- Data Used to Track You: não
+- Data Linked to You: validar conforme a conta e os dados operacionais exibidos
+- Diagnostics: validar conforme a build e serviços habilitados
+
+Atenção
+
+O preenchimento no App Store Connect precisa refletir exatamente a build enviada. Se o comportamento do app mudar, este checklist deve ser revisado.

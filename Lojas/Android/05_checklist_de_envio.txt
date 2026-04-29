@@ -1,0 +1,27 @@
+Google Play - Checklist de Envio
+
+Antes de publicar
+
+- Confirmar nome do app
+- Confirmar descrição curta e descrição completa
+- Confirmar categoria do app
+- Confirmar e-mail de suporte
+- Confirmar URL de suporte
+- Confirmar URL da política de privacidade
+- Confirmar classificação de conteúdo
+- Confirmar Data safety
+- Confirmar ícone do app 512 ou 1024, conforme uso do material de apoio
+- Confirmar recurso gráfico da Google Play
+- Confirmar screenshots obrigatórias
+- Confirmar versão e notas de release
+- Confirmar permissões realmente utilizadas pela build
+
+URLs desta publicação
+
+- Site principal: https://torvia.ari.net.br
+- Suporte: https://torvia.ari.net.br/suporte
+- Política de privacidade: https://torvia.ari.net.br/politica-de-privacidade
+
+Contato
+
+arielson.c.ferreira@gmail.com

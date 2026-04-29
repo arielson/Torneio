@@ -1,0 +1,12 @@
+Google Play - Template de Notas de Versão
+
+Versão atual
+
+Nova versão do Torvia com melhorias operacionais, ajustes na experiência do fiscal, relatórios atualizados e refinamentos gerais de usabilidade.
+
+Modelo resumido
+
+- melhorias na operação do torneio
+- ajustes em relatórios e exibição de ganhadores
+- aperfeiçoamentos no fluxo do fiscal
+- correções gerais de estabilidade

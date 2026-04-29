@@ -25,6 +25,18 @@ public class HomeController : Controller
         return View(torneios);
     }
 
+    [HttpGet("/politica-de-privacidade")]
+    public IActionResult PoliticaDePrivacidade()
+    {
+        return View();
+    }
+
+    [HttpGet("/suporte")]
+    public IActionResult Suporte()
+    {
+        return View();
+    }
+
     // AdminGeral login
     [HttpGet("/login")]
     public IActionResult Login(string? returnUrl)

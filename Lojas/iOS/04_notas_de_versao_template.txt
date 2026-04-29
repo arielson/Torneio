@@ -1,0 +1,12 @@
+App Store - Template de What’s New
+
+Versão atual
+
+Esta versão traz melhorias operacionais, ajustes em relatórios, refinamentos no fluxo do fiscal e correções gerais de estabilidade.
+
+Modelo resumido
+
+- melhorias na operação do torneio
+- ajustes em relatórios e ganhadores
+- aperfeiçoamentos no fluxo do fiscal
+- correções gerais

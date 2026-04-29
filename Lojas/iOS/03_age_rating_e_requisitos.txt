@@ -1,0 +1,22 @@
+App Store - Age Rating e Requisitos
+
+Categoria sugerida
+
+Sports
+
+Perfil do app
+
+Aplicativo de gestão de torneios com uso administrativo, fiscalização em campo e consulta pública de informações do evento.
+
+Características relevantes
+
+- não possui conteúdo sexual
+- não possui jogos de azar
+- não possui violência gráfica
+- não possui chat aberto como função principal
+- não é voltado para crianças
+- pode exibir imagens de peixes e capturas em contexto esportivo
+
+Recomendação
+
+Responder o questionário de age rating com base nas funcionalidades reais da build submetida.

@@ -1,0 +1,31 @@
+Google Play - Data Safety Checklist
+
+Objetivo
+
+Usar este arquivo como checklist operacional antes do preenchimento da seção Data safety no Google Play Console.
+
+Dados que o app pode processar
+
+- Informações de conta e autenticação
+- Nome de usuários vinculados ao torneio
+- Fotos de capturas
+- Conteúdo operacional do torneio
+
+Validações necessárias antes do envio
+
+- Confirmar se o login usa apenas autenticação própria da plataforma
+- Confirmar se não há coleta de localização em segundo plano
+- Confirmar se não há compartilhamento de dados com terceiros para publicidade
+- Confirmar se os dados trafegam por HTTPS
+- Confirmar se há possibilidade de exclusão ou bloqueio de acesso por solicitação administrativa
+
+Respostas normalmente esperadas para este projeto
+
+- Coleta de dados: sim, quando o usuário autentica e registra informações do torneio
+- Compartilhamento de dados com terceiros para publicidade: não
+- Criptografia em trânsito: sim
+- Exclusão de conta e dados: depende da política operacional do publicador, validar antes do envio
+
+Atenção
+
+O preenchimento final no Google Play Console deve refletir exatamente o comportamento da versão publicada. Se o app mudar coleta, retenção ou compartilhamento, este checklist também deve ser revisado.

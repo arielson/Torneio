@@ -1,0 +1,49 @@
+App Store - Textos de Listing
+
+Aplicativo
+
+Nome do app: Torvia
+Bundle ID: br.net.ari.torvia
+Categoria primária sugerida: Sports
+Idioma base sugerido: Português (Brasil)
+
+Subtítulo
+
+Gestão de torneios, capturas, ranking e relatórios.
+
+Texto promocional
+
+Centralize a operação do torneio com cadastro, fiscalização em campo, ranking, financeiro e relatórios.
+
+Descrição
+
+Torvia é a plataforma de operação e acompanhamento de torneios, criada para centralizar a gestão administrativa, a fiscalização em campo e a visualização pública do evento.
+
+Com o app, a organização pode configurar o torneio, manter cadastros, registrar capturas com foto, acompanhar rankings e emitir relatórios. Quando habilitado, o módulo financeiro também ajuda no controle de cobranças, custos e indicadores do evento.
+
+Principais recursos
+
+- gestão de dados do torneio
+- cadastro de embarcações, pescadores, fiscais, espécies e patrocinadores
+- registro de capturas com foto
+- funcionamento offline para fiscais
+- sincronização com a retaguarda
+- acompanhamento de ranking e resultados
+- relatórios em PDF
+- exibição pública de informações do evento
+
+Torvia atende torneios que precisam de controle operacional, histórico e comunicação centralizada entre equipe organizadora, fiscais e público.
+
+Palavras-chave
+
+torneio,pesca,ranking,captura,embarcação,fiscal,competição,gestão
+
+URLs sugeridas
+
+Support URL: https://torvia.ari.net.br/suporte
+Marketing URL: https://torvia.ari.net.br
+Privacy Policy URL: https://torvia.ari.net.br/politica-de-privacidade
+
+E-mail de suporte
+
+arielson.c.ferreira@gmail.com

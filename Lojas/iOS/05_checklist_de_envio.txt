@@ -1,0 +1,29 @@
+App Store - Checklist de Envio
+
+Antes de publicar
+
+- Confirmar nome do app
+- Confirmar subtítulo
+- Confirmar texto promocional
+- Confirmar descrição
+- Confirmar palavras-chave
+- Confirmar e-mail de suporte
+- Confirmar Support URL
+- Confirmar Privacy Policy URL
+- Confirmar Marketing URL
+- Confirmar App Privacy
+- Confirmar Age Rating
+- Confirmar ícones do app
+- Confirmar screenshots obrigatórias
+- Confirmar build e versão
+- Confirmar notas de atualização
+
+URLs desta publicação
+
+- Site principal: https://torvia.ari.net.br
+- Suporte: https://torvia.ari.net.br/suporte
+- Política de privacidade: https://torvia.ari.net.br/politica-de-privacidade
+
+Contato
+
+arielson.c.ferreira@gmail.com

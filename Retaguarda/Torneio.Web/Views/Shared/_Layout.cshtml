@@ -318,7 +318,11 @@ else if (usarLayoutAdmin)
                 </main>
 
                 <footer class="page-footer">
-                    &copy; @DateTime.Now.Year - @applicationName
+                    <span>&copy; @DateTime.Now.Year - @applicationName</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <a href="/politica-de-privacidade">Política de Privacidade</a>
+                    <span class="mx-2 text-muted">|</span>
+                    <a href="/suporte">Suporte</a>
                 </footer>
             </div>
 
@@ -403,7 +407,13 @@ else
         </div>
         <footer class="border-top py-3 mt-4">
             <div class="container">
-                <small class="text-muted">&copy; @DateTime.Now.Year - @applicationName</small>
+                <small class="text-muted">
+                    &copy; @DateTime.Now.Year - @applicationName
+                    <span class="mx-2">|</span>
+                    <a href="/politica-de-privacidade">Política de Privacidade</a>
+                    <span class="mx-2">|</span>
+                    <a href="/suporte">Suporte</a>
+                </small>
             </div>
         </footer>
         <script src="~/lib/jquery/dist/jquery.min.js"></script>

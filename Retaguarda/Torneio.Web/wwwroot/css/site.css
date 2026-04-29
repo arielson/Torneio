@@ -86,6 +86,37 @@ body.auth-page {
     background: var(--sb-bg) !important;
 }
 
+.legal-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.legal-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+}
+
+.legal-card h1 {
+    color: var(--text-heading);
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.legal-card h2 {
+    color: var(--text-heading);
+    font-size: 1.05rem;
+    margin-top: 1.5rem;
+    margin-bottom: .6rem;
+}
+
+.legal-card p,
+.legal-card li {
+    color: var(--text-body);
+}
+
 /* ── Admin layout wrapper ───────────────────────────────────────────────── */
 body.admin-layout {
     background: var(--surface);

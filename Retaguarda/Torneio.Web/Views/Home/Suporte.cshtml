@@ -1,0 +1,33 @@
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Suporte";
+    var applicationName = Configuration["Branding:ApplicationName"] ?? "Torvia";
+    var suporteEmail = "arielson.c.ferreira@gmail.com";
+}
+
+<div class="legal-page">
+    <div class="legal-card">
+        <h1>Suporte</h1>
+        <p class="mb-4">Esta página reúne os canais básicos de suporte do @applicationName para uso em web, aplicativo e cadastros nas lojas.</p>
+
+        <h2>Contato principal</h2>
+        <p>
+            <strong>E-mail:</strong>
+            <a href="mailto:@suporteEmail">@suporteEmail</a>
+        </p>
+
+        <h2>Quando usar este canal</h2>
+        <ul>
+            <li>dúvidas sobre acesso ao sistema;</li>
+            <li>solicitações relacionadas a operação do app e do web;</li>
+            <li>problemas de publicação, visualização pública ou sincronização;</li>
+            <li>solicitações relacionadas à política de privacidade.</li>
+        </ul>
+
+        <h2>Política de privacidade</h2>
+        <p>
+            A política pública da plataforma está disponível em
+            <a href="/politica-de-privacidade">/politica-de-privacidade</a>.
+        </p>
+    </div>
+</div>
