@@ -70,7 +70,7 @@ class _FiscalFormScreenState extends State<FiscalFormScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nao foi possivel carregar as embarcacoes.'),
+          content: Text('Nao foi possivel carregar as embarcações.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -178,7 +178,7 @@ class _FiscalFormScreenState extends State<FiscalFormScreen> {
   Widget build(BuildContext context) {
     final config = context.watch<ConfigProvider>().config;
     final label = config?.labelSupervisor ?? 'Fiscal';
-    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcacoes';
+    final labelEquipePlural = config?.labelEquipePlural ?? 'Embarcações';
     final fotoAtualUrl = AppConfig.resolverUrl(widget.fiscal?.fotoUrl);
 
     return Scaffold(

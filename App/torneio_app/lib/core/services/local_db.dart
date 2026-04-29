@@ -19,7 +19,7 @@ class CapturaPendenteLocal {
 class LocalDb {
   static Database? _db;
   static const _dbName = 'torneio_offline.db';
-  static const _dbVersion = 4;
+  static const _dbVersion = 5;
 
   static const _tableCapturas = 'capturas_pendentes';
   static const _tableCatalogos = 'catalogos_cache';
@@ -45,6 +45,11 @@ class LocalDb {
         if (oldVersion < 4) {
           await _criarTabelaCatalogos(db);
         }
+        if (oldVersion < 5) {
+          await db.execute(
+            'ALTER TABLE $_tableCapturas ADD COLUMN fonteFoto INTEGER NULL',
+          );
+        }
       },
     );
   }
@@ -66,6 +71,7 @@ class LocalDb {
         fotoUrl TEXT NOT NULL,
         dataHora TEXT NOT NULL,
         pendenteSync INTEGER NOT NULL DEFAULT 1,
+        fonteFoto INTEGER NULL,
         sincronizacaoManual INTEGER NOT NULL DEFAULT 0
       )
     ''');
@@ -88,6 +94,7 @@ class LocalDb {
     bool sincronizacaoManual = false,
   }) async {
     final database = await db;
+    await _garantirColunaFonteFoto(database);
     final id = const Uuid().v4();
     await database.insert(_tableCapturas, {
       ...req.toDbMap(id),
@@ -100,6 +107,7 @@ class LocalDb {
     bool? sincronizacaoManual,
   }) async {
     final database = await db;
+    await _garantirColunaFonteFoto(database);
     final where = <String>['pendenteSync = ?'];
     final args = <Object>[1];
 
@@ -128,6 +136,7 @@ class LocalDb {
 
   static Future<int> contarPendentes({bool? sincronizacaoManual}) async {
     final database = await db;
+    await _garantirColunaFonteFoto(database);
     final where = <String>['pendenteSync = 1'];
 
     if (sincronizacaoManual != null) {
@@ -143,6 +152,7 @@ class LocalDb {
   static Future<void> removerSincronizadas(List<String> ids) async {
     if (ids.isEmpty) return;
     final database = await db;
+    await _garantirColunaFonteFoto(database);
     final placeholders = List.filled(ids.length, '?').join(', ');
     await database.delete(
       _tableCapturas,
@@ -153,6 +163,7 @@ class LocalDb {
 
   static Future<void> remover(String id) async {
     final database = await db;
+    await _garantirColunaFonteFoto(database);
     await database.delete(_tableCapturas, where: 'id = ?', whereArgs: [id]);
   }
 
@@ -206,6 +217,19 @@ class LocalDb {
       fotoUrl: row['fotoUrl'] as String,
       dataHora: DateTime.parse(row['dataHora'] as String),
       pendenteSync: (row['pendenteSync'] as int) == 1,
+      fonteFoto: row['fonteFoto'] as int?,
     );
+  }
+
+  static Future<void> _garantirColunaFonteFoto(Database db) async {
+    final colunas = await db.rawQuery('PRAGMA table_info($_tableCapturas)');
+    final existeFonteFoto = colunas.any(
+      (coluna) => (coluna['name'] as String?) == 'fonteFoto',
+    );
+    if (!existeFonteFoto) {
+      await db.execute(
+        'ALTER TABLE $_tableCapturas ADD COLUMN fonteFoto INTEGER NULL',
+      );
+    }
   }
 }
