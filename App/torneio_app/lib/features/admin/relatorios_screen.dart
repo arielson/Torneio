@@ -79,12 +79,10 @@ class RelatoriosAdminScreen extends StatelessWidget {
     final config = context.watch<ConfigProvider>().config;
     final labelEquipe = config?.labelEquipe ?? 'Embarcacao';
     final labelMembro = config?.labelMembro ?? 'Pescador';
-    final qtdGanhadores = config?.qtdGanhadores ?? 3;
     final exibirMaioresCapturas = config?.tipoTorneio == 'Pesca';
-    final exibirQtdGanhadores = config?.modoSorteio == 'Nenhum';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios')),
+      appBar: AppBar(title: const Text('Relatorios')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -114,10 +112,8 @@ class RelatoriosAdminScreen extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.emoji_events_outlined),
               title: const Text('Ganhadores'),
-              subtitle: Text(
-                exibirQtdGanhadores
-                    ? 'Relatorios dos $qtdGanhadores ganhadores com base na classificacao atual por $labelEquipe.'
-                    : 'Relatorios dos ganhadores com base na classificacao atual por $labelEquipe.',
+              subtitle: const Text(
+                'Defina quantas embarcacoes ganhadoras, quantos pescadores por pontuacao e quantos pescadores por maior captura deseja considerar. Depois disso, emita um PDF sintetico ou analitico consolidado.',
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.pushNamed(context, '/admin/relatorios/ganhadores'),

@@ -20,6 +20,9 @@ public class RelatorioController : BaseController
     [Authorize(Policy = "AdminTorneio")]
     [HttpGet("ganhadores")]
     public async Task<IActionResult> Ganhadores(
+        [FromQuery] int? quantidadeEquipes,
+        [FromQuery] int? quantidadeMembrosPontuacao,
+        [FromQuery] int? quantidadeMembrosMaiorCaptura,
         [FromServices] ITorneioServico torneioServico,
         [FromServices] IEquipeServico equipeServico,
         [FromServices] IMembroServico membroServico,
@@ -46,8 +49,14 @@ public class RelatorioController : BaseController
 
         IEnumerable<object> equipesGanhadoras = [];
         IEnumerable<object> membrosGanhadores = [];
+        IEnumerable<object> membrosMaiorCaptura = [];
 
-        if (torneio.PremiacaoPorEquipe)
+        var qtdEquipes = Math.Clamp(quantidadeEquipes ?? 3, 0, 999);
+        var qtdMembrosPontuacao = Math.Clamp(quantidadeMembrosPontuacao ?? 3, 0, 999);
+        var qtdMembrosMaiorCaptura = Math.Clamp(quantidadeMembrosMaiorCaptura ?? 3, 0, 999);
+        var exibirMaiorCaptura = string.Equals(torneio.TipoTorneio, nameof(TipoTorneio.Pesca), StringComparison.OrdinalIgnoreCase);
+
+        if (qtdEquipes > 0)
         {
             var equipes = (await equipeServico.ListarTodos()).ToList();
             equipesGanhadoras = equipes
@@ -60,12 +69,12 @@ public class RelatorioController : BaseController
                     PrimeiraCaptura = capturas.Where(c => c.EquipeId == e.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
                 .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeEquipe)
-                .Take(torneio.QtdGanhadores)
+                .Take(qtdEquipes)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.EquipeId, x.NomeEquipe, x.Capitao, x.TotalPontos })
                 .ToList();
         }
 
-        if (torneio.PremiacaoPorMembro)
+        if (qtdMembrosPontuacao > 0)
         {
             var membros = (await membroServico.ListarTodos()).ToList();
             membrosGanhadores = membros
@@ -77,18 +86,72 @@ public class RelatorioController : BaseController
                     PrimeiraCaptura = capturas.Where(c => c.MembroId == m.Id).Select(c => c.DataHora).DefaultIfEmpty(DateTime.MaxValue).Min()
                 })
                 .OrderByDescending(x => x.TotalPontos).ThenBy(x => x.PrimeiraCaptura).ThenBy(x => x.NomeMembro)
-                .Take(torneio.QtdGanhadores)
+                .Take(qtdMembrosPontuacao)
                 .Select((x, i) => (object)new { Posicao = i + 1, x.MembroId, x.NomeMembro, x.TotalPontos })
+                .ToList();
+        }
+
+        if (exibirMaiorCaptura && qtdMembrosMaiorCaptura > 0)
+        {
+            membrosMaiorCaptura = todasCapturas
+                .GroupBy(c => c.MembroId)
+                .Select(g =>
+                {
+                    var maior = g
+                        .OrderByDescending(c => c.TamanhoMedida)
+                        .ThenBy(c => c.DataHora)
+                        .First();
+                    return new
+                    {
+                        maior.MembroId,
+                        maior.NomeMembro,
+                        MaiorCaptura = maior.TamanhoMedida,
+                        NomeItemMaiorCaptura = maior.NomeItem,
+                        PrimeiraCaptura = maior.DataHora
+                    };
+                })
+                .OrderByDescending(x => x.MaiorCaptura)
+                .ThenBy(x => x.PrimeiraCaptura)
+                .ThenBy(x => x.NomeMembro)
+                .Take(qtdMembrosMaiorCaptura)
+                .Select((x, i) => (object)new { Posicao = i + 1, x.MembroId, x.NomeMembro, x.MaiorCaptura, x.NomeItemMaiorCaptura })
                 .ToList();
         }
 
         return Ok(new
         {
-            torneio.PremiacaoPorEquipe,
-            torneio.PremiacaoPorMembro,
+            QuantidadeEquipes = qtdEquipes,
+            QuantidadeMembrosPontuacao = qtdMembrosPontuacao,
+            QuantidadeMembrosMaiorCaptura = qtdMembrosMaiorCaptura,
+            ExibirMaiorCaptura = exibirMaiorCaptura,
             EquipesGanhadoras = equipesGanhadoras,
             MembrosGanhadores = membrosGanhadores,
+            MembrosMaiorCaptura = membrosMaiorCaptura,
         });
+    }
+
+    [Authorize(Policy = "AdminTorneio")]
+    [HttpGet("ganhadores/pdf")]
+    public async Task<IActionResult> GanhadoresPdf(
+        [FromQuery] int quantidadeEquipes = 3,
+        [FromQuery] int quantidadeMembrosPontuacao = 3,
+        [FromQuery] int quantidadeMembrosMaiorCaptura = 3,
+        [FromQuery] bool analitico = false)
+    {
+        try
+        {
+            var bytes = await _servico.GerarRelatorioGanhadores(
+                quantidadeEquipes,
+                quantidadeMembrosPontuacao,
+                quantidadeMembrosMaiorCaptura,
+                analitico);
+            var tipo = analitico ? "analitico" : "sintetico";
+            return File(bytes, "application/pdf", $"ganhadores_{tipo}.pdf");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
     }
 
     [Authorize(Policy = "AdminTorneio")]

@@ -2,7 +2,6 @@
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     var torneio = (TorneioDto)ViewBag.Torneio;
-    var exibirQtdGanhadores = string.Equals(torneio.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
     ViewData["Title"] = "Relatorio dos Ganhadores";
 }
 
@@ -15,11 +14,67 @@
     <i class="bi bi-arrow-left"></i> Relatorios
 </a>
 
-@if (!Model.Equipes.Any() && !Model.Membros.Any())
+<div class="content-card mb-4">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-sliders me-2"></i>Filtros do Relatorio</h5>
+    </div>
+    <div class="card-body-pad">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Quantidade de embarcacoes ganhadoras</label>
+                <input type="number" min="0" max="999" name="quantidadeEquipes" value="@Model.QuantidadeEquipes" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quantidade de @torneio.LabelMembroPlural por pontuacao</label>
+                <input type="number" min="0" max="999" name="quantidadeMembrosPontuacao" value="@Model.QuantidadeMembrosPontuacao" class="form-control" />
+            </div>
+            @if (Model.ExibirMaiorCaptura)
+            {
+                <div class="col-md-4">
+                    <label class="form-label">Quantidade de @torneio.LabelMembroPlural por maior captura</label>
+                    <input type="number" min="0" max="999" name="quantidadeMembrosMaiorCaptura" value="@Model.QuantidadeMembrosMaiorCaptura" class="form-control" />
+                </div>
+            }
+            <div class="col-12">
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-funnel me-1"></i>Aplicar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.FiltrosInformados)
+{
+    <div class="alert alert-info d-flex gap-2 align-items-center">
+        <i class="bi bi-info-circle-fill"></i>
+        Informe as quantidades desejadas para gerar os relatorios de ganhadores.
+    </div>
+}
+else if (!Model.Equipes.Any() && !Model.MembrosPontuacao.Any() && !Model.MembrosMaiorCaptura.Any())
 {
     <div class="alert alert-info d-flex gap-2 align-items-center">
         <i class="bi bi-info-circle-fill"></i>
         Nenhum ganhador encontrado com base nas informacoes atuais.
+    </div>
+}
+
+@if (Model.FiltrosInformados)
+{
+    <div class="content-card mb-4">
+        <div class="card-header-bar">
+            <h5><i class="bi bi-file-earmark-pdf me-2"></i>Emissao do Relatorio</h5>
+        </div>
+        <div class="card-body-pad d-flex flex-wrap gap-2">
+            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&analitico=false"
+               class="btn btn-outline-primary" target="_blank">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
+            </a>
+            <a href="/@slug/relatorios/ganhadores/download?quantidadeEquipes=@Model.QuantidadeEquipes&quantidadeMembrosPontuacao=@Model.QuantidadeMembrosPontuacao&quantidadeMembrosMaiorCaptura=@Model.QuantidadeMembrosMaiorCaptura&analitico=true"
+               class="btn btn-primary" target="_blank">
+                <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
+            </a>
+        </div>
     </div>
 }
 
@@ -29,14 +84,7 @@
         <div class="card-header-bar">
             <h5>
                 <i class="bi bi-trophy me-2"></i>
-                @if (exibirQtdGanhadores)
-                {
-                    @:Top @torneio.QtdGanhadores @torneio.LabelEquipePlural
-                }
-                else
-                {
-                    @:Ganhadores por @torneio.LabelEquipe
-                }
+                Top @Model.QuantidadeEquipes @torneio.LabelEquipePlural
             </h5>
         </div>
         <div class="table-responsive">
@@ -47,7 +95,6 @@
                         <th>@torneio.LabelEquipe</th>
                         <th>Capitao</th>
                         <th>Pontos</th>
-                        <th class="text-end">Relatorios</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,18 +105,6 @@
                             <td class="fw-semibold">@g.NomeEquipe</td>
                             <td class="text-muted">@g.Capitao</td>
                             <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
-                            <td class="text-end">
-                                <div class="d-flex gap-1 justify-content-end">
-                                    <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=false"
-                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
-                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
-                                    </a>
-                                    <a href="/@slug/relatorios/equipe/download?equipeId=@g.EquipeId&analitico=true"
-                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
-                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
-                                    </a>
-                                </div>
-                            </td>
                         </tr>
                     }
                 </tbody>
@@ -78,20 +113,13 @@
     </div>
 }
 
-@if (Model.Membros.Any())
+@if (Model.MembrosPontuacao.Any())
 {
-    <div class="content-card">
+    <div class="content-card mb-4">
         <div class="card-header-bar">
             <h5>
                 <i class="bi bi-person-badge me-2"></i>
-                @if (exibirQtdGanhadores)
-                {
-                    @:Top @torneio.QtdGanhadores @torneio.LabelMembroPlural
-                }
-                else
-                {
-                    @:Ganhadores por @torneio.LabelMembro
-                }
+                Top @Model.QuantidadeMembrosPontuacao @torneio.LabelMembroPlural por pontuacao
             </h5>
         </div>
         <div class="table-responsive">
@@ -101,27 +129,53 @@
                         <th>Posicao</th>
                         <th>@torneio.LabelMembro</th>
                         <th>Pontos</th>
-                        <th class="text-end">Relatorios</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var g in Model.Membros)
+                    @foreach (var g in Model.MembrosPontuacao)
                     {
                         <tr>
                             <td><span class="badge bg-warning text-dark">@(g.Posicao + "o")</span></td>
                             <td class="fw-semibold">@g.NomeMembro</td>
                             <td class="fw-semibold">@g.TotalPontos.ToString("F2")</td>
-                            <td class="text-end">
-                                <div class="d-flex gap-1 justify-content-end">
-                                    <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=false"
-                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Sintetico">
-                                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Sintetico
-                                    </a>
-                                    <a href="/@slug/relatorios/membro/download?membroId=@g.MembroId&analitico=true"
-                                       class="btn btn-sm btn-primary" target="_blank" title="Analitico">
-                                        <i class="bi bi-file-earmark-richtext me-1"></i>Analitico
-                                    </a>
-                                </div>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.ExibirMaiorCaptura && Model.MembrosMaiorCaptura.Any())
+{
+    <div class="content-card">
+        <div class="card-header-bar">
+            <h5>
+                <i class="bi bi-rulers me-2"></i>
+                Top @Model.QuantidadeMembrosMaiorCaptura @torneio.LabelMembroPlural por maior captura
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Posicao</th>
+                        <th>@torneio.LabelMembro</th>
+                        <th>Maior captura</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var g in Model.MembrosMaiorCaptura)
+                    {
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">@(g.Posicao + "o")</span></td>
+                            <td class="fw-semibold">@g.NomeMembro</td>
+                            <td class="fw-semibold">
+                                @((g.MaiorCaptura ?? 0).ToString("F1")) @torneio.MedidaCaptura
+                                @if (!string.IsNullOrWhiteSpace(g.NomeItemMaiorCaptura))
+                                {
+                                    <span class="text-muted">- @g.NomeItemMaiorCaptura</span>
+                                }
                             </td>
                         </tr>
                     }

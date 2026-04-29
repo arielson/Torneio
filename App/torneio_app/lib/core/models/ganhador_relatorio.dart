@@ -27,42 +27,59 @@ class GanhadorMembro {
   final String membroId;
   final String nomeMembro;
   final double totalPontos;
+  final double? maiorCaptura;
+  final String? nomeItemMaiorCaptura;
 
   const GanhadorMembro({
     required this.posicao,
     required this.membroId,
     required this.nomeMembro,
     required this.totalPontos,
+    this.maiorCaptura,
+    this.nomeItemMaiorCaptura,
   });
 
   factory GanhadorMembro.fromJson(Map<String, dynamic> json) => GanhadorMembro(
         posicao: json['posicao'] as int,
         membroId: json['membroId'] as String,
         nomeMembro: json['nomeMembro'] as String,
-        totalPontos: (json['totalPontos'] as num).toDouble(),
+        totalPontos: (json['totalPontos'] as num?)?.toDouble() ?? 0,
+        maiorCaptura: (json['maiorCaptura'] as num?)?.toDouble(),
+        nomeItemMaiorCaptura: json['nomeItemMaiorCaptura'] as String?,
       );
 }
 
 class GanhadoresResponse {
-  final bool premiacaoPorEquipe;
-  final bool premiacaoPorMembro;
+  final int quantidadeEquipes;
+  final int quantidadeMembrosPontuacao;
+  final int quantidadeMembrosMaiorCaptura;
+  final bool exibirMaiorCaptura;
   final List<GanhadorEquipe> equipesGanhadoras;
   final List<GanhadorMembro> membrosGanhadores;
+  final List<GanhadorMembro> membrosMaiorCaptura;
 
   const GanhadoresResponse({
-    required this.premiacaoPorEquipe,
-    required this.premiacaoPorMembro,
+    required this.quantidadeEquipes,
+    required this.quantidadeMembrosPontuacao,
+    required this.quantidadeMembrosMaiorCaptura,
+    required this.exibirMaiorCaptura,
     required this.equipesGanhadoras,
     required this.membrosGanhadores,
+    required this.membrosMaiorCaptura,
   });
 
   factory GanhadoresResponse.fromJson(Map<String, dynamic> json) => GanhadoresResponse(
-        premiacaoPorEquipe: json['premiacaoPorEquipe'] as bool? ?? true,
-        premiacaoPorMembro: json['premiacaoPorMembro'] as bool? ?? false,
+        quantidadeEquipes: json['quantidadeEquipes'] as int? ?? 0,
+        quantidadeMembrosPontuacao: json['quantidadeMembrosPontuacao'] as int? ?? 0,
+        quantidadeMembrosMaiorCaptura: json['quantidadeMembrosMaiorCaptura'] as int? ?? 0,
+        exibirMaiorCaptura: json['exibirMaiorCaptura'] as bool? ?? false,
         equipesGanhadoras: (json['equipesGanhadoras'] as List? ?? [])
             .map((e) => GanhadorEquipe.fromJson(e as Map<String, dynamic>))
             .toList(),
         membrosGanhadores: (json['membrosGanhadores'] as List? ?? [])
+            .map((e) => GanhadorMembro.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        membrosMaiorCaptura: (json['membrosMaiorCaptura'] as List? ?? [])
             .map((e) => GanhadorMembro.fromJson(e as Map<String, dynamic>))
             .toList(),
       );

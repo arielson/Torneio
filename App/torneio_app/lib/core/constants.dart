@@ -51,7 +51,37 @@ class ApiConstants {
   static String financeiroCustos(String slug) => '$_base/api/$slug/financeiro/custos';
   static String financeiroChecklist(String slug) => '$_base/api/$slug/financeiro/checklist';
   static String rankingPublico(String slug) => '$_base/api/$slug/ranking';
-  static String relatoriosGanhadores(String slug) => '$_base/api/$slug/relatorios/ganhadores';
+  static String relatoriosGanhadores(
+    String slug, {
+    int? quantidadeEquipes,
+    int? quantidadeMembrosPontuacao,
+    int? quantidadeMembrosMaiorCaptura,
+  }) {
+    final params = <String>[
+      if (quantidadeEquipes != null) 'quantidadeEquipes=$quantidadeEquipes',
+      if (quantidadeMembrosPontuacao != null)
+        'quantidadeMembrosPontuacao=$quantidadeMembrosPontuacao',
+      if (quantidadeMembrosMaiorCaptura != null)
+        'quantidadeMembrosMaiorCaptura=$quantidadeMembrosMaiorCaptura',
+    ];
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    return '$_base/api/$slug/relatorios/ganhadores$query';
+  }
+  static String relatorioGanhadoresPdf(
+    String slug, {
+    required int quantidadeEquipes,
+    required int quantidadeMembrosPontuacao,
+    required int quantidadeMembrosMaiorCaptura,
+    bool analitico = false,
+  }) {
+    final params = [
+      'quantidadeEquipes=$quantidadeEquipes',
+      'quantidadeMembrosPontuacao=$quantidadeMembrosPontuacao',
+      'quantidadeMembrosMaiorCaptura=$quantidadeMembrosMaiorCaptura',
+      'analitico=$analitico',
+    ];
+    return '$_base/api/$slug/relatorios/ganhadores/pdf?${params.join('&')}';
+  }
   static String relatorioMaioresCapturasPdf(String slug, int quantidade) =>
       '$_base/api/$slug/relatorios/maiores-capturas?quantidade=$quantidade';
   static String relatorioEquipePdf(String slug, String equipeId, {bool analitico = false}) =>
