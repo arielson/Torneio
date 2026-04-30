@@ -35,7 +35,12 @@
     var exibirSorteio = !string.Equals(torneioNav?.ModoSorteio, "Nenhum", StringComparison.OrdinalIgnoreCase);
     var exibirFinanceiro = torneioNav?.ExibirModuloFinanceiro ?? true;
     var applicationName = Configuration["Branding:ApplicationName"] ?? "Torneio";
-    var usarLayoutAdmin = isAdmin && (isAdminGeral || !string.IsNullOrEmpty(effectiveSlug));
+    var slugLogado = User.FindFirst("slug")?.Value;
+    var isPublicPage = Context.Request.Path.Value?.TrimEnd('/').Equals($"/{slug}", StringComparison.OrdinalIgnoreCase) ?? false;
+    var estaEmOutroTorneio = !string.IsNullOrWhiteSpace(slugLogado)
+        && !string.IsNullOrEmpty(slug)
+        && !string.Equals(slugLogado, slug, StringComparison.OrdinalIgnoreCase);
+    var usarLayoutAdmin = isAdmin && (isAdminGeral || !string.IsNullOrEmpty(effectiveSlug)) && !(estaEmOutroTorneio && isPublicPage);
 
     bool IsActive(string path) =>
         (Context.Request.Path.Value ?? "").StartsWith(path, StringComparison.OrdinalIgnoreCase);
@@ -349,7 +354,15 @@ else
                 </button>
                 <div class="navbar-collapse collapse" id="navPublic">
                     <ul class="navbar-nav ms-auto">
-                        @if (!string.IsNullOrEmpty(slug))
+                        @if (estaEmOutroTorneio)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="/@slugLogado/admin">
+                                    <i class="bi bi-arrow-left-circle me-1"></i>Voltar para @slugLogado
+                                </a>
+                            </li>
+                        }
+                        else if (!string.IsNullOrEmpty(slug))
                         {
                             @if (isMembro)
                             {

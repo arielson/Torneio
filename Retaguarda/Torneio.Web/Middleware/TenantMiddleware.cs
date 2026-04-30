@@ -25,13 +25,16 @@ public class TenantMiddleware
 
             var perfil = context.User.FindFirst("perfil")?.Value;
 
+            // Página pública do torneio (/{slug} sem subpath) é acessível a qualquer usuário logado.
+            var isPublicPage = context.Request.Path.Value?.TrimEnd('/').Equals($"/{slug}", StringComparison.OrdinalIgnoreCase) ?? false;
+
             if (perfil == "AdminGeral")
             {
                 tenantContext.DefinirAdminGeral(torneio.Id, torneio.Slug);
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(perfil))
+                if (!isPublicPage && !string.IsNullOrWhiteSpace(perfil))
                 {
                     var torneioIdClaim = context.User.FindFirst("torneio_id")?.Value;
                     if (!string.IsNullOrWhiteSpace(torneioIdClaim) &&
