@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -313,13 +314,22 @@ extension on CapturaProvider {
             .where((url) => url.trim().isNotEmpty && url.startsWith('http'))
             .toSet();
 
-    for (final url in imagens) {
-      try {
-        await DefaultCacheManager().downloadFile(url);
-      } catch (_) {
-        // Cache de imagem e oportunistico.
-      }
-    }
+    if (imagens.isEmpty) return;
+
+    // Dispara em background e retorna imediatamente para não bloquear o login.
+    // runZonedGuarded captura erros de Futures fire-and-forget do DefaultCacheManager
+    // (inicialização do path_provider via objective_c FFI) que escapam catch normal.
+    runZonedGuarded(
+      () async {
+        final cacheManager = DefaultCacheManager();
+        for (final url in imagens) {
+          try {
+            await cacheManager.downloadFile(url);
+          } catch (_) {}
+        }
+      },
+      (_, __) {},
+    );
   }
 }
 
