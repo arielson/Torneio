@@ -13,6 +13,7 @@ class ApiException implements Exception {
 
 class ApiService {
   final http.Client _client;
+  static const _timeout = Duration(seconds: 30);
 
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
@@ -23,18 +24,16 @@ class ApiService {
       };
 
   Future<dynamic> get(String url, {String? token}) async {
-    final response = await _client.get(
-      Uri.parse(url),
-      headers: _headers(token: token),
-    );
+    final response = await _client
+        .get(Uri.parse(url), headers: _headers(token: token))
+        .timeout(_timeout);
     return _handle(response);
   }
 
   Future<Uint8List> getBytes(String url, {String? token}) async {
-    final response = await _client.get(
-      Uri.parse(url),
-      headers: _headers(token: token),
-    );
+    final response = await _client
+        .get(Uri.parse(url), headers: _headers(token: token))
+        .timeout(_timeout);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response.bodyBytes;
     }
@@ -43,28 +42,23 @@ class ApiService {
   }
 
   Future<dynamic> post(String url, dynamic body, {String? token}) async {
-    final response = await _client.post(
-      Uri.parse(url),
-      headers: _headers(token: token),
-      body: json.encode(body),
-    );
+    final response = await _client
+        .post(Uri.parse(url), headers: _headers(token: token), body: json.encode(body))
+        .timeout(_timeout);
     return _handle(response);
   }
 
   Future<dynamic> put(String url, dynamic body, {String? token}) async {
-    final response = await _client.put(
-      Uri.parse(url),
-      headers: _headers(token: token),
-      body: json.encode(body),
-    );
+    final response = await _client
+        .put(Uri.parse(url), headers: _headers(token: token), body: json.encode(body))
+        .timeout(_timeout);
     return _handle(response);
   }
 
   Future<dynamic> delete(String url, {String? token}) async {
-    final response = await _client.delete(
-      Uri.parse(url),
-      headers: _headers(token: token),
-    );
+    final response = await _client
+        .delete(Uri.parse(url), headers: _headers(token: token))
+        .timeout(_timeout);
     return _handle(response);
   }
 
@@ -88,7 +82,7 @@ class ApiService {
       }
     }
 
-    final streamed = await request.send();
+    final streamed = await request.send().timeout(_timeout);
     final response = await http.Response.fromStream(streamed);
     return _handle(response);
   }
@@ -113,7 +107,7 @@ class ApiService {
       }
     }
 
-    final streamed = await request.send();
+    final streamed = await request.send().timeout(_timeout);
     final response = await http.Response.fromStream(streamed);
     return _handle(response);
   }
