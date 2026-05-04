@@ -121,7 +121,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: prov.carregando
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
+          : prov.erro != null && torneios.isEmpty
+              ? _ErroConexao(mensagem: prov.erro!, onRetry: () => prov.carregarHome().then((_) => _iniciarCarrossel()))
+              : RefreshIndicator(
               onRefresh: () => prov.carregarHome().then((_) => _iniciarCarrossel()),
               child: CustomScrollView(
                 slivers: [
@@ -208,6 +210,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SliverToBoxAdapter(
                       child: Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
                     )
+                  else if (prov.erroBusca != null)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
+                            const SizedBox(height: 12),
+                            Text(prov.erroBusca!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    )
                   else if (torneios.isEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
@@ -237,6 +252,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+    );
+  }
+}
+
+class _ErroConexao extends StatelessWidget {
+  final String mensagem;
+  final VoidCallback onRetry;
+  const _ErroConexao({required this.mensagem, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(mensagem, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

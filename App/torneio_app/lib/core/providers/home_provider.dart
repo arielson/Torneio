@@ -13,6 +13,7 @@ class HomeProvider extends ChangeNotifier {
   bool carregando = false;
   bool buscando = false;
   String? erro;
+  String? erroBusca;
   bool _buscaAtiva = false;
 
   bool get buscaAtiva => _buscaAtiva;
@@ -33,8 +34,8 @@ class HomeProvider extends ChangeNotifier {
       banners = (resBanners as List)
           .map((j) => BannerApp.fromJson(j as Map<String, dynamic>))
           .toList();
-    } catch (e) {
-      erro = e.toString();
+    } catch (_) {
+      erro = 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
     } finally {
       carregando = false;
       notifyListeners();
@@ -45,11 +46,13 @@ class HomeProvider extends ChangeNotifier {
     if (q.trim().isEmpty) {
       _buscaAtiva = false;
       resultadosBusca = [];
+      erroBusca = null;
       notifyListeners();
       return;
     }
     _buscaAtiva = true;
     buscando = true;
+    erroBusca = null;
     notifyListeners();
     try {
       final res = await _api.get(ApiConstants.torneiosBuscar(q));
@@ -58,6 +61,7 @@ class HomeProvider extends ChangeNotifier {
           .toList();
     } catch (_) {
       resultadosBusca = [];
+      erroBusca = 'Não foi possível realizar a busca. Verifique sua conexão.';
     } finally {
       buscando = false;
       notifyListeners();
