@@ -1,0 +1,62 @@
+@model IEnumerable<Torneio.Application.DTOs.Notificacao.MensagemTorneioDto>
+@{
+    ViewData["Title"] = "Mensagens do Torneio";
+    var slug = Context.GetRouteData().Values["slug"]?.ToString();
+}
+
+<div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-0">Mensagens</h1>
+        <p class="text-muted mb-0">Mural público e notificações push para seguidores</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="/@slug/mensagens/nova" class="btn btn-primary btn-sm">
+            <i class="bi bi-send me-1"></i>Nova mensagem
+        </a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>Nenhuma mensagem enviada ainda.
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Mensagem</th>
+                        <th>Enviado por</th>
+                        <th>Data</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var msg in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@msg.Titulo</td>
+                            <td class="text-muted" style="max-width:320px;white-space:pre-wrap;">@msg.Corpo</td>
+                            <td>@msg.CriadoPor</td>
+                            <td>@msg.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-end">
+                                <form method="post" action="/@slug/mensagens/@msg.Id/remover"
+                                      onsubmit="return confirm('Remover esta mensagem do mural?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
