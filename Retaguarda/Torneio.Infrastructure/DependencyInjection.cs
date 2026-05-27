@@ -10,6 +10,7 @@ using Torneio.Infrastructure.Data;
 using Torneio.Infrastructure.Repositories;
 using Torneio.Infrastructure.Services;
 using Torneio.Infrastructure.Services.Options;
+using FcmConfig = Torneio.Infrastructure.Services.Options.FcmOptions;
 
 namespace Torneio.Infrastructure;
 
@@ -73,6 +74,12 @@ public static class DependencyInjection
         services.AddScoped<IPremioRepositorio, PremioRepositorio>();
         services.AddScoped<IBannerRepositorio, BannerRepositorio>();
         services.AddScoped<ILogAuditoriaRepositorio, LogAuditoriaRepositorio>();
+        services.AddScoped<ISeguidorTorneioRepositorio, SeguidorTorneioRepositorio>();
+        services.AddScoped<IMensagemTorneioRepositorio, MensagemTorneioRepositorio>();
+
+        // Notificações FCM
+        services.Configure<FcmConfig>(configuration.GetSection(FcmConfig.Section));
+        services.AddSingleton<INotificacaoServico, FcmNotificacaoServico>();
 
         // Opções de armazenamento de arquivos
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.Section));

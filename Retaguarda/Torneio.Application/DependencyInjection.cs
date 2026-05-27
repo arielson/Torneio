@@ -36,6 +36,8 @@ public static class DependencyInjection
         services.AddScoped<IAutenticacaoServico, AutenticacaoServico>();
         services.AddScoped<IBannerServico, BannerServico>();
         services.AddScoped<ILogAuditoriaServico, LogAuditoriaServico>();
+        services.AddScoped<ISeguidorServico, SeguidorServico>();
+        services.AddScoped<IMensagemTorneioServico, MensagemTorneioServico>();
 
         return services;
     }

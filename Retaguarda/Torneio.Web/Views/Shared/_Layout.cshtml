@@ -205,6 +205,11 @@ else if (usarLayoutAdmin)
                                 <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link @(IsActive($"/{effectiveSlug}/mensagens") ? "active" : "")" href="/@effectiveSlug/mensagens">
+                                <i class="bi bi-megaphone"></i> Mensagens
+                            </a>
+                        </li>
                         @if (exibirSorteio)
                         {
                             <li>

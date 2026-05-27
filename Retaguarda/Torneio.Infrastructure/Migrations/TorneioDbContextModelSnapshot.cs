@@ -782,6 +782,44 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("membros", (string)null);
                 });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.MensagemTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Corpo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("corpo");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<string>("CriadoPor")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("criado_por");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("titulo");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mensagem_torneio");
+
+                    b.ToTable("mensagem_torneio", (string)null);
+                });
+
             modelBuilder.Entity("Torneio.Domain.Entities.ParcelaTorneio", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1163,6 +1201,43 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDatabaseName("ix_registros_publicos_membros_torneio_id_celular_normalizado_c");
 
                     b.ToTable("registros_publicos_membros", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.SeguidorTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<string>("DeviceToken")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("device_token");
+
+                    b.Property<string>("Plataforma")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("plataforma");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_seguidor_torneio");
+
+                    b.HasIndex("TorneioId", "DeviceToken")
+                        .IsUnique()
+                        .HasDatabaseName("ix_seguidor_torneio_torneio_id_device_token");
+
+                    b.ToTable("seguidor_torneio", (string)null);
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.SorteioEquipe", b =>

@@ -41,6 +41,8 @@ public class TorneioDbContext : DbContext
     public DbSet<SorteioGrupo> SorteiosGrupo { get; set; }
     public DbSet<Premio> Premios { get; set; }
     public DbSet<LogAuditoria> Logs { get; set; }
+    public DbSet<SeguidorTorneio> SeguidoresTorneio { get; set; }
+    public DbSet<MensagemTorneio> MensagensTorneio { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -120,5 +122,10 @@ public class TorneioDbContext : DbContext
 
         modelBuilder.Entity<Premio>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<MensagemTorneio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        // SeguidorTorneio não usa query filter pois os repositórios sempre filtram por TorneioId explicitamente
     }
 }

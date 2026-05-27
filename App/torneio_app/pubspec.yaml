@@ -40,6 +40,11 @@ dependencies:
   image_picker: ^1.1.2
   file_picker: ^10.1.9
 
+  # Notificações push
+  firebase_core: ^3.13.0
+  firebase_messaging: ^15.2.5
+  flutter_local_notifications: ^18.0.1
+
   # Utilitários
   intl: ^0.19.0
   uuid: ^4.5.1

@@ -51,6 +51,8 @@ class ApiConstants {
   static String financeiroCustos(String slug) => '$_base/api/$slug/financeiro/custos';
   static String financeiroChecklist(String slug) => '$_base/api/$slug/financeiro/checklist';
   static String rankingPublico(String slug) => '$_base/api/$slug/ranking';
+  static String seguidor(String slug) => '$_base/api/$slug/seguidor';
+  static String mensagensTorneio(String slug) => '$_base/api/$slug/mensagens';
   static String relatoriosGanhadores(
     String slug, {
     int? quantidadeEquipes,

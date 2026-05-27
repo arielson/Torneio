@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
 using Torneio.Web.Models;
+using Torneio.Application.DTOs.Notificacao;
 
 namespace Torneio.Web.Controllers;
 
@@ -14,6 +15,7 @@ public class PublicoController : TorneioBaseController
     private readonly ICapturaServico _capturaServico;
     private readonly IEquipeServico _equipeServico;
     private readonly IMembroServico _membroServico;
+    private readonly IMensagemTorneioServico _mensagemServico;
 
     public PublicoController(
         TenantContext tenantContext,
@@ -22,7 +24,8 @@ public class PublicoController : TorneioBaseController
         IPremioServico premioServico,
         ICapturaServico capturaServico,
         IEquipeServico equipeServico,
-        IMembroServico membroServico)
+        IMembroServico membroServico,
+        IMensagemTorneioServico mensagemServico)
         : base(tenantContext)
     {
         _torneioServico = torneioServico;
@@ -31,6 +34,7 @@ public class PublicoController : TorneioBaseController
         _capturaServico = capturaServico;
         _equipeServico = equipeServico;
         _membroServico = membroServico;
+        _mensagemServico = mensagemServico;
     }
 
     [HttpGet("")]
@@ -40,6 +44,7 @@ public class PublicoController : TorneioBaseController
         if (torneio is null) return NotFound();
 
         ViewBag.Patrocinadores = await _patrocinadorServico.ListarPorTorneio(torneio.Id);
+        ViewBag.Mensagens = (await _mensagemServico.ListarAsync()).Take(10).ToList();
         if (torneio.ExibirParticipantesPublicos)
         {
             ViewBag.Participantes = (await _membroServico.ListarTodos())

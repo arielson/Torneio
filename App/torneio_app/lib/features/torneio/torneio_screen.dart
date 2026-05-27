@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
 import '../../core/flavor_config.dart';
+import '../../core/models/mensagem_torneio.dart';
 import '../../core/models/membro.dart';
 import '../../core/models/patrocinador.dart';
 import '../../core/models/premio.dart';
 import '../../core/providers/config_provider.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/notificacao_service.dart';
 import '../../widgets/patrocinadores_section.dart';
 
 class TorneioScreen extends StatefulWidget {
@@ -24,6 +27,9 @@ class _TorneioScreenState extends State<TorneioScreen> {
   List<Patrocinador> _patrocinadores = const [];
   List<Membro> _participantes = const [];
   List<Premio> _premios = const [];
+  List<MensagemTorneio> _mensagens = const [];
+  bool _seguindo = false;
+  bool _seguindoCarregando = false;
 
   // Ranking state
   bool _rankingCarregando = false;
@@ -49,6 +55,8 @@ class _TorneioScreenState extends State<TorneioScreen> {
           if (cfg != null && (cfg.status == 'Liberado' || cfg.status == 'Finalizado')) {
             _carregarRanking(_slug!);
           }
+          _carregarMensagens(_slug!);
+          _verificarSeguindo(_slug!);
         });
       }
       _inicializado = true;
@@ -118,6 +126,40 @@ class _TorneioScreenState extends State<TorneioScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _rankingCarregando = false);
+    }
+  }
+
+  Future<void> _carregarMensagens(String slug) async {
+    try {
+      final data = await _api.get(ApiConstants.mensagensTorneio(slug));
+      final lista = data is List
+          ? data.map((e) => MensagemTorneio.fromJson(e as Map<String, dynamic>)).toList()
+          : <MensagemTorneio>[];
+      if (!mounted) return;
+      setState(() => _mensagens = lista);
+    } catch (_) {}
+  }
+
+  Future<void> _verificarSeguindo(String slug) async {
+    final seguindo = await NotificacaoService.estaSeguindo(slug);
+    if (!mounted) return;
+    setState(() => _seguindo = seguindo);
+  }
+
+  Future<void> _toggleSeguir() async {
+    if (_slug == null || _seguindoCarregando) return;
+    setState(() => _seguindoCarregando = true);
+    try {
+      if (_seguindo) {
+        await NotificacaoService.deixarDeSeguirTorneio(_slug!);
+      } else {
+        await NotificacaoService.seguirTorneio(_slug!);
+      }
+      if (!mounted) return;
+      setState(() => _seguindo = !_seguindo);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _seguindoCarregando = false);
     }
   }
 
@@ -288,6 +330,17 @@ class _TorneioScreenState extends State<TorneioScreen> {
                       label: const Text('Fiscal/Administração'),
                       onPressed: () => Navigator.pushNamed(context, '/login'),
                     ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      icon: _seguindoCarregando
+                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Icon(_seguindo ? Icons.notifications_active : Icons.notifications_none_outlined),
+                      label: Text(_seguindo ? 'Seguindo' : 'Seguir torneio'),
+                      style: _seguindo
+                          ? OutlinedButton.styleFrom(foregroundColor: Colors.green.shade700)
+                          : null,
+                      onPressed: _toggleSeguir,
+                    ),
 
                     // ── Ranking ──────────────────────────────────────────────
                     if (exibirRanking) ...[
@@ -316,6 +369,10 @@ class _TorneioScreenState extends State<TorneioScreen> {
                         labelMembroPlural: config.labelMembroPlural,
                         posicoesRanking: posicoesParticipantes,
                       ),
+                    ],
+                    if (_mensagens.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      _MuralSection(mensagens: _mensagens),
                     ],
                     if (_patrocinadores.isNotEmpty) ...[
                       const SizedBox(height: 24),
@@ -873,6 +930,53 @@ class _ParticipantesSection extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MuralSection extends StatelessWidget {
+  final List<MensagemTorneio> mensagens;
+  const _MuralSection({required this.mensagens});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionTitle(
+          icon: Icons.campaign_outlined,
+          color: Colors.blue.shade700,
+          title: 'Avisos do Torneio',
+        ),
+        const SizedBox(height: 8),
+        ...mensagens.map((msg) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            msg.titulo,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                        ),
+                        Text(
+                          DateFormat('dd/MM HH:mm').format(msg.criadoEm),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(msg.corpo, style: TextStyle(color: Colors.grey.shade700)),
+                  ],
+                ),
+              ),
+            )),
+      ],
     );
   }
 }
