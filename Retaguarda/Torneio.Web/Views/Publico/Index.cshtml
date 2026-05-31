@@ -30,7 +30,14 @@
     var labelMembroPlural  = (string)(ViewBag.LabelMembroPlural ?? "Pescadores");
     var labelItem          = (string)(ViewBag.LabelItem  ?? "Item");
     var labelCaptura       = (string)(ViewBag.LabelCaptura ?? "Captura");
-    var posicoesParticipantes = rankingMembros
+
+    // No modo "Nenhum" (sem sorteio), o ranking mostra apenas os QtdGanhadores primeiros colocados
+    var modoNenhum = Model.ModoSorteio == "Nenhum";
+    var rankingMembrosFiltrado = modoNenhum && Model.QtdGanhadores > 0
+        ? rankingMembros.Take(Model.QtdGanhadores).ToList()
+        : rankingMembros;
+
+    var posicoesParticipantes = rankingMembrosFiltrado
         .Where(r => r.MembroId != Guid.Empty)
         .GroupBy(r => r.MembroId)
         .ToDictionary(g => g.Key, g => g.First().Posicao);
@@ -213,16 +220,26 @@
         <div class="@(exibirRankingEquipe ? "col-lg-7" : "col-12")">
             <div class="content-card h-100">
                 <div class="card-header-bar">
-                    <h5><i class="bi bi-person-lines-fill me-2 text-primary"></i>Ranking por @labelMembroPlural</h5>
+                    <h5>
+                        <i class="bi bi-person-lines-fill me-2 text-primary"></i>
+                        @if (modoNenhum && Model.QtdGanhadores > 0)
+                        {
+                            <span>Top @Model.QtdGanhadores @labelMembroPlural</span>
+                        }
+                        else
+                        {
+                            <span>Ranking por @labelMembroPlural</span>
+                        }
+                    </h5>
                 </div>
-                @if (!rankingMembros.Any())
+                @if (!rankingMembrosFiltrado.Any())
                 {
                     <div class="card-body-pad text-muted">Nenhuma captura registrada ainda.</div>
                 }
                 else
                 {
                     <div class="accordion accordion-flush" id="accordionMembros">
-                        @foreach (var r in rankingMembros)
+                        @foreach (var r in rankingMembrosFiltrado)
                         {
                             var medalha   = r.Posicao switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => $"{r.Posicao}º" };
                             var accordId  = $"membro-{r.Posicao}";
