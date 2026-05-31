@@ -1,0 +1,103 @@
+@using Torneio.Application.DTOs.Asaas
+@using Torneio.Application.DTOs.Financeiro
+@model IEnumerable<ParcelaTorneioDto>
+@{
+    ViewData["Title"] = "Cobranças";
+    Layout = "~/Views/Shared/_LayoutPescador.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var lista = Model.OrderBy(p => p.Pago).ThenBy(p => p.Vencimento).ToList();
+    var asaas = ViewBag.CobrancasAsaas as Dictionary<Guid, CobrancaAsaasDto> ?? new();
+    var taxas = ViewBag.Taxas as Dictionary<Guid, decimal> ?? new();
+    var asaasAtivo = ViewBag.AsaasAtivo as bool? == true;
+}
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <a href="/@slug/pescador" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h5 class="mb-0">Cobranças</h5>
+</div>
+
+@if (!lista.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-1"></i>Nenhuma cobrança encontrada.
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column gap-3">
+        @foreach (var p in lista)
+        {
+            asaas.TryGetValue(p.Id, out var c);
+            taxas.TryGetValue(p.Id, out var taxa);
+            var temTaxa = asaasAtivo && taxa > 0;
+            var totalPagar = temTaxa ? p.Valor + taxa : p.Valor;
+            var taxaReal = c?.TaxaAsaas.HasValue == true; // taxa confirmada vs estimada
+
+            var statusBadge = p.Pago ? "bg-success" : p.Bonificada ? "bg-info text-dark" : p.Inadimplente ? "bg-danger" : "bg-warning text-dark";
+            var statusLabel = p.Pago ? "Pago" : p.Bonificada ? "Bonificada" : p.Inadimplente ? "Vencida" : "Em aberto";
+            var href = $"/{slug}/pescador/cobrancas/{p.Id}";
+
+            <a href="@href" class="text-decoration-none text-dark">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-semibold">@p.Descricao</div>
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-calendar3 me-1"></i>Vencimento: @p.Vencimento.ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                            <span class="badge @statusBadge ms-2">@statusLabel</span>
+                        </div>
+
+                        @* Detalhamento de valores *@
+                        <div class="border-top pt-2 mt-1">
+                            @if (temTaxa)
+                            {
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Valor da cobrança</span>
+                                    <span>R$ @p.Valor.ToString("N2")</span>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>
+                                        Taxa da plataforma de pagamento
+                                        @if (!taxaReal)
+                                        {
+                                            <span class="text-muted fst-italic">(estimada)</span>
+                                        }
+                                    </span>
+                                    <span>R$ @taxa.ToString("N2")</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold mt-1">
+                                    <span>Total a pagar</span>
+                                    <span class="text-primary">R$ @totalPagar.ToString("N2")</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Valor</span>
+                                    <span>R$ @p.Valor.ToString("N2")</span>
+                                </div>
+                            }
+                        </div>
+
+                        @* Ação *@
+                        <div class="text-end mt-2 small">
+                            @if (p.Pago)
+                            {
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>Ver comprovante</span>
+                            }
+                            else if (!p.Bonificada)
+                            {
+                                <span class="text-primary fw-semibold"><i class="bi bi-credit-card me-1"></i>Toque para pagar</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+}

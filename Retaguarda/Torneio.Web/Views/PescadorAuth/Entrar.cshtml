@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Entrar";
+    Layout = "~/Views/Shared/_LayoutPublico.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var estado = ViewBag.Estado as string ?? "Celular";
+    var celular = ViewBag.Celular as string ?? "";
+    var returnUrl = ViewBag.ReturnUrl as string ?? "";
+    var erroHtml = TempData["ErroHtml"] as bool? == true;
+    var erro = ViewBag.Erro as string ?? TempData["Erro"] as string;
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-sm-10 col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                @if (erro != null)
+                {
+                    <div class="alert alert-danger py-2 small">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        @if (erroHtml) { @Html.Raw(erro) } else { @erro }
+                    </div>
+                }
+
+                @if (estado == "NaoNesteTorneio")
+                {
+                    var outrosTorneios = ViewBag.OutrosTorneios as List<Torneio.Application.DTOs.Torneio.TorneioDto> ?? new();
+                    <h5 class="card-title mb-1">Você não está cadastrado neste torneio</h5>
+                    <p class="text-muted small mb-3">
+                        Seu número não está registrado neste torneio.
+                        @if (outrosTorneios.Count > 0)
+                        {
+                            <span>No entanto, você está cadastrado no(s) torneio(s) abaixo:</span>
+                        }
+                    </p>
+                    @if (outrosTorneios.Count > 0)
+                    {
+                        <div class="list-group mb-3">
+                            @foreach (var t in outrosTorneios)
+                            {
+                                <a href="/@t.Slug/pescador/entrar" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-trophy me-2 text-primary"></i>@t.NomeTorneio
+                                </a>
+                            }
+                        </div>
+                    }
+                    <a href="/@slug/pescador/entrar" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Usar outro número
+                    </a>
+                }
+                else if (estado == "Celular")
+                {
+                    <h5 class="card-title mb-1">Área do Pescador</h5>
+                    <p class="text-muted small mb-4">Digite seu número de celular para continuar.</p>
+
+                    <form method="post" asp-action="Identificar" asp-route-slug="@slug">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Celular</label>
+                            <input type="tel" id="inputCelular" name="celular" class="form-control"
+                                   placeholder="(71) 99999-9999" inputmode="tel"
+                                   autocomplete="tel" autofocus maxlength="16" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-1"></i>Continuar
+                        </button>
+                    </form>
+                }
+                else if (estado == "PrimeiroAcesso")
+                {
+                    <h5 class="card-title mb-1">Primeiro acesso</h5>
+                    <p class="text-muted small mb-4">
+                        Para criar sua senha, enviaremos um código para <strong>@celular</strong>.
+                    </p>
+                    <form method="post" asp-action="EnviarCodigo" asp-route-slug="@slug">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-phone me-1"></i>Receber código por SMS
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="/@slug/pescador/entrar" class="small text-muted">
+                            <i class="bi bi-arrow-left me-1"></i>Usar outro número
+                        </a>
+                    </div>
+                }
+                else if (estado == "Login")
+                {
+                    <h5 class="card-title mb-1">Área do Pescador</h5>
+                    <p class="text-muted small mb-4">
+                        Número: <strong>@celular</strong>
+                    </p>
+                    <form method="post" asp-action="Login" asp-route-slug="@slug">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Senha</label>
+                            <input type="password" name="senha" class="form-control"
+                                   autocomplete="current-password" autofocus />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                        </button>
+                    </form>
+                    <hr class="my-2" />
+                    <p class="text-center small mb-0">
+                        Esqueceu a senha?
+                        <form method="post" asp-action="EnviarCodigo" asp-route-slug="@slug" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button type="submit" class="btn btn-link btn-sm p-0">Receber código por SMS</button>
+                        </form>
+                    </p>
+                    <p class="text-center small mt-1 mb-0">
+                        <a href="/@slug/pescador/entrar" class="text-muted">
+                            <i class="bi bi-arrow-left me-1"></i>Usar outro número
+                        </a>
+                    </p>
+                }
+
+                @if (estado == "Celular")
+                {
+                    <hr class="mt-4 mb-3" />
+                    <p class="text-center small text-muted mb-0">
+                        Número não cadastrado?
+                        <a href="@ViewBag.LinkWhatsApp" target="_blank" rel="noopener noreferrer"
+                           class="text-success fw-semibold">
+                            <i class="bi bi-whatsapp me-1"></i>Fale no WhatsApp
+                        </a>
+                    </p>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var input = document.getElementById('inputCelular');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        var digits = this.value.replace(/\D/g, '').substring(0, 11);
+        var formatted = '';
+        if (digits.length === 0) {
+            formatted = '';
+        } else if (digits.length <= 2) {
+            formatted = '(' + digits;
+        } else if (digits.length <= 7) {
+            formatted = '(' + digits.substring(0, 2) + ') ' + digits.substring(2);
+        } else if (digits.length <= 10) {
+            formatted = '(' + digits.substring(0, 2) + ') ' + digits.substring(2, 6) + '-' + digits.substring(6);
+        } else {
+            formatted = '(' + digits.substring(0, 2) + ') ' + digits.substring(2, 7) + '-' + digits.substring(7);
+        }
+        this.value = formatted;
+    });
+})();
+</script>
+}

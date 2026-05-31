@@ -21,6 +21,25 @@ builder.Services.AddAuthentication("TorneioCookie")
         options.Cookie.Name = "TorneioAuth";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
+    })
+    .AddCookie("PescadorAuth", options =>
+    {
+        options.Cookie.Name = "PescadorAuth";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.Events.OnRedirectToLogin = ctx =>
+        {
+            var slug = ctx.Request.RouteValues["slug"]?.ToString() ?? "";
+            var returnUrl = Uri.EscapeDataString(ctx.Request.Path + ctx.Request.QueryString);
+            ctx.Response.Redirect($"/{slug}/pescador/entrar?returnUrl={returnUrl}");
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = ctx =>
+        {
+            var slug = ctx.Request.RouteValues["slug"]?.ToString() ?? "";
+            ctx.Response.Redirect($"/{slug}/pescador/entrar");
+            return Task.CompletedTask;
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -31,6 +50,19 @@ builder.Services.AddAuthorization(options =>
         p.RequireAuthenticatedUser().RequireClaim("perfil", "AdminGeral", "AdminTorneio"));
     options.AddPolicy("MembroTorneio", p =>
         p.RequireAuthenticatedUser().RequireClaim("perfil", "Membro"));
+    options.AddPolicy("Pescador", p =>
+        p.AddAuthenticationSchemes("PescadorAuth")
+         .RequireAuthenticatedUser()
+         .RequireClaim("perfil", "Pescador"));
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "TorneioSession";
 });
 
 builder.Services.AddControllersWithViews(options =>
@@ -82,6 +114,7 @@ if (!string.IsNullOrEmpty(storagePath))
     });
 }
 
+app.UseSession();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
 app.UseMiddleware<TrocarSenhaMiddleware>();

@@ -1,11 +1,14 @@
 @model Torneio.Application.DTOs.Financeiro.ParcelaTorneioDto
 @using Torneio.Application.DTOs.Financeiro
+@using Torneio.Application.DTOs.Asaas
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = $"Cobranca {Model.NumeroParcela} - {Model.NomeMembro}";
     var torneio = (TorneioDto)ViewBag.Torneio;
     var labelMembro = torneio?.LabelMembro ?? "Membro";
     var doacoes = ((IEnumerable<DoacaoPatrocinadorDto>?)ViewBag.Doacoes ?? Enumerable.Empty<DoacaoPatrocinadorDto>()).OrderBy(x => x.NomePatrocinador).ToList();
+    var cobrancaAsaas = ViewBag.CobrancaAsaas as CobrancaAsaasDto;
+    var configAsaas = ViewBag.ConfigAsaas as ConfiguracaoAsaasDto;
 }
 
 <div class="page-header">
@@ -149,6 +152,143 @@
             </div>
         </div>
 
+        <div class="content-card mb-3">
+            <div class="card-header-bar">
+                <h5><i class="bi bi-credit-card-2-front me-2"></i>Cobrança Asaas</h5>
+            </div>
+            <div class="card-body-pad">
+                @if (cobrancaAsaas is not null)
+                {
+                    <dl class="row mb-3">
+                        <dt class="col-5">Status</dt>
+                        <dd class="col-7">
+                            @{
+                                var badgeCls = cobrancaAsaas.Status switch {
+                                    "Confirmado" or "Recebido" => "bg-success",
+                                    "Excluido" or "Estornado" or "RecusadoCartao" => "bg-danger",
+                                    "Vencido" => "bg-warning text-dark",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badgeCls">@cobrancaAsaas.Status</span>
+                        </dd>
+                        <dt class="col-5">Forma</dt>
+                        <dd class="col-7">@(cobrancaAsaas.FormaPagamento ?? "—")</dd>
+                        <dt class="col-5">Valor</dt>
+                        <dd class="col-7">R$ @cobrancaAsaas.ValorOriginal.ToString("N2")</dd>
+                        @if (cobrancaAsaas.TaxaAsaas.HasValue)
+                        {
+                            <dt class="col-5">Taxa Asaas</dt>
+                            <dd class="col-7">R$ @cobrancaAsaas.TaxaAsaas.Value.ToString("N2")</dd>
+                            <dt class="col-5">Valor líquido</dt>
+                            <dd class="col-7">R$ @((cobrancaAsaas.ValorOriginal - cobrancaAsaas.TaxaAsaas.Value).ToString("N2"))</dd>
+                        }
+                        @if (cobrancaAsaas.DataPrevisaoCredito.HasValue)
+                        {
+                            <dt class="col-5">Previsão crédito</dt>
+                            <dd class="col-7">@cobrancaAsaas.DataPrevisaoCredito.Value.ToString("dd/MM/yyyy")</dd>
+                        }
+                        @if (cobrancaAsaas.DataCreditoEfetivo.HasValue)
+                        {
+                            <dt class="col-5">Crédito efetivo</dt>
+                            <dd class="col-7">@cobrancaAsaas.DataCreditoEfetivo.Value.ToString("dd/MM/yyyy")</dd>
+                        }
+                        <dt class="col-5">Payment ID</dt>
+                        <dd class="col-7 text-muted small font-monospace">@cobrancaAsaas.AsaasPaymentId</dd>
+                    </dl>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if (!string.IsNullOrEmpty(cobrancaAsaas.AsaasInvoiceUrl))
+                        {
+                            <a href="@cobrancaAsaas.AsaasInvoiceUrl" target="_blank" rel="noopener"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Link da fatura
+                            </a>
+                        }
+                        @if (cobrancaAsaas.FormaPagamento == "Pix" &&
+                             cobrancaAsaas.Status is "Pendente" or "Vencido")
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="carregarQrCode('@Model.Id', '@slug')">
+                                <i class="bi bi-qr-code me-1"></i>Ver QR Code PIX
+                            </button>
+                        }
+                        @if (cobrancaAsaas.Status is "Pendente" or "Vencido")
+                        {
+                            <form asp-controller="CobrancaAsaas"
+                                  asp-action="Cancelar"
+                                  asp-route-slug="@slug"
+                                  asp-route-parcelaId="@Model.Id"
+                                  method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Cancelar esta cobrança no Asaas?')">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar cobrança
+                                </button>
+                            </form>
+                        }
+                    </div>
+
+                    <!-- Modal QR Code PIX -->
+                    <div class="modal fade" id="modalQrCode" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="bi bi-qr-code me-2"></i>QR Code PIX</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center" id="qrCodeContent">
+                                    <div class="spinner-border text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (configAsaas?.StatusChave == "Ativa")
+                {
+                    <p class="text-muted small mb-3">Nenhuma cobrança Asaas gerada para esta parcela.</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if (configAsaas.AceitarPix)
+                        {
+                            <form asp-controller="CobrancaAsaas"
+                                  asp-action="Gerar"
+                                  asp-route-slug="@slug"
+                                  asp-route-parcelaId="@Model.Id"
+                                  method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="formaPagamento" value="0" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-qr-code me-1"></i>Gerar cobrança PIX
+                                </button>
+                            </form>
+                        }
+                        @if (configAsaas.AceitarCartaoCredito)
+                        {
+                            <form asp-controller="CobrancaAsaas"
+                                  asp-action="Gerar"
+                                  asp-route-slug="@slug"
+                                  asp-route-parcelaId="@Model.Id"
+                                  method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="formaPagamento" value="1" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-credit-card me-1"></i>Gerar cobrança Cartão
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Integração Asaas não configurada para este torneio.
+                        Configure em <a href="/admin/asaas">Integrações Asaas</a>.
+                    </p>
+                }
+            </div>
+        </div>
+
         <div class="content-card">
             <div class="card-header-bar">
                 <h5><i class="bi bi-gift me-2"></i>Bonificação por doação</h5>
@@ -198,3 +338,39 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+async function carregarQrCode(parcelaId, slug) {
+    const modal = new bootstrap.Modal(document.getElementById('modalQrCode'));
+    const content = document.getElementById('qrCodeContent');
+    content.innerHTML = '<div class="spinner-border text-secondary" role="status"></div>';
+    modal.show();
+
+    try {
+        const resp = await fetch(`/${slug}/financeiro/asaas/${parcelaId}/qrcode`);
+        const json = await resp.json();
+
+        if (json.success) {
+            const { encodedImage, payload } = json.data;
+            content.innerHTML = `
+                <img src="data:image/png;base64,${encodedImage}" alt="QR Code PIX"
+                     style="max-width:260px;" class="mb-3 d-block mx-auto" />
+                <p class="small text-muted mb-1">Copia e cola:</p>
+                <div class="input-group input-group-sm mb-2">
+                    <input type="text" class="form-control font-monospace small" id="pixPayload"
+                           value="${payload}" readonly />
+                    <button class="btn btn-outline-secondary" type="button"
+                            onclick="navigator.clipboard.writeText('${payload}').then(()=>this.textContent='Copiado!')">
+                        Copiar
+                    </button>
+                </div>`;
+        } else {
+            content.innerHTML = `<p class="text-danger">${json.error}</p>`;
+        }
+    } catch {
+        content.innerHTML = '<p class="text-danger">Erro ao carregar QR Code.</p>';
+    }
+}
+</script>
+}

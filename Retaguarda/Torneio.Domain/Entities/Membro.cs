@@ -6,6 +6,8 @@ public class Membro
     public Guid TorneioId { get; private set; }
     public string Nome { get; private set; } = null!;
     public string? FotoUrl { get; private set; }
+    public string? Email { get; private set; }
+    public string? Cpf { get; private set; }
     public string? Celular { get; private set; }
     public string? TamanhoCamisa { get; private set; }
     public string? Usuario { get; private set; }
@@ -42,6 +44,12 @@ public class Membro
 
     public void AtualizarFoto(string fotoUrl) => FotoUrl = fotoUrl;
 
+    public void AtualizarEmail(string? email) =>
+        Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
+
+    public void AtualizarCpf(string? cpf) =>
+        Cpf = string.IsNullOrWhiteSpace(cpf) ? null : cpf.Trim();
+
     public void AtualizarCelular(string? celular) =>
         Celular = string.IsNullOrWhiteSpace(celular) ? null : celular.Trim();
 
@@ -58,5 +66,11 @@ public class Membro
             SenhaHash = senhaHash.Trim();
             DeveAlterarSenha = false;
         }
+    }
+
+    public void DefinirSenha(string senhaHash)
+    {
+        SenhaHash = senhaHash;
+        DeveAlterarSenha = false;
     }
 }

@@ -13,7 +13,9 @@ D:\Source\Torneio
 │   ├── Torneio.Application
 │   ├── Torneio.Infrastructure
 │   ├── Torneio.Web
-│   └── Torneio.API
+│   ├── Torneio.API
+│   ├── Torneio.Asaas            → biblioteca de integração com a API Asaas (sem deps do projeto)
+│   └── Torneio.Asaas.Tests      → xUnit + Moq, testa calculadoras + processador de webhook
 ├── App\                 → Flutter/Dart
 └── CLAUDE.md
 ```
@@ -47,6 +49,28 @@ D:\Source\Torneio
 /api/{slug}/sorteio
 /api/{slug}/relatorios
 /api/{slug}/sync
+/api/webhook/asaas             → webhook Asaas (AllowAnonymous, valida header asaas-access-token)
+```
+
+**Web — rotas públicas (sem login):**
+```
+/{slug}/cobranca/{celular}           → tela de acesso (CPF como senha)
+/{slug}/cobranca/{celular}/cobrancas → minhas cobranças (session-based)
+/{slug}/cobranca/{celular}/qrcode/{parcelaId} → QR Code PIX via AJAX
+```
+
+**Web — rotas Asaas (AdminGeral):**
+```
+/admin/asaas                          → lista de torneios e status da integração
+/admin/asaas/{torneioId}/configurar   → configurar chave de API e formas de pagamento
+/admin/asaas/{torneioId}/registrar-webhook → registrar/atualizar webhook no Asaas
+```
+
+**Web — rotas Asaas (AdminTorneio):**
+```
+/{slug}/financeiro/asaas/{parcelaId}/gerar   → gerar cobrança PIX ou cartão
+/{slug}/financeiro/asaas/{parcelaId}/qrcode  → QR Code PIX (AJAX, AdminTorneio)
+/{slug}/financeiro/asaas/{parcelaId}/cancelar → cancelar cobrança
 ```
 
 ## Perfis de usuário
@@ -73,13 +97,29 @@ D:\Source\Torneio
 
 **Equipe:** Id, TorneioId, AnoTorneioId, Nome, FotoUrl?, Capitao, FotoCapitaoUrl?, FiscalId, QtdVagas
 
-**Membro:** Id, TorneioId, AnoTorneioId, Nome, FotoUrl?
+**Membro:** Id, TorneioId, AnoTorneioId, Nome, FotoUrl?, Cpf?, Celular?, TamanhoCamisa?, Usuario?, SenhaHash?
+- `Cpf` não é obrigatório para gerar cobrança; é obrigatório para o membro acessar suas cobranças no link público (usado como "senha")
+- `Celular` é usado como identificador na URL pública: `/{slug}/cobranca/{celular}`
 
 **Item:** Id, TorneioId, Nome, FotoUrl?, Comprimento (decimal), FatorMultiplicador (decimal, default 1.0)
 
 **Captura:** Id, TorneioId, AnoTorneioId, ItemId, MembroId, EquipeId, TamanhoMedida (decimal), FotoUrl, DataHora, PendenteSync (bool)
 
 **SorteioEquipe:** Id, TorneioId, AnoTorneioId, EquipeId, MembroId, Posicao
+
+**ConfiguracaoAsaasTorneio:** Id, TorneioId (unique), ChaveApiAsaas?, StatusChave (enum), AsaasAccountId?, AceitarPix, AceitarCartaoCredito, DataAtivacao?
+- Uma por torneio; gerenciada pelo AdminGeral em `/admin/asaas`
+- `StatusChave`: NaoConfigurada | Ativa | Inativa
+
+**CobrancaAsaas:** Id, TorneioId, MembroId, ParcelaTorneioId (unique), AsaasPaymentId (unique), AsaasCustomerId?, AsaasInvoiceUrl?, Status (enum), FormaPagamento? (enum), ValorOriginal, TaxaAsaas?, Vencimento, DataPrevisaoCredito?, DataCreditoEfetivo?, CriadoEm, AtualizadoEm
+- `Status`: Pendente | Confirmado | Recebido | Vencido | Estornado | Excluido | RecusadoCartao
+- `FormaPagamento`: Pix | CartaoCredito
+- Uma CobrancaAsaas por ParcelaTorneio; gera nova cobrança se a anterior foi cancelada/excluída
+- `AsaasCustomerId` é cacheado localmente para evitar chamadas repetidas à API
+
+**WebhookEventoAsaas:** Id, EventoId (unique), TipoEvento, AsaasPaymentId?, PayloadJson, Processado, ErroProcessamento?, RecebidoEm, ProcessadoEm?
+- Tabela **global** — sem TorneioId, sem query filter no EF Core
+- Garante idempotência: se `EventoId` já existe, ignora o evento
 
 ## Regras de negócio
 - Pontuação: soma(TamanhoMedida × FatorMultiplicador) por captura
@@ -123,9 +163,37 @@ O TorneioId é carregado no claim do JWT para a API.
   "Plataforma": {
     "NomePlataforma": "Torneio",
     "UrlBase": "https://torneio.ari.net.br"
+  },
+  "Asaas": {
+    "Ambiente": "Sandbox",
+    "BaseUrlSandbox": "https://sandbox.asaas.com",
+    "BaseUrlProducao": "https://api.asaas.com",
+    "WebhookAuthToken": "token-secreto-webhook",
+    "WebhookEmail": "admin@torneio.ari.net.br",
+    "PrazoCreditoCartaoDias": 32,
+    "Taxas": {
+      "Pix": 1.99,
+      "CartaoFixo": 0.49,
+      "CartaoPercentual": 2.99,
+      "PromocaoAtiva": false,
+      "CartaoPercentualPromocional": 1.99
+    },
+    "Webhook": {
+      "EventosAssinados": [
+        "PAYMENT_CONFIRMED",
+        "PAYMENT_RECEIVED",
+        "PAYMENT_OVERDUE",
+        "PAYMENT_REFUNDED",
+        "PAYMENT_DELETED",
+        "PAYMENT_CREDIT_CARD_CAPTURE_REFUSED"
+      ]
+    }
   }
 }
 ```
+- `Plataforma:UrlBase` é usada para construir a URL do webhook: `{UrlBase}/api/webhook/asaas`
+- `Asaas:WebhookAuthToken` é validado no header `asaas-access-token` de cada POST no webhook
+- A chave de API de cada torneio fica em `ConfiguracaoAsaasTorneio.ChaveApiAsaas` (banco), **não** no appsettings
 
 ## Relatórios PDF (gerados no backend)
 Cabeçalho: NomeTorneio + Ano
@@ -148,6 +216,77 @@ O app consome ao inicializar para adaptar terminologia e modo de sorteio.
 - **Fase 5:** Web — roteamento por slug, TorneioBaseController, CRUDs, sorteio, painel AdminGeral
 - **Fase 6:** App Flutter — estrutura, telas por perfil, offline/sync, relatórios
 - **Fase 7:** Relatórios PDF — geração no backend, download via API e Web
+
+**Integração Asaas (Etapas 3–11):**
+- **Etapa 3:** Domain + Infrastructure — entidades, enums, migrations, configuração EF Core
+- **Etapa 4:** Torneio.Asaas — calculadoras de taxa e previsão de crédito, testes unitários
+- **Etapa 5:** Configuração AdminGeral — CRUD de chave de API por torneio, views de gestão
+- **Etapa 6:** Geração de cobrança — CobrancaAsaasServico, lookup de customer, integração PIX/cartão, tela EditarParcela atualizada com QR Code AJAX
+- **Etapa 7:** Webhook handler — WebhookAsaasProcessador, AsaasWebhookController, idempotência, mapeamento de eventos para status de cobrança e parcela
+- **Etapa 8:** Página pública do membro — `/{slug}/cobranca/{celular}`, auth por CPF via session, QR Code on-demand
+- **Etapa 9:** Registro automático de webhook no Asaas — ao salvar configuração + botão manual
+- **Etapa 10:** Testes — 47 testes (xUnit + Moq): calculadoras, entidades de domínio, processador de webhook
+- **Etapa 11:** Documentação (este arquivo)
+
+## Integração Asaas
+
+### Biblioteca Torneio.Asaas
+Projeto separado, zero dependência de Domain/Application/Infrastructure. Contém:
+- `AsaasClient` — ponto de entrada; expõe `Payments`, `Customers`, `Webhooks`, `MyAccount`
+- `IAsaasClientFactory` / `AsaasClientFactory` — cria um `AsaasClient` por chamada com a chave do torneio
+- `CalculadoraTaxaAsaas` — PIX: taxa flat; Cartão: fixo + percentual (com suporte a promoção)
+- `CalculadoraPrevisaoCredito` — PIX: próximo dia útil; Cartão: T + prazoDias corridos
+- Os dois calculadores são registrados como **Singleton** em DI, instanciados com `AsaasOptions`
+
+### Fluxo de cobrança (AdminTorneio)
+1. Admin abre `/{slug}/financeiro/{parcelaId}` e clica "Gerar cobrança PIX" ou "Cartão"
+2. `CobrancaAsaasServico.GerarCobranca` valida config, resolve/cria customer no Asaas, cria payment
+3. `CobrancaAsaas` é salva no banco; para PIX, o QR Code **não** é gerado aqui
+4. QR Code é gerado on-demand quando o admin ou o membro clica no botão — via `GET .../qrcode/{parcelaId}`
+
+### Fluxo de cobrança pública (Membro)
+1. Link enviado ao membro: `/{slug}/cobranca/{celular}`
+2. Membro digita CPF → validado contra `Membro.Cpf` (normalizado, apenas dígitos)
+3. Se válido, `membroId` salvo em session key `cobranca_{slug}_{celularNormalizado}`
+4. Membro vê suas cobranças e pode gerar QR Code PIX on-demand
+
+### Fluxo de webhook
+```
+POST /api/webhook/asaas
+  → valida header asaas-access-token
+  → lê body como string
+  → WebhookAsaasProcessador.ProcessarAsync(payloadJson)
+      → TenantContext.DefinirAdminGeral()          ← bypassa query filters EF Core
+      → verifica idempotência por EventoId
+      → salva WebhookEventoAsaas (Processado=false)
+      → switch(tipoEvento):
+          PAYMENT_CONFIRMED → cobrança.Status=Confirmado + parcela.MarcarComoPago()
+          PAYMENT_RECEIVED  → cobrança.Status=Recebido + DataCreditoEfetivo
+          PAYMENT_OVERDUE   → cobrança.Status=Vencido
+          PAYMENT_REFUNDED  → cobrança.Status=Estornado + parcela.DesmarcarPagamento()
+          PAYMENT_DELETED   → cobrança.Status=Excluido
+          PAYMENT_CREDIT_CARD_CAPTURE_REFUSED → cobrança.Status=RecusadoCartao
+      → MarcarProcessado() ou MarcarErro(ex.Message)
+      → salva WebhookEventoAsaas (estado final)
+```
+
+### Lookup de customer Asaas
+Para evitar duplicatas no Asaas, a ordem de resolução do `customerId` é:
+1. Checar tabela `cobrancas_asaas` local por `AsaasCustomerId` do membro
+2. Buscar no Asaas por `externalReference = membroId`
+3. Criar novo customer (com `NotificationDisabled = true`)
+
+### Registro de webhook
+- Disparado automaticamente ao salvar configuração Asaas (falha silenciosa com aviso)
+- Também disponível via botão "Registrar / Atualizar Webhook" na tela de configuração
+- Estratégia: lista webhooks do torneio no Asaas → atualiza se encontrar pela URL → cria se não encontrar
+- URL registrada: `{Plataforma:UrlBase}/api/webhook/asaas`
+
+### Observações importantes
+- A chave de API de cada torneio fica em banco (`ConfiguracaoAsaasTorneio.ChaveApiAsaas`), nunca no appsettings
+- `IAsaasClientFactory` é Singleton; cria `AsaasClient` por chamada — **não** reutiliza instâncias entre torneios
+- `WebhookEventoAsaas` não tem `TorneioId` — é tabela global; `CobrancaAsaasRepositorio.ObterPorAsaasPaymentId` usa `IgnoreQueryFilters()`
+- CPF não é obrigatório para gerar cobrança; é obrigatório apenas para o membro acessar o link público
 
 ## Convenções de código
 - Nomes de domínio: **português** (entidades, propriedades, métodos de negócio)

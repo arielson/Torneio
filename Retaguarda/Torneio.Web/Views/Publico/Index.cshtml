@@ -99,6 +99,9 @@
         var estaEmOutroTorneio = !string.IsNullOrWhiteSpace(slugLogado)
             && !string.Equals(slugLogado, Model.Slug, StringComparison.OrdinalIgnoreCase);
     }
+    @{
+        var pescadorLogado = ViewBag.PescadorLogado as bool? == true;
+    }
     @if (estaEmOutroTorneio)
     {
         <a href="/@slugLogado/admin" class="btn btn-primary">
@@ -107,8 +110,24 @@
     }
     else if (!User.Identity!.IsAuthenticated)
     {
-        <a href="/@Model.Slug/login" class="btn btn-outline-primary">Entrar como administrador</a>
+        <a href="/@Model.Slug/login" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-shield-lock me-1"></i>Área administrativa
+        </a>
     }
+
+    @if (pescadorLogado)
+    {
+        <a href="/@Model.Slug/pescador" class="btn btn-primary ms-2">
+            <i class="bi bi-person-check me-1"></i>Minha área
+        </a>
+    }
+    else
+    {
+        <a href="/@Model.Slug/pescador/entrar" class="btn btn-primary ms-2">
+            <i class="bi bi-person me-1"></i>Área do @Model.LabelMembro.ToLower()
+        </a>
+    }
+
     @if (Model.PermitirRegistroPublicoMembro)
     {
         <a href="/@Model.Slug/membro/login" class="btn btn-outline-secondary ms-2">Entrar como @Model.LabelMembro.ToLower()</a>

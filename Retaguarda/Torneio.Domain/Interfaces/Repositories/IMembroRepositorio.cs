@@ -8,6 +8,7 @@ public interface IMembroRepositorio : IRepositorio<Membro>
     Task<IEnumerable<Membro>> ListarPorEquipe(Guid equipeId);
     Task<IEnumerable<Membro>> ListarPorEquipes(IEnumerable<Guid> equipeIds);
     Task<Membro?> ObterPorCelularNormalizado(Guid torneioId, string celularNormalizado);
+    Task<IEnumerable<Membro>> ListarTodosPorCelular(string celularNormalizado);
     Task<Membro?> ObterPorUsuario(Guid torneioId, string usuario);
     Task<(int total, List<string> fotosParaRemover)> RemoverTodos(Guid torneioId);
 }

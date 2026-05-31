@@ -1,0 +1,57 @@
+@using Torneio.Domain.Entities
+@model Membro
+@{
+    ViewData["Title"] = "Meu Perfil";
+    Layout = "~/Views/Shared/_LayoutPescador.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+}
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <a href="/@slug/pescador" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h5 class="mb-0">Meu Perfil</h5>
+</div>
+
+@if (TempData["Sucesso"] is string sucesso)
+{
+    <div class="alert alert-success py-2 small">
+        <i class="bi bi-check-circle me-1"></i>@sucesso
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <div class="small text-muted">Nome</div>
+                    <div class="fw-semibold">@Model.Nome</div>
+                </div>
+                <div class="mb-3">
+                    <div class="small text-muted">Celular</div>
+                    <div class="fw-semibold">@(Model.Celular ?? "—")</div>
+                </div>
+                <hr />
+                <form method="post" asp-action="SalvarPerfil" asp-route-slug="@slug">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">E-mail <span class="text-muted fw-normal">(opcional)</span></label>
+                        <input type="email" name="email" class="form-control"
+                               value="@Model.Email" placeholder="seu@email.com"
+                               autocomplete="email" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">CPF <span class="text-muted fw-normal">(opcional)</span></label>
+                        <input type="text" name="cpf" class="form-control"
+                               value="@Model.Cpf" placeholder="000.000.000-00"
+                               inputmode="numeric" maxlength="14" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Salvar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

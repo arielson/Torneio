@@ -26,7 +26,8 @@ public static class CategoriaLog
     public const string Torneios = "Torneios";
     public const string Sorteio = "Sorteio";
     public const string Grupos = "Grupos";
+    public const string Asaas = "Asaas";
 
     public static readonly IReadOnlyList<string> Todas =
-        [Usuarios, Capturas, Financeiro, Itens, Patrocinadores, Equipes, Grupos, Membros, Premios, Torneios, Sorteio];
+        [Usuarios, Capturas, Financeiro, Itens, Patrocinadores, Equipes, Grupos, Membros, Premios, Torneios, Sorteio, Asaas];
 }

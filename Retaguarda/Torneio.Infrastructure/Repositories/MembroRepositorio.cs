@@ -43,7 +43,7 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
             .ToListAsync();
 
         return membros.FirstOrDefault(m =>
-            NormalizarCelular(m.Celular) == celularNormalizado);
+            ExtrairDigitosRelevantes(m.Celular) == ExtrairDigitosRelevantes(celularNormalizado));
     }
 
     public async Task<(int total, List<string> fotosParaRemover)> RemoverTodos(Guid torneioId)
@@ -69,6 +69,16 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
         _dbSet.RemoveRange(membros);
         await _context.SaveChangesAsync();
         return (membros.Count, fotos);
+    }
+
+    public async Task<IEnumerable<Membro>> ListarTodosPorCelular(string celularNormalizado)
+    {
+        var membros = await _dbSet.IgnoreQueryFilters()
+            .Where(m => m.Celular != null && m.Celular != string.Empty)
+            .ToListAsync();
+
+        var inputDigitos = ExtrairDigitosRelevantes(celularNormalizado);
+        return membros.Where(m => ExtrairDigitosRelevantes(m.Celular) == inputDigitos);
     }
 
     public async Task<Membro?> ObterPorUsuario(Guid torneioId, string usuario) =>
@@ -102,5 +112,15 @@ public class MembroRepositorio : RepositorioBase<Membro>, IMembroRepositorio
             return $"+{digitos}";
 
         return $"+{digitos}";
+    }
+
+    // Extrai os últimos 11 dígitos (número local brasileiro sem código de país).
+    // Permite comparar independente de formatação ou presença de +55.
+    private static string ExtrairDigitosRelevantes(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor)) return string.Empty;
+        var digitos = new string(valor.Where(char.IsDigit).ToArray());
+        if (digitos.Length == 0) return string.Empty;
+        return digitos.Length > 11 ? digitos[^11..] : digitos;
     }
 }

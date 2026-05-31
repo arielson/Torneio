@@ -1,0 +1,45 @@
+@using Torneio.Domain.Entities
+@model Membro
+@{
+    ViewData["Title"] = "Início";
+    Layout = "~/Views/Shared/_LayoutPescador.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var torneio = ViewBag.Torneio as Torneio.Application.DTOs.Torneio.TorneioDto;
+}
+
+<div class="row g-3">
+    <div class="col-12">
+        <h5 class="mb-1">Olá, @Model.Nome!</h5>
+        <p class="text-muted small mb-0">Bem-vindo à sua área no @(torneio?.NomeTorneio ?? "torneio").</p>
+    </div>
+
+    <div class="col-sm-6 col-lg-4">
+        <a href="/@slug/pescador/cobrancas" class="card shadow-sm text-decoration-none text-dark h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <i class="bi bi-receipt fs-2 text-primary"></i>
+                <div>
+                    <div class="fw-semibold">Cobranças</div>
+                    <div class="small text-muted">Veja e pague suas cobranças</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-4">
+        <a href="/@slug/pescador/perfil" class="card shadow-sm text-decoration-none text-dark h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <i class="bi bi-person-circle fs-2 text-secondary"></i>
+                <div>
+                    <div class="fw-semibold">Meu Perfil</div>
+                    <div class="small text-muted">Atualize e-mail e CPF</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-12 mt-2">
+        <a href="/@slug" class="btn btn-outline-secondary w-100">
+            <i class="bi bi-house me-2"></i>Voltar à página do @(torneio?.NomeTorneio ?? "torneio")
+        </a>
+    </div>
+</div>

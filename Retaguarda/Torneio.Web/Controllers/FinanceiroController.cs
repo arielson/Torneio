@@ -25,6 +25,8 @@ public class FinanceiroController : TorneioBaseController
     private readonly ITorneioServico _torneioServico;
     private readonly ILogAuditoriaServico _log;
     private readonly IFileStorage _fileStorage;
+    private readonly ICobrancaAsaasServico _cobrancaAsaasServico;
+    private readonly IConfiguracaoAsaasServico _configuracaoAsaasServico;
 
     public FinanceiroController(
         TenantContext tenantContext,
@@ -38,7 +40,9 @@ public class FinanceiroController : TorneioBaseController
         IPatrocinadorServico patrocinadorServico,
         ITorneioServico torneioServico,
         ILogAuditoriaServico log,
-        IFileStorage fileStorage) : base(tenantContext)
+        IFileStorage fileStorage,
+        ICobrancaAsaasServico cobrancaAsaasServico,
+        IConfiguracaoAsaasServico configuracaoAsaasServico) : base(tenantContext)
     {
         _financeiroServico = financeiroServico;
         _produtoExtraServico = produtoExtraServico;
@@ -51,6 +55,8 @@ public class FinanceiroController : TorneioBaseController
         _torneioServico = torneioServico;
         _log = log;
         _fileStorage = fileStorage;
+        _cobrancaAsaasServico = cobrancaAsaasServico;
+        _configuracaoAsaasServico = configuracaoAsaasServico;
     }
 
     [HttpGet("")]
@@ -164,10 +170,14 @@ public class FinanceiroController : TorneioBaseController
     public async Task<IActionResult> EditarCobranca(Guid id)
     {
         var parcela = await _financeiroServico.ObterParcela(id);
+        if (parcela is null) return NotFound();
+
         var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);
         ViewBag.Torneio = torneio;
         ViewBag.Doacoes = await _doacaoPatrocinadorServico.Listar(TenantContext.TorneioId);
-        return parcela is null ? NotFound() : View("EditarParcela", parcela);
+        ViewBag.CobrancaAsaas = await _cobrancaAsaasServico.ObterPorParcelaId(id);
+        ViewBag.ConfigAsaas = await _configuracaoAsaasServico.ObterPorTorneio(TenantContext.TorneioId);
+        return View("EditarParcela", parcela);
     }
 
     [HttpPost("cobrancas/{id:guid}/editar")]

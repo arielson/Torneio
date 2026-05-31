@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Torneio.Domain\Torneio.Domain.csproj" />
     <ProjectReference Include="..\Torneio.Application\Torneio.Application.csproj" />
+    <ProjectReference Include="..\Torneio.Asaas\Torneio.Asaas.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,39 @@
+@using Torneio.Application.DTOs.Torneio
+@{
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var corPrimaria = torneio?.CorPrimaria;
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (!string.IsNullOrEmpty(corPrimaria))
+    {
+        <style>:root { --brand: @corPrimaria; --brand-dark: @corPrimaria; }</style>
+    }
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-brand shadow-sm">
+        <div class="container">
+            @if (!string.IsNullOrWhiteSpace(torneio?.LogoUrl))
+            {
+                <img src="@torneio!.LogoUrl" alt="@torneio.NomeTorneio" height="36" class="me-2" />
+            }
+            <span class="navbar-brand mb-0 h6">@(torneio?.NomeTorneio ?? "Torneio")</span>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

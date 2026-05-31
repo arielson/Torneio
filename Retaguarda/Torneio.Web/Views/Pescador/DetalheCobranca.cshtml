@@ -1,0 +1,346 @@
+@using Torneio.Application.DTOs.Asaas
+@using Torneio.Application.DTOs.Financeiro
+@model ParcelaTorneioDto
+@{
+    ViewData["Title"] = Model.Descricao;
+    Layout = "~/Views/Shared/_LayoutPescador.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var cobranca = ViewBag.Cobranca as CobrancaAsaasDto;
+    var config = ViewBag.ConfigAsaas as ConfiguracaoAsaasDto;
+
+    var asaasAtiva = config?.StatusChave == "Ativa";
+    var temCobranca = cobranca is not null;
+    var cobrancaAtiva = temCobranca && cobranca!.Status is "Pendente" or "Vencido";
+    var isPix = cobranca?.FormaPagamento == "Pix";
+    var isCartao = cobranca?.FormaPagamento == "CartaoCredito";
+    var cpfAtual = ViewBag.CpfAtual as string;
+    var semCpf = string.IsNullOrWhiteSpace(cpfAtual);
+    var taxa = (decimal)(ViewBag.Taxa ?? 0m);
+    var temTaxa = taxa > 0;
+    var totalPagar = temTaxa ? Model.Valor + taxa : Model.Valor;
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/@slug/pescador/cobrancas" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h5 class="mb-0">@Model.Descricao</h5>
+</div>
+
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger py-2 small mb-3">
+        <i class="bi bi-exclamation-triangle me-1"></i>@erro
+    </div>
+}
+
+<div class="row g-3 justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+        @* Resumo da cobrança *@
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-6 text-muted">Vencimento</dt>
+                    <dd class="col-6">@Model.Vencimento.ToString("dd/MM/yyyy")</dd>
+                    @if (!string.IsNullOrWhiteSpace(Model.Observacao))
+                    {
+                        <dt class="col-6 text-muted">Observação</dt>
+                        <dd class="col-6">@Model.Observacao</dd>
+                    }
+                </dl>
+                <hr class="my-2" />
+                @if (temTaxa)
+                {
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Valor da cobrança</span>
+                        <span>R$ @Model.Valor.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>
+                            Taxa da plataforma de pagamento
+                            @if (cobranca?.TaxaAsaas is null) { <span class="fst-italic">(estimada)</span> }
+                        </span>
+                        <span>R$ @taxa.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mt-1 fs-6">
+                        <span>Total a pagar</span>
+                        <span class="text-primary">R$ @totalPagar.ToString("N2")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex justify-content-between fw-bold fs-6">
+                        <span>Valor</span>
+                        <span>R$ @Model.Valor.ToString("N2")</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ── PAGO ─────────────────────────────────────────────────────── *@
+        @if (Model.Pago)
+        {
+            <div class="card border-success shadow-sm mb-3">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-check-circle-fill text-success fs-1 mb-2 d-block"></i>
+                    <h6 class="text-success mb-1">Cobrança paga</h6>
+                    @if (Model.DataPagamento.HasValue)
+                    {
+                        <p class="text-muted small mb-2">Pago em @Model.DataPagamento.Value.ToString("dd/MM/yyyy")</p>
+                    }
+                    @if (cobranca is not null)
+                    {
+                        @if (cobranca.FormaPagamento == "Pix")
+                        {
+                            <span class="badge bg-info text-dark"><i class="bi bi-qr-code me-1"></i>PIX</span>
+                        }
+                        else if (cobranca.FormaPagamento == "CartaoCredito")
+                        {
+                            <span class="badge bg-primary"><i class="bi bi-credit-card me-1"></i>Cartão de crédito</span>
+                        }
+                        @if (cobranca.TaxaAsaas.HasValue)
+                        {
+                            <p class="text-muted small mt-2 mb-0">
+                                Taxa: R$ @cobranca.TaxaAsaas.Value.ToString("N2") —
+                                Total pago: R$ @((Model.Valor + cobranca.TaxaAsaas.Value).ToString("N2"))
+                            </p>
+                        }
+                        @if (cobranca.DataCreditoEfetivo.HasValue)
+                        {
+                            <p class="text-muted small mb-0">Creditado em: @cobranca.DataCreditoEfetivo.Value.ToString("dd/MM/yyyy")</p>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        @* ── BONIFICADA ───────────────────────────────────────────────── *@
+        else if (Model.Bonificada)
+        {
+            <div class="card border-info shadow-sm mb-3">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-gift-fill text-info fs-1 mb-2 d-block"></i>
+                    <h6 class="text-info mb-1">Cobrança bonificada</h6>
+                    @if (!string.IsNullOrWhiteSpace(Model.MotivoBonificacao))
+                    {
+                        <p class="text-muted small mb-0">@Model.MotivoBonificacao</p>
+                    }
+                </div>
+            </div>
+        }
+        @* ── NÃO PAGA ─────────────────────────────────────────────────── *@
+        else
+        {
+            @* Tem cobrança PIX ativa: mostra QR Code *@
+            @if (cobrancaAtiva && isPix)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body text-center py-4">
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-qr-code me-1"></i>Escaneie o QR Code ou copie o código PIX para pagar.
+                        </p>
+                        <div id="qrCodeArea">
+                            <div class="spinner-border text-primary my-3" role="status"></div>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(cobranca?.AsaasInvoiceUrl))
+                        {
+                            <a href="@cobranca!.AsaasInvoiceUrl" target="_blank" class="btn btn-sm btn-outline-secondary mt-2">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir fatura completa
+                            </a>
+                        }
+                        @if (cobranca?.DataPrevisaoCredito.HasValue == true)
+                        {
+                            <p class="text-muted small mt-3 mb-0">
+                                <i class="bi bi-clock me-1"></i>Previsão de crédito: @cobranca!.DataPrevisaoCredito!.Value.ToString("dd/MM/yyyy")
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+            @* Tem cobrança Cartão ativa *@
+            else if (cobrancaAtiva && isCartao)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body text-center py-4">
+                        <i class="bi bi-credit-card fs-1 text-primary mb-3 d-block"></i>
+                        <p class="text-muted small mb-3">Clique no botão abaixo para acessar a fatura e informar os dados do cartão.</p>
+                        @if (!string.IsNullOrWhiteSpace(cobranca?.AsaasInvoiceUrl))
+                        {
+                            <a href="@cobranca!.AsaasInvoiceUrl" target="_blank" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Pagar com cartão
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            @* Cobrança com status final (estornada/cancelada) *@
+            else if (temCobranca && !cobrancaAtiva)
+            {
+                <div class="alert alert-warning small mb-3">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    A cobrança anterior foi @(cobranca!.Status == "Estornado" ? "estornada" : "cancelada").
+                    Uma nova cobrança pode ser gerada abaixo.
+                </div>
+            }
+
+            @* Sem cobrança ativa: oferecer formas de pagamento *@
+            @if (!cobrancaAtiva && asaasAtiva && config is not null)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        @if (semCpf)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">
+                                    <i class="bi bi-person-vcard me-1"></i>CPF obrigatório para pagamento
+                                </label>
+                                <input type="text" id="cpfInput" class="form-control"
+                                       placeholder="000.000.000-00" inputmode="numeric"
+                                       maxlength="14" autocomplete="off" />
+                                <div class="form-text">Seu CPF será salvo no seu cadastro.</div>
+                            </div>
+                        }
+                        <p class="text-muted small mb-3">Escolha como deseja pagar:</p>
+                        <div class="d-grid gap-2">
+                            @if (config.AceitarPix)
+                            {
+                                <form method="post"
+                                      asp-action="GerarCobranca"
+                                      asp-route-slug="@slug"
+                                      asp-route-parcelaId="@Model.Id"
+                                      class="form-pagamento">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="formaPagamento" value="0" />
+                                    @if (semCpf) { <input type="hidden" name="cpf" class="cpf-hidden" /> }
+                                    <button type="submit" class="btn btn-primary w-100 btn-gerar">
+                                        <i class="bi bi-qr-code me-2"></i>Pagar com PIX
+                                    </button>
+                                </form>
+                            }
+                            @if (config.AceitarCartaoCredito)
+                            {
+                                <form method="post"
+                                      asp-action="GerarCobranca"
+                                      asp-route-slug="@slug"
+                                      asp-route-parcelaId="@Model.Id"
+                                      class="form-pagamento">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="formaPagamento" value="1" />
+                                    @if (semCpf) { <input type="hidden" name="cpf" class="cpf-hidden" /> }
+                                    <button type="submit" class="btn btn-outline-primary w-100 btn-gerar">
+                                        <i class="bi bi-credit-card me-2"></i>Pagar com cartão de crédito
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (!cobrancaAtiva && !asaasAtiva)
+            {
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Entre em contato com o organizador para realizar o pagamento.
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    @* Desabilita botões de pagamento no submit para evitar múltiplas cobranças *@
+    <script>
+    document.querySelectorAll('.form-pagamento').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            document.querySelectorAll('.btn-gerar').forEach(function (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Aguarde...';
+            });
+        });
+    });
+    </script>
+    @if (semCpf)
+    {
+        <script>
+        (function () {
+            // Máscara CPF
+            var cpfInput = document.getElementById('cpfInput');
+            if (cpfInput) {
+                cpfInput.addEventListener('input', function () {
+                    var d = this.value.replace(/\D/g, '').substring(0, 11);
+                    if (d.length <= 3)      this.value = d;
+                    else if (d.length <= 6) this.value = d.substring(0,3) + '.' + d.substring(3);
+                    else if (d.length <= 9) this.value = d.substring(0,3) + '.' + d.substring(3,6) + '.' + d.substring(6);
+                    else                    this.value = d.substring(0,3) + '.' + d.substring(3,6) + '.' + d.substring(6,9) + '-' + d.substring(9);
+                });
+            }
+
+            // Copia o CPF para o hidden de cada form antes do submit
+            document.querySelectorAll('.form-pagamento').forEach(function (form) {
+                form.addEventListener('submit', function () {
+                    var val = cpfInput ? cpfInput.value : '';
+                    var hidden = form.querySelector('.cpf-hidden');
+                    if (hidden) hidden.value = val;
+                });
+            });
+        })();
+        </script>
+    }
+    @if (cobrancaAtiva && isPix)
+    {
+        <script>
+        (function () {
+            // ── Polling de status ────────────────────────────────────────────
+            var _poll = setInterval(function () {
+                fetch('/@slug/pescador/cobrancas/@Model.Id/status')
+                    .then(function (r) { return r.json(); })
+                    .then(function (json) {
+                        if (json.expirado) { clearInterval(_poll); return; }
+                        if (json.pago ||
+                            json.status === 'Confirmado' ||
+                            json.status === 'Recebido') {
+                            clearInterval(_poll);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(function () {});
+            }, 5000);
+
+            // ── Carrega QR Code ──────────────────────────────────────────────
+            fetch('/@slug/pescador/cobrancas/@Model.Id/qrcode')
+                .then(r => r.json())
+                .then(json => {
+                    const area = document.getElementById('qrCodeArea');
+                    if (!area) return;
+                    if (json.success) {
+                        const d = json.data;
+                        let html = '';
+                        if (d.encodedImage)
+                            html += `<img src="data:image/png;base64,${d.encodedImage}" class="img-fluid mb-3" style="max-width:240px" />`;
+                        if (d.payload)
+                            html += `<p class="small text-muted mb-1">Copia e Cola:</p>
+                                     <div class="input-group input-group-sm mb-1">
+                                       <input type="text" class="form-control font-monospace" id="pixPayload" value="${d.payload}" readonly />
+                                       <button class="btn btn-outline-secondary" type="button"
+                                               onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>this.innerHTML='<i class=\'bi bi-check\'></i> Copiado!')">
+                                         <i class="bi bi-clipboard"></i>
+                                       </button>
+                                     </div>`;
+                        if (d.expirationDate) {
+                            const exp = new Date(d.expirationDate);
+                            html += `<p class="small text-muted mt-2 mb-0">Expira em: ${exp.toLocaleString('pt-BR')}</p>`;
+                        }
+                        area.innerHTML = html || '<p class="text-muted">QR Code indisponível.</p>';
+                    } else {
+                        area.innerHTML = `<div class="alert alert-danger small">${json.error}</div>`;
+                    }
+                })
+                .catch(() => {
+                    const a = document.getElementById('qrCodeArea');
+                    if (a) a.innerHTML = '<div class="alert alert-danger small">Erro ao carregar QR Code.</div>';
+                });
+        })();
+        </script>
+    }
+}

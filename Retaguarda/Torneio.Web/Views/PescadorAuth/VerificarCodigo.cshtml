@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Verificar Código";
+    Layout = "~/Views/Shared/_LayoutPublico.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-sm-10 col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-1">Digite o código</h5>
+                <p class="text-muted small mb-4">
+                    Enviamos um código de 6 dígitos para o seu celular. Válido por 10 minutos.
+                </p>
+
+                @if (ViewBag.Erro != null)
+                {
+                    <div class="alert alert-danger py-2 small">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>@ViewBag.Erro
+                    </div>
+                }
+
+                <form method="post" asp-action="VerificarCodigo" asp-route-slug="@slug">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Código SMS</label>
+                        <input type="text" name="codigo" class="form-control text-center fs-4"
+                               maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                               autofocus placeholder="000000" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-lg me-1"></i>Confirmar
+                    </button>
+                </form>
+
+                <hr class="my-3" />
+                <p class="text-center small mb-0">
+                    Não recebeu?
+                    <form method="post" asp-action="EnviarCodigo" asp-route-slug="@slug" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-link btn-sm p-0">Reenviar código</button>
+                    </form>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

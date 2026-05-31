@@ -41,6 +41,9 @@ public class TorneioDbContext : DbContext
     public DbSet<SorteioGrupo> SorteiosGrupo { get; set; }
     public DbSet<Premio> Premios { get; set; }
     public DbSet<LogAuditoria> Logs { get; set; }
+    public DbSet<ConfiguracaoAsaasTorneio> ConfiguracoesAsaas { get; set; }
+    public DbSet<CobrancaAsaas> CobrancasAsaas { get; set; }
+    public DbSet<WebhookEventoAsaas> WebhookEventosAsaas { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -119,6 +122,12 @@ public class TorneioDbContext : DbContext
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
 
         modelBuilder.Entity<Premio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<ConfiguracaoAsaasTorneio>()
+            .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
+
+        modelBuilder.Entity<CobrancaAsaas>()
             .HasQueryFilter(e => e.TorneioId == _tenantContext.TorneioId || _tenantContext.EhAdminGeral);
     }
 }

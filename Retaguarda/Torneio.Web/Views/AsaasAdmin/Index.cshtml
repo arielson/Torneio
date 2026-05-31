@@ -1,0 +1,122 @@
+@using Torneio.Application.DTOs.Asaas
+@using Torneio.Application.DTOs.Torneio
+@model IEnumerable<TorneioDto>
+@{
+    ViewData["Title"] = "Integrações Asaas";
+    var configs = ViewBag.Configs as Dictionary<Guid, ConfiguracaoAsaasDto> ?? new();
+    var lista = Model.ToList();
+}
+
+<div class="page-header">
+    <div class="page-header-left">
+        <h1><i class="bi bi-credit-card-2-front me-2"></i>Integrações Asaas</h1>
+        <p class="text-muted mb-0">Configure a chave de API do Asaas para cada torneio.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header-bar">
+        <h5><i class="bi bi-list-ul me-2"></i>Torneios</h5>
+    </div>
+    @if (!lista.Any())
+    {
+        <div class="card-body-pad text-muted">Nenhum torneio cadastrado.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Torneio</th>
+                        <th>Status Asaas</th>
+                        <th>PIX</th>
+                        <th>Cartão</th>
+                        <th>Ativado em</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in lista)
+                    {
+                        configs.TryGetValue(t.Id, out var cfg);
+                        var status = cfg?.StatusChave ?? "NaoConfigurada";
+                        <tr>
+                            <td>
+                                <span class="fw-semibold">@t.NomeTorneio</span>
+                                <div class="text-muted small">@t.Slug</div>
+                            </td>
+                            <td>
+                                @if (status == "Ativa")
+                                {
+                                    <span class="badge bg-success">Ativa</span>
+                                }
+                                else if (status == "Inativa")
+                                {
+                                    <span class="badge bg-secondary">Inativa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Não configurada</span>
+                                }
+                            </td>
+                            <td>
+                                @if (cfg is not null)
+                                {
+                                    @(cfg.AceitarPix ? "✓" : "—")
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td>
+                                @if (cfg is not null)
+                                {
+                                    @(cfg.AceitarCartaoCredito ? "✓" : "—")
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td class="text-muted small">
+                                @(cfg?.DataAtivacao?.ToString("dd/MM/yyyy") ?? "—")
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="/admin/asaas/@t.Id/configurar"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Configurar">
+                                        <i class="bi bi-gear"></i>
+                                    </a>
+                                    @if (status == "Ativa")
+                                    {
+                                        <form asp-controller="AsaasAdmin"
+                                              asp-action="Desativar"
+                                              asp-route-torneioId="@t.Id"
+                                              method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-warning"
+                                                    title="Desativar"
+                                                    onclick="return confirm('Desativar integração Asaas para @t.NomeTorneio?')">
+                                                <i class="bi bi-pause-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (status == "Inativa")
+                                    {
+                                        <form asp-controller="AsaasAdmin"
+                                              asp-action="Reativar"
+                                              asp-route-torneioId="@t.Id"
+                                              method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-success"
+                                                    title="Reativar">
+                                                <i class="bi bi-play-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

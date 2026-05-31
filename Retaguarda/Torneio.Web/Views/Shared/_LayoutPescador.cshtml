@@ -1,0 +1,65 @@
+@using Torneio.Application.DTOs.Torneio
+@{
+    var torneio = ViewBag.Torneio as TorneioDto;
+    var corPrimaria = torneio?.CorPrimaria;
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — @(torneio?.NomeTorneio ?? "Torneio")</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (!string.IsNullOrEmpty(corPrimaria))
+    {
+        <style>:root { --brand: @corPrimaria; --brand-dark: @corPrimaria; }</style>
+    }
+</head>
+<body>
+    <nav class="navbar navbar-expand navbar-dark bg-brand shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 me-3" href="/@slug/pescador">
+                @if (!string.IsNullOrWhiteSpace(torneio?.LogoUrl))
+                {
+                    <img src="@torneio!.LogoUrl" alt="@torneio.NomeTorneio" height="28" />
+                }
+                <span class="fw-semibold small">@(torneio?.NomeTorneio ?? "Torneio")</span>
+            </a>
+
+            <div class="navbar-nav d-flex flex-row align-items-center gap-2 ms-auto flex-wrap">
+                <a href="/@slug/pescador/cobrancas"
+                   class="nav-link px-2 @(action == "Cobrancas" ? "fw-bold" : "")">
+                    <i class="bi bi-receipt"></i>
+                    <span class="d-none d-sm-inline ms-1">Cobranças</span>
+                </a>
+                <a href="/@slug/pescador/perfil"
+                   class="nav-link px-2 @(action == "Perfil" ? "fw-bold" : "")">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="d-none d-sm-inline ms-1">Perfil</span>
+                </a>
+                <a href="/@slug" class="nav-link px-2">
+                    <i class="bi bi-house me-1"></i>Torneio
+                </a>
+                <form method="post" action="/@slug/pescador/sair" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-light px-2">
+                        <i class="bi bi-box-arrow-right me-1"></i>Sair
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

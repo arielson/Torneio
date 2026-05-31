@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.Services.Interfaces;
 using Torneio.Infrastructure.Services;
@@ -38,6 +39,9 @@ public class PublicoController : TorneioBaseController
     {
         var torneio = await _torneioServico.ObterPorSlug(slug);
         if (torneio is null) return NotFound();
+
+        var pescadorAuth = await HttpContext.AuthenticateAsync("PescadorAuth");
+        ViewBag.PescadorLogado = pescadorAuth.Succeeded;
 
         ViewBag.Patrocinadores = await _patrocinadorServico.ListarPorTorneio(torneio.Id);
         if (torneio.ExibirParticipantesPublicos)

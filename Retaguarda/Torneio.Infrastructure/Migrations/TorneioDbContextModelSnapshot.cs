@@ -288,6 +288,154 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("checklist_torneio_itens", (string)null);
                 });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.CobrancaAsaas", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AsaasCustomerId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("asaas_customer_id");
+
+                    b.Property<string>("AsaasInvoiceUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("asaas_invoice_url");
+
+                    b.Property<string>("AsaasPaymentId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("asaas_payment_id");
+
+                    b.Property<DateTime>("AtualizadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizado_em");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criado_em");
+
+                    b.Property<DateTime?>("DataCreditoEfetivo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_credito_efetivo");
+
+                    b.Property<DateTime?>("DataPrevisaoCredito")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_previsao_credito");
+
+                    b.Property<string>("FormaPagamento")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("forma_pagamento");
+
+                    b.Property<Guid>("MembroId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("membro_id");
+
+                    b.Property<Guid>("ParcelaTorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parcela_torneio_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal?>("TaxaAsaas")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("taxa_asaas");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.Property<decimal>("ValorOriginal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_original");
+
+                    b.Property<DateTime>("Vencimento")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("vencimento");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cobrancas_asaas");
+
+                    b.HasIndex("AsaasPaymentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_cobrancas_asaas_asaas_payment_id");
+
+                    b.HasIndex("MembroId")
+                        .HasDatabaseName("ix_cobrancas_asaas_membro_id");
+
+                    b.HasIndex("ParcelaTorneioId")
+                        .HasDatabaseName("ix_cobrancas_asaas_parcela_torneio_id");
+
+                    b.HasIndex("TorneioId", "MembroId")
+                        .HasDatabaseName("ix_cobrancas_asaas_torneio_id_membro_id");
+
+                    b.ToTable("cobrancas_asaas", (string)null);
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ConfiguracaoAsaasTorneio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AceitarCartaoCredito")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("aceitar_cartao_credito");
+
+                    b.Property<bool>("AceitarPix")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("aceitar_pix");
+
+                    b.Property<string>("AsaasAccountId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("asaas_account_id");
+
+                    b.Property<string>("ChaveApiAsaas")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("chave_api_asaas");
+
+                    b.Property<DateTime?>("DataAtivacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_ativacao");
+
+                    b.Property<string>("StatusChave")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status_chave");
+
+                    b.Property<Guid>("TorneioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("torneio_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_configuracoes_asaas");
+
+                    b.HasIndex("TorneioId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_configuracoes_asaas_torneio_id");
+
+                    b.ToTable("configuracoes_asaas", (string)null);
+                });
+
             modelBuilder.Entity("Torneio.Domain.Entities.CustoTorneio", b =>
                 {
                     b.Property<Guid>("Id")
@@ -735,6 +883,11 @@ namespace Torneio.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("celular");
+
+                    b.Property<string>("Cpf")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("cpf");
 
                     b.Property<bool>("DeveAlterarSenha")
                         .ValueGeneratedOnAdd()
@@ -1510,6 +1663,65 @@ namespace Torneio.Infrastructure.Migrations
                     b.ToTable("valores_parcelas_torneio", (string)null);
                 });
 
+            modelBuilder.Entity("Torneio.Domain.Entities.WebhookEventoAsaas", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AsaasPaymentId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("asaas_payment_id");
+
+                    b.Property<string>("ErroProcessamento")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("erro_processamento");
+
+                    b.Property<string>("EventoId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("evento_id");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload_json");
+
+                    b.Property<bool>("Processado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("processado");
+
+                    b.Property<DateTime?>("ProcessadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processado_em");
+
+                    b.Property<DateTime>("RecebidoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recebido_em");
+
+                    b.Property<string>("TipoEvento")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("tipo_evento");
+
+                    b.HasKey("Id")
+                        .HasName("pk_webhook_eventos_asaas");
+
+                    b.HasIndex("EventoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_webhook_eventos_asaas_evento_id");
+
+                    b.HasIndex("Processado", "RecebidoEm")
+                        .HasDatabaseName("ix_webhook_eventos_asaas_processado_recebido_em");
+
+                    b.ToTable("webhook_eventos_asaas", (string)null);
+                });
+
             modelBuilder.Entity("equipe_membro", b =>
                 {
                     b.Property<Guid>("EquipeId")
@@ -1582,6 +1794,40 @@ namespace Torneio.Infrastructure.Migrations
                         .HasConstraintName("fk_capturas_torneiros_torneio_id");
 
                     b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.CobrancaAsaas", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.Membro", null)
+                        .WithMany()
+                        .HasForeignKey("MembroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cobrancas_asaas_membros_membro_id");
+
+                    b.HasOne("Torneio.Domain.Entities.ParcelaTorneio", null)
+                        .WithMany()
+                        .HasForeignKey("ParcelaTorneioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cobrancas_asaas_parcelas_torneio_parcela_torneio_id");
+
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_cobrancas_asaas_torneiros_torneio_id");
+                });
+
+            modelBuilder.Entity("Torneio.Domain.Entities.ConfiguracaoAsaasTorneio", b =>
+                {
+                    b.HasOne("Torneio.Domain.Entities.TorneioEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TorneioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_configuracoes_asaas_torneiros_torneio_id");
                 });
 
             modelBuilder.Entity("Torneio.Domain.Entities.Equipe", b =>
