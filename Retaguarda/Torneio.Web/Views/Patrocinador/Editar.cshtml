@@ -24,28 +24,32 @@
         <div class="form-section-title">Dados do patrocinador</div>
         <div class="mb-3">
             <label asp-for="Nome" class="form-label">Nome</label>
-            <input asp-for="Nome" class="form-control" />
+            <input asp-for="Nome" class="form-control" placeholder="Ex.: Pesca Esporte Ltda" />
             <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
-        <div class="mb-3">
-            <label asp-for="Instagram" class="form-label">Instagram (opcional)</label>
-            <input asp-for="Instagram" class="form-control" />
-            <span asp-validation-for="Instagram" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Facebook" class="form-label">Facebook (opcional)</label>
-            <input asp-for="Facebook" class="form-control" />
-            <span asp-validation-for="Facebook" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Site" class="form-label">Site (opcional)</label>
-            <input asp-for="Site" class="form-control" />
-            <span asp-validation-for="Site" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Zap" class="form-label">Zap (opcional)</label>
-            <input asp-for="Zap" class="form-control" />
-            <span asp-validation-for="Zap" class="text-danger small"></span>
+
+        <div class="form-section-title"><i class="bi bi-share me-1"></i>Formas de contato <span class="fw-normal text-muted">(todas opcionais — aparecerão como botões na tela do torneio)</span></div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="Instagram" class="form-label"><i class="bi bi-instagram me-1"></i>Instagram</label>
+                <input asp-for="Instagram" class="form-control" placeholder="@@perfildopatrocinador" />
+                <span asp-validation-for="Instagram" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Facebook" class="form-label"><i class="bi bi-facebook me-1"></i>Facebook</label>
+                <input asp-for="Facebook" class="form-control" placeholder="facebook.com/pagina ou @@pagina" />
+                <span asp-validation-for="Facebook" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Site" class="form-label"><i class="bi bi-globe me-1"></i>Site</label>
+                <input asp-for="Site" class="form-control" placeholder="https://www.site.com.br" />
+                <span asp-validation-for="Site" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Zap" class="form-label"><i class="bi bi-whatsapp me-1"></i>WhatsApp</label>
+                <input asp-for="Zap" class="form-control" placeholder="(71) 99999-9999" inputmode="tel" />
+                <span asp-validation-for="Zap" class="text-danger small"></span>
+            </div>
         </div>
         <div class="form-check mb-2">
             <input asp-for="ExibirNaTelaInicial" class="form-check-input" />
