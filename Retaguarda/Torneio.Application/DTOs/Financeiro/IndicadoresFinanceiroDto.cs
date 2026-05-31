@@ -13,6 +13,7 @@ public class IndicadoresFinanceiroDto
     public decimal ReceitaPrevista { get; init; }
     public decimal SaldoProjetado { get; init; }
     public int ParcelasInadimplentes { get; init; }
+    public decimal ValorPago { get; init; }
     public decimal ValorEmAberto { get; init; }
     public int EmbarcacoesConfirmadas { get; init; }
     public int QuantidadeCustosLancados { get; init; }

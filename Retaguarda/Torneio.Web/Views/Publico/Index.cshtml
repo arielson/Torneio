@@ -89,6 +89,12 @@
 {
     <p class="text-muted mb-2" style="max-width:840px;white-space:pre-line;">@Model.Descricao</p>
 }
+@if (Model.DataTorneio.HasValue)
+{
+    <p class="text-muted small mb-2">
+        <i class="bi bi-calendar-event me-1"></i>@Model.DataTorneio.Value.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))
+    </p>
+}
 <p class="mt-2">
     <span class="badge @badgeClass">@Model.Status</span>
 </p>

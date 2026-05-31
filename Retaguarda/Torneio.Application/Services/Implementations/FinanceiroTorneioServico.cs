@@ -358,10 +358,43 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             })
             .ToList();
 
+        var hoje = DateTime.UtcNow.Date;
+        var eventosReais = new List<(DateTime Data, decimal Recebimento, decimal Pagamento)>();
+        eventosReais.AddRange(parcelasReceita
+            .Where(x => x.Pago)
+            .Select(x => ((x.DataPagamento ?? x.Vencimento).Date, x.Valor, 0m)));
+        eventosReais.AddRange(custosDetalhados
+            .Where(x => x.Vencimento.HasValue && x.Vencimento.Value.Date <= hoje)
+            .Select(x => (x.Vencimento!.Value.Date, 0m, x.ValorTotal)));
+        eventosReais.AddRange(dados.Doacoes
+            .Where(x => x.Tipo == TipoDoacaoPatrocinador.Dinheiro && x.Valor.HasValue)
+            .Select(x => (x.DataDoacao.Date, x.Valor!.Value, 0m)));
+
+        decimal saldoReal = 0;
+        var fluxoReal = eventosReais
+            .GroupBy(x => x.Data)
+            .OrderBy(x => x.Key)
+            .Select(g =>
+            {
+                var rec = g.Sum(x => x.Recebimento);
+                var pag = g.Sum(x => x.Pagamento);
+                saldoReal += rec - pag;
+                return new FluxoFinanceiroLinhaDto
+                {
+                    Data = g.Key,
+                    RecebimentosPrevistos = rec,
+                    PagamentosPrevistos = pag,
+                    SaldoDiario = rec - pag,
+                    SaldoAcumulado = saldoReal
+                };
+            })
+            .ToList();
+
         return new RelatorioFinanceiroDto
         {
             Indicadores = indicadores,
             FluxoCaixaProjetado = fluxo,
+            FluxoCaixaReal = fluxoReal,
             ReceitasPorTipo = receitasPorTipo,
             CustosPorCategoria = custosPorCategoria,
             ProximosRecebimentosPendentes = parcelasReceita
@@ -668,6 +701,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             .Sum(x => x.Valor ?? 0);
         var receitaPrevista = arrecadacaoPrevista + receitaDoacoes;
         var abertas = dados.Parcelas.Where(x => !x.Pago && !x.Bonificada).ToList();
+        var pagas = dados.Parcelas.Where(x => x.Pago).ToList();
         var inadimplentes = abertas.Where(x => x.Vencimento.Date < DateTime.UtcNow.Date).ToList();
         var quantidadeCustos = dados.Custos.Count + dados.Equipes.Count(x => x.Custo > 0 && x.StatusFinanceiro != StatusEmbarcacaoFinanceira.Cancelada);
 
@@ -686,6 +720,7 @@ public class FinanceiroTorneioServico : IFinanceiroTorneioServico
             ReceitaDoacoesPatrocinadores = receitaDoacoes,
             SaldoProjetado = receitaPrevista - custoTotal,
             ParcelasInadimplentes = inadimplentes.Count,
+            ValorPago = pagas.Sum(x => x.Valor),
             ValorEmAberto = abertas.Sum(x => x.Valor),
             EmbarcacoesConfirmadas = dados.Equipes.Count(x => x.StatusFinanceiro == StatusEmbarcacaoFinanceira.Confirmada),
             QuantidadeCustosLancados = quantidadeCustos,

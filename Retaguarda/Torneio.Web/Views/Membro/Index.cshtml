@@ -60,6 +60,7 @@
                         {
                             <th>Tamanho da camisa</th>
                         }
+                        <th title="Código enviado por SMS para criar/redefinir senha">Código SMS</th>
                         <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
@@ -95,6 +96,28 @@
                             {
                                 <td>@(string.IsNullOrWhiteSpace(m.TamanhoCamisa) ? "-" : m.TamanhoCamisa)</td>
                             }
+                            <td>
+                                @if (!string.IsNullOrEmpty(m.CodigoSms))
+                                {
+                                    var expirado = m.CodigoSmsExpiracao.HasValue && m.CodigoSmsExpiracao.Value < DateTime.UtcNow;
+                                    if (expirado)
+                                    {
+                                        <span class="text-muted small">@m.CodigoSms <span class="badge text-bg-secondary">expirado</span></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fw-semibold font-monospace text-primary">@m.CodigoSms</span>
+                                        @if (m.CodigoSmsExpiracao.HasValue)
+                                        {
+                                            <span class="text-muted small ms-1">até @m.CodigoSmsExpiracao.Value.ToLocalTime().ToString("HH:mm")</span>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <a href="/@slug/membros/@m.Id/editar" class="btn btn-sm btn-outline-secondary" title="Editar">

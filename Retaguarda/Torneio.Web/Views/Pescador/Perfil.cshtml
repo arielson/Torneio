@@ -24,6 +24,14 @@
     <div class="col-lg-6">
         <div class="card shadow-sm">
             <div class="card-body p-4">
+                @if (!string.IsNullOrWhiteSpace(Model.FotoUrl))
+                {
+                    <div class="text-center mb-4">
+                        <img src="@Model.FotoUrl" alt="@Model.Nome"
+                             class="rounded-circle border"
+                             style="width:96px;height:96px;object-fit:cover;" />
+                    </div>
+                }
                 <div class="mb-3">
                     <div class="small text-muted">Nome</div>
                     <div class="fw-semibold">@Model.Nome</div>

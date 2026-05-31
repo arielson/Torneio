@@ -32,7 +32,7 @@ public class CobrancaAsaasController : TorneioBaseController
 
     [HttpPost("{parcelaId:guid}/gerar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Gerar(Guid parcelaId, FormaPagamentoAsaas formaPagamento)
+    public async Task<IActionResult> Gerar(Guid parcelaId, FormaPagamentoAsaas formaPagamento, string? cpf)
     {
         try
         {
@@ -40,7 +40,8 @@ public class CobrancaAsaasController : TorneioBaseController
             {
                 TorneioId = TenantContext.TorneioId,
                 ParcelaTorneioId = parcelaId,
-                FormaPagamento = formaPagamento
+                FormaPagamento = formaPagamento,
+                CpfOverride = cpf
             });
 
             var torneio = await _torneioServico.ObterPorId(TenantContext.TorneioId);

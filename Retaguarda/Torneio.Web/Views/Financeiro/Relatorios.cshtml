@@ -1,25 +1,69 @@
 @model Torneio.Application.DTOs.Financeiro.RelatorioFinanceiroDto
+@using System.Globalization
 @{
     var slug = Context.GetRouteData().Values["slug"]?.ToString();
     ViewData["Title"] = "Relatórios financeiros";
     var fluxo = Model.FluxoCaixaProjetado.OrderBy(x => x.Data).ToList();
-    var minValor = fluxo.Any() ? Math.Min(0m, fluxo.Min(x => Math.Min(x.RecebimentosPrevistos, Math.Min(x.PagamentosPrevistos, x.SaldoAcumulado)))) : 0m;
-    var maxValor = fluxo.Any() ? Math.Max(1m, fluxo.Max(x => Math.Max(x.RecebimentosPrevistos, Math.Max(x.PagamentosPrevistos, x.SaldoAcumulado)))) : 1m;
-    var faixa = maxValor - minValor;
-    if (faixa == 0) { faixa = 1; }
-    var largura = 920m;
-    var altura = 280m;
-    string PlotLine(Func<Torneio.Application.DTOs.Financeiro.FluxoFinanceiroLinhaDto, decimal> selector)
+    var fluxoReal = Model.FluxoCaixaReal.OrderBy(x => x.Data).ToList();
+
+    // Eixo X compartilhado — todas as datas de ambas as séries
+    var todasDatas = fluxo.Select(x => x.Data)
+        .Union(fluxoReal.Select(x => x.Data))
+        .OrderBy(x => x)
+        .ToList();
+
+    // Escala Y compartilhada — min/max de ambas as séries
+    var todosVals = fluxo.Select(x => x.SaldoAcumulado)
+        .Concat(fluxoReal.Select(x => x.SaldoAcumulado))
+        .ToList();
+    var minSaldo = todosVals.Any() ? Math.Min(0m, todosVals.Min()) : 0m;
+    var maxSaldo = todosVals.Any() ? Math.Max(1m, todosVals.Max()) : 1m;
+    var pad = Math.Max(1m, (maxSaldo - minSaldo) * 0.08m);
+    minSaldo -= pad;
+    maxSaldo += pad;
+    var faixa = maxSaldo - minSaldo;
+    if (faixa == 0) faixa = 1m;
+
+    // Coordenadas inteiras para evitar separador decimal de locale (pt-BR usa vírgula)
+    const int W = 860, H = 260, OX = 60, OY = 10;
+
+    int PxD(DateTime d)
     {
-        if (!fluxo.Any()) return string.Empty;
-        var pontos = fluxo.Select((item, index) =>
-        {
-            var x = fluxo.Count == 1 ? largura / 2 : largura * index / (fluxo.Count - 1);
-            var y = altura - ((selector(item) - minValor) / faixa * altura);
-            return $"{x:0.##},{y:0.##}";
-        });
-        return string.Join(" ", pontos);
+        var idx = todasDatas.IndexOf(d);
+        return todasDatas.Count == 1 ? W / 2 : W * idx / (todasDatas.Count - 1);
     }
+    int Py(decimal v) => (int)(H - (v - minSaldo) / faixa * H);
+
+    var zeroY = Py(0m);
+
+    string PontosProjetado() => !fluxo.Any() ? "" :
+        string.Join(" ", fluxo.Select(r => $"{PxD(r.Data)},{Py(r.SaldoAcumulado)}"));
+
+    string PontosReal() => !fluxoReal.Any() ? "" :
+        string.Join(" ", fluxoReal.Select(r => $"{PxD(r.Data)},{Py(r.SaldoAcumulado)}"));
+
+    string AreaReal()
+    {
+        if (!fluxoReal.Any()) return "";
+        var pts = string.Join(" L ", fluxoReal.Select(r => $"{OX + PxD(r.Data)},{OY + Py(r.SaldoAcumulado)}"));
+        return $"M {OX + PxD(fluxoReal.First().Data)},{OY + zeroY} L {pts} L {OX + PxD(fluxoReal.Last().Data)},{OY + zeroY} Z";
+    }
+
+    var step = Math.Max(1, todasDatas.Count / 10);
+    var temAlgumDado = fluxo.Any() || fluxoReal.Any();
+
+    var projetadoMap = fluxo.ToDictionary(r => r.Data, r => r.SaldoAcumulado);
+    var realMap      = fluxoReal.ToDictionary(r => r.Data, r => r.SaldoAcumulado);
+
+    string FmtVal(decimal v)
+    {
+        if (Math.Abs(v) >= 1000m)
+            return "R$" + (v / 1000m).ToString("0.#", CultureInfo.InvariantCulture) + "k";
+        return "R$" + ((int)v).ToString();
+    }
+
+    // Formato completo para o tooltip em pt-BR
+    string FmtTooltip(decimal v) => "R$ " + v.ToString("N2", new CultureInfo("pt-BR"));
 }
 
 <div class="page-header">
@@ -41,26 +85,110 @@
         <h5><i class="bi bi-graph-up-arrow me-2"></i>Fluxo projetado de recebimentos e pagamentos</h5>
     </div>
     <div class="card-body-pad">
-        @if (!fluxo.Any())
+        @if (!temAlgumDado)
         {
             <div class="text-muted">Ainda não há datas suficientes para montar a linha do tempo financeira.</div>
         }
         else
         {
-            <div class="small text-muted mb-3">Azul: recebimentos previstos. Vermelho: pagamentos previstos. Verde: saldo acumulado projetado.</div>
-            <svg viewBox="0 0 960 340" width="100%" role="img" aria-label="Gráfico de linha do fluxo financeiro">
-                <rect x="0" y="0" width="960" height="340" fill="#fff" />
-                <line x1="20" y1="300" x2="940" y2="300" stroke="#cbd5e1" stroke-width="1" />
-                <line x1="20" y1="20" x2="20" y2="300" stroke="#cbd5e1" stroke-width="1" />
-                <polyline fill="none" stroke="#2563eb" stroke-width="3" points="@PlotLine(x => x.RecebimentosPrevistos)" transform="translate(20,20)" />
-                <polyline fill="none" stroke="#dc2626" stroke-width="3" points="@PlotLine(x => x.PagamentosPrevistos)" transform="translate(20,20)" />
-                <polyline fill="none" stroke="#16a34a" stroke-width="3" points="@PlotLine(x => x.SaldoAcumulado)" transform="translate(20,20)" />
-                @for (var i = 0; i < fluxo.Count; i++)
+            <div class="d-flex align-items-center gap-4 small text-muted mb-3">
+                <span><span style="display:inline-block;width:28px;height:3px;background:#94a3b8;border-radius:2px;vertical-align:middle;border-top:2px dashed #94a3b8;"></span> Projetado</span>
+                <span><span style="display:inline-block;width:28px;height:3px;background:#2563eb;border-radius:2px;vertical-align:middle;"></span> Real</span>
+                <span><span style="display:inline-block;width:28px;height:1px;border-top:2px dashed #cbd5e1;vertical-align:middle;"></span> Zero (equilíbrio)</span>
+            </div>
+            <div style="position:relative">
+            <div id="chartTooltip" style="display:none;position:absolute;pointer-events:none;
+                 background:#1e293b;color:#f1f5f9;border-radius:6px;padding:8px 12px;
+                 font-size:13px;line-height:1.6;white-space:nowrap;z-index:10;
+                 box-shadow:0 4px 12px rgba(0,0,0,.25)"></div>
+            <svg id="chartSvg" viewBox="0 0 960 300" width="100%" role="img" aria-label="Gráfico de saldo acumulado">
+                <rect x="0" y="0" width="960" height="300" fill="#fff" />
+
+                @* Eixos *@
+                <line x1="@OX" y1="@OY" x2="@OX" y2="@(OY + H)" stroke="#e2e8f0" stroke-width="1" />
+                <line x1="@OX" y1="@(OY + H)" x2="@(OX + W)" y2="@(OY + H)" stroke="#e2e8f0" stroke-width="1" />
+
+                @* Linha do zero *@
+                @if (minSaldo < 0 && maxSaldo > 0)
                 {
-                    var x = fluxo.Count == 1 ? largura / 2 : largura * i / (fluxo.Count - 1);
-                    @Html.Raw($"<text x=\"{x + 20:0.##}\" y=\"325\" font-size=\"10\" text-anchor=\"middle\" fill=\"#475569\">{fluxo[i].Data:dd/MM}</text>")
+                    <line x1="@OX" y1="@(OY + zeroY)" x2="@(OX + W)" y2="@(OY + zeroY)"
+                          stroke="#cbd5e1" stroke-width="1" stroke-dasharray="5,4" />
+                    @Html.Raw($"<text x=\"{OX - 4}\" y=\"{OY + zeroY + 4}\" font-size=\"9\" text-anchor=\"end\" fill=\"#94a3b8\">0</text>")
+                }
+
+                @* Labels Y *@
+                @Html.Raw($"<text x=\"{OX - 4}\" y=\"{OY + 4}\" font-size=\"9\" text-anchor=\"end\" fill=\"#64748b\">{FmtVal(maxSaldo)}</text>")
+                @Html.Raw($"<text x=\"{OX - 4}\" y=\"{OY + H}\" font-size=\"9\" text-anchor=\"end\" fill=\"#64748b\">{FmtVal(minSaldo)}</text>")
+
+                @* Área real preenchida *@
+                @if (fluxoReal.Any())
+                {
+                    <path d="@AreaReal()" fill="#2563eb" fill-opacity="0.07" />
+                }
+
+                @* Linha projetada — cinza tracejada *@
+                @if (fluxo.Any())
+                {
+                    <polyline fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4"
+                              stroke-linejoin="round" points="@PontosProjetado()" transform="translate(@OX,@OY)" />
+                }
+
+                @* Linha real — azul sólida *@
+                @if (fluxoReal.Any())
+                {
+                    <polyline fill="none" stroke="#2563eb" stroke-width="2.5"
+                              stroke-linejoin="round" points="@PontosReal()" transform="translate(@OX,@OY)" />
+                }
+
+                @* Labels de data no eixo X — baseados em todas as datas *@
+                @for (var i = 0; i < todasDatas.Count; i++)
+                {
+                    var mostrarLabel = todasDatas.Count <= 14 || i == 0 || i == todasDatas.Count - 1 || i % step == 0;
+                    if (mostrarLabel)
+                    {
+                        var lx = OX + PxD(todasDatas[i]);
+                        @Html.Raw($"<text x=\"{lx}\" y=\"{OY + H + 16}\" font-size=\"9\" text-anchor=\"middle\" fill=\"#475569\">{todasDatas[i].ToString("dd/MM")}</text>")
+                        <line x1="@lx" y1="@(OY + H)" x2="@lx" y2="@(OY + H + 4)" stroke="#cbd5e1" stroke-width="1" />
+                    }
+                }
+
+                @* Pontos projetado *@
+                @foreach (var r in fluxo)
+                {
+                    var cx = OX + PxD(r.Data);
+                    var cy = OY + Py(r.SaldoAcumulado);
+                    <circle cx="@cx" cy="@cy" r="3" fill="#94a3b8" />
+                }
+
+                @* Pontos real *@
+                @foreach (var r in fluxoReal)
+                {
+                    var cx = OX + PxD(r.Data);
+                    var cy = OY + Py(r.SaldoAcumulado);
+                    <circle cx="@cx" cy="@cy" r="3.5" fill="#2563eb" />
+                }
+
+                @* Crosshair vertical — controlado por JS *@
+                <line id="chartCrosshair" x1="0" y1="@OY" x2="0" y2="@(OY+H)"
+                      stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"
+                      opacity="0" pointer-events="none" />
+
+                @* Hit areas invisíveis — uma por data, capturam o hover *@
+                @for (var i = 0; i < todasDatas.Count; i++)
+                {
+                    var d    = todasDatas[i];
+                    var hx   = OX + PxD(d);
+                    var proj = projetadoMap.TryGetValue(d, out var pv) ? FmtTooltip(pv) : "";
+                    var real = realMap.TryGetValue(d, out var rv)      ? FmtTooltip(rv) : "";
+                    <rect x="@(hx - 12)" y="@OY" width="24" height="@H"
+                          fill="transparent" class="chart-hit" style="cursor:crosshair"
+                          data-date="@d.ToString("dd/MM/yyyy")"
+                          data-cx="@hx"
+                          data-proj="@proj"
+                          data-real="@real" />
                 }
             </svg>
+            </div>
         }
     </div>
 </div>
@@ -204,3 +332,49 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    var svg       = document.getElementById('chartSvg');
+    var tooltip   = document.getElementById('chartTooltip');
+    var crosshair = document.getElementById('chartCrosshair');
+    if (!svg || !tooltip) return;
+
+    document.querySelectorAll('.chart-hit').forEach(function (rect) {
+        rect.addEventListener('mouseenter', function () {
+            var date = this.dataset.date;
+            var proj = this.dataset.proj;
+            var real = this.dataset.real;
+            var cx   = parseInt(this.dataset.cx, 10);
+
+            var lines = ['<span style="opacity:.7;font-size:11px">' + date + '</span>'];
+            if (proj) lines.push('<span style="color:#94a3b8">&#9632; Projetado</span>&nbsp;&nbsp;<b>' + proj + '</b>');
+            if (real) lines.push('<span style="color:#93c5fd">&#9632; Real</span>&nbsp;&nbsp;<b>' + real + '</b>');
+            tooltip.innerHTML = lines.join('<br>');
+            tooltip.style.display = 'block';
+
+            if (crosshair) {
+                crosshair.setAttribute('x1', cx);
+                crosshair.setAttribute('x2', cx);
+                crosshair.setAttribute('opacity', '0.6');
+            }
+        });
+
+        rect.addEventListener('mousemove', function (e) {
+            var container = svg.parentElement.getBoundingClientRect();
+            var tx = e.clientX - container.left + 16;
+            var ty = e.clientY - container.top  - 20;
+            if (tx + 210 > container.width) tx = e.clientX - container.left - 220;
+            tooltip.style.left = tx + 'px';
+            tooltip.style.top  = Math.max(0, ty) + 'px';
+        });
+
+        rect.addEventListener('mouseleave', function () {
+            tooltip.style.display = 'none';
+            if (crosshair) crosshair.setAttribute('opacity', '0');
+        });
+    });
+})();
+</script>
+}

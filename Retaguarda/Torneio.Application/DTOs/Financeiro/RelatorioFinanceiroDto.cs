@@ -4,6 +4,7 @@ public class RelatorioFinanceiroDto
 {
     public IndicadoresFinanceiroDto Indicadores { get; init; } = new();
     public List<FluxoFinanceiroLinhaDto> FluxoCaixaProjetado { get; init; } = [];
+    public List<FluxoFinanceiroLinhaDto> FluxoCaixaReal { get; init; } = [];
     public List<ResumoFinanceiroPorTipoDto> ReceitasPorTipo { get; init; } = [];
     public List<ResumoFinanceiroPorCategoriaDto> CustosPorCategoria { get; init; } = [];
     public List<ParcelaTorneioDto> ProximosRecebimentosPendentes { get; init; } = [];

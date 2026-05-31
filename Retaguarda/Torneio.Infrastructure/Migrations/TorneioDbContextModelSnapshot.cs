@@ -895,6 +895,15 @@ namespace Torneio.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("deve_alterar_senha");
 
+                    b.Property<string>("CodigoSms")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("codigo_sms");
+
+                    b.Property<DateTime?>("CodigoSmsExpiracao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("codigo_sms_expiracao");
+
                     b.Property<string>("FotoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")

@@ -13,6 +13,8 @@ public class Membro
     public string? Usuario { get; private set; }
     public string? SenhaHash { get; private set; }
     public bool DeveAlterarSenha { get; private set; }
+    public string? CodigoSms { get; private set; }
+    public DateTime? CodigoSmsExpiracao { get; private set; }
 
     private Membro() { }
 
@@ -72,5 +74,22 @@ public class Membro
     {
         SenhaHash = senhaHash;
         DeveAlterarSenha = false;
+    }
+
+    public bool CodigoSmsValido() =>
+        !string.IsNullOrEmpty(CodigoSms) &&
+        CodigoSmsExpiracao.HasValue &&
+        DateTime.UtcNow < CodigoSmsExpiracao.Value;
+
+    public void DefinirCodigoSms(string codigo, TimeSpan validade)
+    {
+        CodigoSms = codigo;
+        CodigoSmsExpiracao = DateTime.UtcNow.Add(validade);
+    }
+
+    public void LimparCodigoSms()
+    {
+        CodigoSms = null;
+        CodigoSmsExpiracao = null;
     }
 }

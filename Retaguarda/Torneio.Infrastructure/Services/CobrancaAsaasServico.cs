@@ -63,6 +63,20 @@ public class CobrancaAsaasServico : ICobrancaAsaasServico
         var membro = await _membroRepositorio.ObterPorId(parcela.MembroId)
             ?? throw new InvalidOperationException("Membro não encontrado.");
 
+        // Se o membro não tem CPF e foi informado um via formulário, salva antes de criar o customer
+        if (string.IsNullOrWhiteSpace(membro.Cpf) && !string.IsNullOrWhiteSpace(dto.CpfOverride))
+        {
+            var digits = new string(dto.CpfOverride.Where(char.IsDigit).ToArray());
+            if (digits.Length != 11)
+                throw new InvalidOperationException("CPF informado inválido. Informe os 11 dígitos.");
+            membro.AtualizarCpf(dto.CpfOverride);
+            await _membroRepositorio.Atualizar(membro);
+        }
+
+        if (string.IsNullOrWhiteSpace(membro.Cpf))
+            throw new InvalidOperationException(
+                "O Asaas exige CPF para emitir a cobrança. Informe o CPF do membro.");
+
         var client = _clientFactory.Criar(config.ChaveApiAsaas);
 
         var customerId = await ResolverClienteAsaas(client, membro, dto.TorneioId);

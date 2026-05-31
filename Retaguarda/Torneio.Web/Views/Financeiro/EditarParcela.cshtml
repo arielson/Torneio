@@ -9,6 +9,21 @@
     var doacoes = ((IEnumerable<DoacaoPatrocinadorDto>?)ViewBag.Doacoes ?? Enumerable.Empty<DoacaoPatrocinadorDto>()).OrderBy(x => x.NomePatrocinador).ToList();
     var cobrancaAsaas = ViewBag.CobrancaAsaas as CobrancaAsaasDto;
     var configAsaas = ViewBag.ConfigAsaas as ConfiguracaoAsaasDto;
+    var membroCelular = ViewBag.MembroCelular as string;
+    var celularDigitos = string.IsNullOrWhiteSpace(membroCelular)
+        ? null
+        : new string(membroCelular.Where(char.IsDigit).ToArray());
+    // garante prefixo 55 para WhatsApp (E.164 sem +)
+    var celularWa = celularDigitos is { Length: >= 10 }
+        ? (celularDigitos.StartsWith("55") ? celularDigitos : "55" + celularDigitos)
+        : null;
+
+    var cobrancaAtiva = cobrancaAsaas is not null &&
+        cobrancaAsaas.Status is not ("Excluido" or "Estornado" or "RecusadoCartao");
+    var invoiceUrl    = cobrancaAsaas?.AsaasInvoiceUrl ?? "";
+    var membroTemCpf  = ViewBag.MembroTemCpf as bool? ?? false;
+    var taxaPix       = ViewBag.TaxaPix    is decimal tp ? tp : (decimal?)null;
+    var taxaCartao    = ViewBag.TaxaCartao is decimal tc ? tc : (decimal?)null;
 }
 
 <div class="page-header">
@@ -174,14 +189,16 @@
                         </dd>
                         <dt class="col-5">Forma</dt>
                         <dd class="col-7">@(cobrancaAsaas.FormaPagamento ?? "—")</dd>
-                        <dt class="col-5">Valor</dt>
+                        <dt class="col-5">Valor da parcela</dt>
                         <dd class="col-7">R$ @cobrancaAsaas.ValorOriginal.ToString("N2")</dd>
                         @if (cobrancaAsaas.TaxaAsaas.HasValue)
                         {
                             <dt class="col-5">Taxa Asaas</dt>
                             <dd class="col-7">R$ @cobrancaAsaas.TaxaAsaas.Value.ToString("N2")</dd>
+                            <dt class="col-5">Total cobrado</dt>
+                            <dd class="col-7">R$ @((cobrancaAsaas.ValorOriginal + cobrancaAsaas.TaxaAsaas.Value).ToString("N2"))</dd>
                             <dt class="col-5">Valor líquido</dt>
-                            <dd class="col-7">R$ @((cobrancaAsaas.ValorOriginal - cobrancaAsaas.TaxaAsaas.Value).ToString("N2"))</dd>
+                            <dd class="col-7">R$ @cobrancaAsaas.ValorOriginal.ToString("N2")</dd>
                         }
                         @if (cobrancaAsaas.DataPrevisaoCredito.HasValue)
                         {
@@ -247,6 +264,41 @@
                 else if (configAsaas?.StatusChave == "Ativa")
                 {
                     <p class="text-muted small mb-3">Nenhuma cobrança Asaas gerada para esta parcela.</p>
+
+                    @* Prévia de taxas antes de gerar *@
+                    @if (taxaPix.HasValue || taxaCartao.HasValue)
+                    {
+                        <dl class="row mb-3 small">
+                            @if (configAsaas.AceitarPix && taxaPix.HasValue)
+                            {
+                                <dt class="col-6 text-muted">PIX — taxa</dt>
+                                <dd class="col-6">R$ @taxaPix.Value.ToString("N2")</dd>
+                                <dt class="col-6 text-muted">PIX — total cobrado</dt>
+                                <dd class="col-6 fw-semibold">R$ @((Model.Valor + taxaPix.Value).ToString("N2"))</dd>
+                            }
+                            @if (configAsaas.AceitarCartaoCredito && taxaCartao.HasValue)
+                            {
+                                <dt class="col-6 text-muted">Cartão — taxa</dt>
+                                <dd class="col-6">R$ @taxaCartao.Value.ToString("N2")</dd>
+                                <dt class="col-6 text-muted">Cartão — total cobrado</dt>
+                                <dd class="col-6 fw-semibold">R$ @((Model.Valor + taxaCartao.Value).ToString("N2"))</dd>
+                            }
+                        </dl>
+                    }
+
+                    @if (!membroTemCpf)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                CPF do @labelMembro.ToLower()
+                                <span class="text-danger">*</span>
+                                <span class="text-muted fw-normal">(exigido pelo Asaas)</span>
+                            </label>
+                            <input type="text" id="inputCpfAsaas" class="form-control form-control-sm"
+                                   placeholder="000.000.000-00" inputmode="numeric" maxlength="14" />
+                        </div>
+                    }
+
                     <div class="d-flex gap-2 flex-wrap">
                         @if (configAsaas.AceitarPix)
                         {
@@ -254,9 +306,10 @@
                                   asp-action="Gerar"
                                   asp-route-slug="@slug"
                                   asp-route-parcelaId="@Model.Id"
-                                  method="post" class="d-inline">
+                                  method="post" class="d-inline form-gerar-asaas">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="formaPagamento" value="0" />
+                                <input type="hidden" name="cpf" class="cpf-hidden" />
                                 <button type="submit" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-qr-code me-1"></i>Gerar cobrança PIX
                                 </button>
@@ -268,9 +321,10 @@
                                   asp-action="Gerar"
                                   asp-route-slug="@slug"
                                   asp-route-parcelaId="@Model.Id"
-                                  method="post" class="d-inline">
+                                  method="post" class="d-inline form-gerar-asaas">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="formaPagamento" value="1" />
+                                <input type="hidden" name="cpf" class="cpf-hidden" />
                                 <button type="submit" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-credit-card me-1"></i>Gerar cobrança Cartão
                                 </button>
@@ -288,6 +342,66 @@
                 }
             </div>
         </div>
+
+        @if (cobrancaAtiva && !string.IsNullOrEmpty(invoiceUrl))
+        {
+            <div class="content-card mb-3">
+                <div class="card-header-bar">
+                    <h5><i class="bi bi-share me-2"></i>Compartilhar com o @labelMembro.ToLower()</h5>
+                </div>
+                <div class="card-body-pad">
+                    <p class="text-muted small mb-3">
+                        Envie o link abaixo para o @labelMembro.ToLower() efetuar o pagamento pelo celular.
+                    </p>
+
+                    @* Link copiável *@
+                    <div class="input-group mb-3">
+                        <input type="text" id="linkPagamento" class="form-control form-control-sm font-monospace"
+                               value="@invoiceUrl" readonly />
+                        <button class="btn btn-outline-secondary btn-sm" type="button"
+                                onclick="navigator.clipboard.writeText(document.getElementById('linkPagamento').value).then(()=>{this.innerHTML='<i class=\'bi bi-check-lg\'></i> Copiado!';setTimeout(()=>this.innerHTML='<i class=\'bi bi-clipboard\'></i> Copiar',2000)})">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                    </div>
+
+                    @* WhatsApp *@
+                    @if (celularWa is not null)
+                    {
+                        var msg = Uri.EscapeDataString(
+                            $"Olá {Model.NomeMembro}! Segue o link para pagamento da sua cobrança: {invoiceUrl}");
+                        <a href="https://wa.me/@celularWa?text=@msg" target="_blank" rel="noopener"
+                           class="btn btn-success me-2">
+                            <i class="bi bi-whatsapp me-1"></i>Enviar via WhatsApp
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">
+                            <i class="bi bi-whatsapp me-1"></i>
+                            Celular não cadastrado — cadastre o celular do @labelMembro.ToLower() para enviar via WhatsApp.
+                        </span>
+                    }
+
+                    @* QR Code PIX inline *@
+                    @if (cobrancaAsaas?.FormaPagamento == "Pix" &&
+                         cobrancaAsaas.Status is "Pendente" or "Vencido")
+                    {
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    id="btnQrInline"
+                                    onclick="carregarQrCodeInline('@Model.Id', '@slug')">
+                                <i class="bi bi-qr-code me-1"></i>Mostrar QR Code na tela
+                            </button>
+                            <div id="qrInlineContainer" class="mt-3 text-center d-none">
+                                <div id="qrInlineContent">
+                                    <div class="spinner-border text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
 
         <div class="content-card">
             <div class="card-header-bar">
@@ -341,6 +455,68 @@
 
 @section Scripts {
 <script>
+// Máscara de CPF e cópia para os hidden fields antes de submeter
+(function () {
+    var cpfInput = document.getElementById('inputCpfAsaas');
+    if (!cpfInput) return;
+
+    cpfInput.addEventListener('input', function () {
+        var d = this.value.replace(/\D/g, '').substring(0, 11);
+        var f = '';
+        if (d.length <= 3)       f = d;
+        else if (d.length <= 6)  f = d.slice(0,3)+'.'+d.slice(3);
+        else if (d.length <= 9)  f = d.slice(0,3)+'.'+d.slice(3,6)+'.'+d.slice(6);
+        else                      f = d.slice(0,3)+'.'+d.slice(3,6)+'.'+d.slice(6,9)+'-'+d.slice(9);
+        this.value = f;
+    });
+
+    document.querySelectorAll('.form-gerar-asaas').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            var digits = cpfInput.value.replace(/\D/g, '');
+            if (digits.length !== 11) {
+                cpfInput.focus();
+                cpfInput.classList.add('is-invalid');
+                event.preventDefault();
+                return;
+            }
+            form.querySelector('.cpf-hidden').value = cpfInput.value;
+        });
+    });
+})();
+
+async function carregarQrCodeInline(parcelaId, slug) {
+    const container = document.getElementById('qrInlineContainer');
+    const content   = document.getElementById('qrInlineContent');
+    const btn       = document.getElementById('btnQrInline');
+    container.classList.remove('d-none');
+    btn.classList.add('d-none');
+
+    try {
+        const resp = await fetch(`/${slug}/financeiro/asaas/${parcelaId}/qrcode`);
+        const json = await resp.json();
+
+        if (json.success) {
+            const { encodedImage, payload } = json.data;
+            content.innerHTML = `
+                <img src="data:image/png;base64,${encodedImage}" alt="QR Code PIX"
+                     style="max-width:220px;" class="mb-3 d-block mx-auto border rounded p-2" />
+                <p class="small text-muted mb-1">Copia e cola:</p>
+                <div class="input-group input-group-sm mb-2 mx-auto" style="max-width:400px">
+                    <input type="text" class="form-control font-monospace small"
+                           value="${payload}" readonly />
+                    <button class="btn btn-outline-secondary" type="button"
+                            onclick="navigator.clipboard.writeText('${payload}').then(()=>this.textContent='Copiado!')">
+                        Copiar
+                    </button>
+                </div>`;
+        } else {
+            content.innerHTML = `<p class="text-danger">${json.error}</p>`;
+        }
+    } catch {
+        content.innerHTML = '<p class="text-danger">Erro ao carregar QR Code.</p>';
+    }
+}
+
 async function carregarQrCode(parcelaId, slug) {
     const modal = new bootstrap.Modal(document.getElementById('modalQrCode'));
     const content = document.getElementById('qrCodeContent');

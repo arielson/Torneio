@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Torneio.Application.DTOs.Financeiro;
 using Torneio.Application.DTOs.Log;
 using Torneio.Application.Services.Interfaces;
+using Torneio.Asaas;
 using Torneio.Domain.Enums;
 using Torneio.Domain.Interfaces.Services;
 using Torneio.Infrastructure.Services;
@@ -27,6 +28,7 @@ public class FinanceiroController : TorneioBaseController
     private readonly IFileStorage _fileStorage;
     private readonly ICobrancaAsaasServico _cobrancaAsaasServico;
     private readonly IConfiguracaoAsaasServico _configuracaoAsaasServico;
+    private readonly CalculadoraTaxaAsaas _calculadoraTaxa;
 
     public FinanceiroController(
         TenantContext tenantContext,
@@ -42,7 +44,8 @@ public class FinanceiroController : TorneioBaseController
         ILogAuditoriaServico log,
         IFileStorage fileStorage,
         ICobrancaAsaasServico cobrancaAsaasServico,
-        IConfiguracaoAsaasServico configuracaoAsaasServico) : base(tenantContext)
+        IConfiguracaoAsaasServico configuracaoAsaasServico,
+        CalculadoraTaxaAsaas calculadoraTaxa) : base(tenantContext)
     {
         _financeiroServico = financeiroServico;
         _produtoExtraServico = produtoExtraServico;
@@ -57,6 +60,7 @@ public class FinanceiroController : TorneioBaseController
         _fileStorage = fileStorage;
         _cobrancaAsaasServico = cobrancaAsaasServico;
         _configuracaoAsaasServico = configuracaoAsaasServico;
+        _calculadoraTaxa = calculadoraTaxa;
     }
 
     [HttpGet("")]
@@ -177,6 +181,11 @@ public class FinanceiroController : TorneioBaseController
         ViewBag.Doacoes = await _doacaoPatrocinadorServico.Listar(TenantContext.TorneioId);
         ViewBag.CobrancaAsaas = await _cobrancaAsaasServico.ObterPorParcelaId(id);
         ViewBag.ConfigAsaas = await _configuracaoAsaasServico.ObterPorTorneio(TenantContext.TorneioId);
+        var membroDto = await _membroServico.ObterPorId(parcela.MembroId);
+        ViewBag.MembroCelular = membroDto?.Celular;
+        ViewBag.MembroTemCpf  = !string.IsNullOrWhiteSpace(membroDto?.Cpf);
+        ViewBag.TaxaPix    = _calculadoraTaxa.CalcularTaxaPix(parcela.Valor);
+        ViewBag.TaxaCartao = _calculadoraTaxa.CalcularTaxaCartao(parcela.Valor);
         return View("EditarParcela", parcela);
     }
 
@@ -190,7 +199,7 @@ public class FinanceiroController : TorneioBaseController
             TempData["Sucesso"] = "Cobranca atualizada.";
             await RegistrarLog(
                 "AtualizarParcelaWeb",
-                $"Parcela atualizada pela retaguarda web | Parcela: {id} | Vencimento: {dto.Vencimento:dd/MM/yyyy} | Observacao: {dto.Observacao ?? "-"}");
+                $"Parcela atualizada pela retaguarda web | Parcela: {id} | Vencimento: {dto.Vencimento:dd/MM/yyyy} | Observação: {dto.Observacao ?? "-"}");
         }
         catch (Exception ex)
         {

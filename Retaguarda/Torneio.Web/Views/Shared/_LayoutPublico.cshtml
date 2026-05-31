@@ -23,7 +23,7 @@
         <div class="container">
             @if (!string.IsNullOrWhiteSpace(torneio?.LogoUrl))
             {
-                <img src="@torneio!.LogoUrl" alt="@torneio.NomeTorneio" height="36" class="me-2" />
+                <img src="@torneio!.LogoUrl" alt="@torneio.NomeTorneio" height="100" class="me-2" />
             }
             <span class="navbar-brand mb-0 h6">@(torneio?.NomeTorneio ?? "Torneio")</span>
         </div>

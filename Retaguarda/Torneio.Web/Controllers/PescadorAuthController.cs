@@ -21,7 +21,7 @@ public class PescadorAuthController : TorneioBaseController
     private readonly IPasswordHasher _passwordHasher;
     private readonly IConfiguration _configuration;
 
-    private const int CodigoValidadeMinutos = 10;
+    private static readonly TimeSpan CodigoValidade = TimeSpan.FromHours(24);
 
     public PescadorAuthController(
         TenantContext tenantContext,
@@ -157,9 +157,27 @@ public class PescadorAuthController : TorneioBaseController
         if (string.IsNullOrEmpty(normalizado))
             return RedirectToAction(nameof(Entrar), new { slug = Slug });
 
-        var codigo = GerarCodigo();
-        var expiry = DateTime.UtcNow.AddMinutes(CodigoValidadeMinutos).Ticks;
-        HttpContext.Session.SetString(CodigoKey(), $"{codigo}|{expiry}");
+        var todos = (await _membroRepositorio.ListarTodosPorCelular(normalizado)).ToList();
+        if (todos.Count == 0)
+            return RedirectToAction(nameof(Entrar), new { slug = Slug });
+
+        // Reutiliza código existente se ainda válido — não gera novo a cada clique
+        var membroComCodigo = todos.FirstOrDefault(m => m.CodigoSmsValido());
+        string codigo;
+        if (membroComCodigo is not null)
+        {
+            codigo = membroComCodigo.CodigoSms!;
+        }
+        else
+        {
+            codigo = GerarCodigo();
+            foreach (var m in todos)
+            {
+                m.DefinirCodigoSms(codigo, CodigoValidade);
+                await _membroRepositorio.Atualizar(m);
+            }
+        }
+
         HttpContext.Session.SetString(ReturnUrlKey(), returnUrl ?? "");
 
         try
@@ -181,41 +199,54 @@ public class PescadorAuthController : TorneioBaseController
     // ── Verificação do código ─────────────────────────────────────────────────
 
     [HttpGet("codigo")]
-    public IActionResult VerificarCodigoView()
+    public async Task<IActionResult> VerificarCodigoView()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString(CodigoKey())))
+        var normalizado = HttpContext.Session.GetString(CelularKey());
+        if (string.IsNullOrEmpty(normalizado))
             return RedirectToAction(nameof(Entrar), new { slug = Slug });
+
+        var todos = (await _membroRepositorio.ListarTodosPorCelular(normalizado)).ToList();
+        if (!todos.Any(m => m.CodigoSmsValido()))
+        {
+            TempData["Erro"] = "Código expirado. Solicite um novo.";
+            return RedirectToAction(nameof(Entrar), new { slug = Slug });
+        }
 
         return View("VerificarCodigo");
     }
 
     [HttpPost("codigo")]
     [ValidateAntiForgeryToken]
-    public IActionResult VerificarCodigo(string codigo)
+    public async Task<IActionResult> VerificarCodigo(string codigo)
     {
-        var sessaoCodigo = HttpContext.Session.GetString(CodigoKey());
-        if (string.IsNullOrEmpty(sessaoCodigo))
+        var normalizado = HttpContext.Session.GetString(CelularKey());
+        if (string.IsNullOrEmpty(normalizado))
         {
-            TempData["Erro"] = "Código expirado. Tente novamente.";
+            TempData["Erro"] = "Sessão expirada. Tente novamente.";
             return RedirectToAction(nameof(Entrar), new { slug = Slug });
         }
 
-        var partes = sessaoCodigo.Split('|');
-        if (partes.Length != 2 || !long.TryParse(partes[1], out var expiryTicks) ||
-            DateTime.UtcNow.Ticks > expiryTicks)
+        var todos = (await _membroRepositorio.ListarTodosPorCelular(normalizado)).ToList();
+        var comCodigo = todos.FirstOrDefault(m => m.CodigoSmsValido());
+        if (comCodigo is null)
         {
-            HttpContext.Session.Remove(CodigoKey());
             TempData["Erro"] = "Código expirado. Solicite um novo.";
             return RedirectToAction(nameof(Entrar), new { slug = Slug });
         }
 
-        if (!string.Equals(partes[0], codigo?.Trim(), StringComparison.Ordinal))
+        if (!string.Equals(comCodigo.CodigoSms, codigo?.Trim(), StringComparison.Ordinal))
         {
             ViewBag.Erro = "Código inválido. Verifique e tente novamente.";
             return View("VerificarCodigo");
         }
 
-        HttpContext.Session.Remove(CodigoKey());
+        // Limpa o código em todos os membros com este celular após uso bem-sucedido
+        foreach (var m in todos)
+        {
+            m.LimparCodigoSms();
+            await _membroRepositorio.Atualizar(m);
+        }
+
         HttpContext.Session.SetString(CodigoOkKey(), "1");
         return RedirectToAction(nameof(DefinirSenhaView), new { slug = Slug });
     }
@@ -317,7 +348,6 @@ public class PescadorAuthController : TorneioBaseController
     }
 
     private string CelularKey()   => $"pesc_cel_{Slug}";
-    private string CodigoKey()    => $"pesc_cod_{Slug}";
     private string CodigoOkKey()  => $"pesc_ok_{Slug}";
     private string ReturnUrlKey() => $"pesc_ret_{Slug}";
 

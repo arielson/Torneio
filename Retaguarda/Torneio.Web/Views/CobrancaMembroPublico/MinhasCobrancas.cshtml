@@ -1,0 +1,177 @@
+@model IEnumerable<Torneio.Application.DTOs.Asaas.CobrancaAsaasDto>
+@{
+    ViewData["Title"] = "Minhas Cobranças";
+    Layout = "~/Views/Shared/_LayoutPublico.cshtml";
+    var slug = ViewContext.RouteData.Values["slug"]?.ToString();
+    var celular = ViewContext.RouteData.Values["celular"]?.ToString();
+    var lista = Model.ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Minhas Cobranças</h5>
+</div>
+
+@if (!lista.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-1"></i> Nenhuma cobrança encontrada.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var c in lista)
+        {
+            var badgeClass = c.Status switch
+            {
+                "Confirmado" => "bg-success",
+                "Recebido"   => "bg-success",
+                "Pendente"   => "bg-warning text-dark",
+                "Vencido"    => "bg-danger",
+                "Estornado"  => "bg-secondary",
+                "Excluido"   => "bg-secondary",
+                "RecusadoCartao" => "bg-danger",
+                _ => "bg-secondary"
+            };
+            var statusLabel = c.Status switch
+            {
+                "Confirmado"     => "Confirmado",
+                "Recebido"       => "Pago / Creditado",
+                "Pendente"       => "Pendente",
+                "Vencido"        => "Vencido",
+                "Estornado"      => "Estornado",
+                "Excluido"       => "Excluído",
+                "RecusadoCartao" => "Recusado (Cartão)",
+                _ => c.Status
+            };
+            var formaBadge = c.FormaPagamento switch
+            {
+                "Pix"          => "<span class='badge bg-info text-dark me-1'><i class='bi bi-qr-code'></i> PIX</span>",
+                "CartaoCredito" => "<span class='badge bg-primary me-1'><i class='bi bi-credit-card'></i> Cartão</span>",
+                _ => ""
+            };
+            var podeQrCode = c.FormaPagamento == "Pix"
+                && c.Status is "Pendente" or "Vencido";
+
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                @Html.Raw(formaBadge)
+                                <span class="badge @badgeClass">@statusLabel</span>
+                            </div>
+                            <span class="fw-bold fs-5">R$ @c.ValorOriginal.ToString("N2")</span>
+                        </div>
+
+                        <div class="small text-muted mb-2">
+                            <i class="bi bi-calendar3 me-1"></i>Vencimento: @c.Vencimento.ToString("dd/MM/yyyy")
+                        </div>
+
+                        @if (c.DataPrevisaoCredito.HasValue)
+                        {
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-clock me-1"></i>Previsão de crédito: @c.DataPrevisaoCredito.Value.ToString("dd/MM/yyyy")
+                            </div>
+                        }
+
+                        @if (c.DataCreditoEfetivo.HasValue)
+                        {
+                            <div class="small text-success mb-2">
+                                <i class="bi bi-check-circle me-1"></i>Creditado em: @c.DataCreditoEfetivo.Value.ToString("dd/MM/yyyy")
+                            </div>
+                        }
+
+                        @if (c.TaxaAsaas.HasValue)
+                        {
+                            <div class="small text-muted mb-2">
+                                Taxa: R$ @c.TaxaAsaas.Value.ToString("N2")
+                                — Líquido: R$ @((c.ValorOriginal - c.TaxaAsaas.Value).ToString("N2"))
+                            </div>
+                        }
+
+                        <div class="mt-3 d-flex gap-2 flex-wrap">
+                            @if (podeQrCode)
+                            {
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="carregarQrCode('@slug', '@celular', '@c.ParcelaTorneioId', this)">
+                                    <i class="bi bi-qr-code me-1"></i>Gerar QR Code PIX
+                                </button>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(c.AsaasInvoiceUrl))
+                            {
+                                <a href="@c.AsaasInvoiceUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-receipt me-1"></i>Boleto / Fatura
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Modal PIX QR Code -->
+<div class="modal fade" id="modalQrCode" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="bi bi-qr-code me-2"></i>QR Code PIX</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="qrCodeBody">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function carregarQrCode(slug, celular, parcelaId, btn) {
+            const modal = new bootstrap.Modal(document.getElementById('modalQrCode'));
+            const body = document.getElementById('qrCodeBody');
+            body.innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+            modal.show();
+
+            fetch(`/${slug}/cobranca/${encodeURIComponent(celular)}/qrcode/${parcelaId}`)
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success) {
+                        const d = json.data;
+                        let html = '';
+                        if (d.encodedImage) {
+                            html += `<img src="data:image/png;base64,${d.encodedImage}" class="img-fluid mb-3" style="max-width:220px" alt="QR Code PIX" />`;
+                        }
+                        if (d.payload) {
+                            html += `<p class="small text-muted mb-1">Copia e Cola:</p>
+                                     <div class="input-group input-group-sm mb-3">
+                                       <input type="text" class="form-control" id="pixPayload" value="${d.payload}" readonly />
+                                       <button class="btn btn-outline-secondary" onclick="copiarPix()">
+                                         <i class="bi bi-clipboard"></i>
+                                       </button>
+                                     </div>`;
+                        }
+                        if (d.expirationDate) {
+                            const exp = new Date(d.expirationDate);
+                            html += `<p class="small text-muted">Expira em: ${exp.toLocaleString('pt-BR')}</p>`;
+                        }
+                        body.innerHTML = html || '<p class="text-muted">QR Code indisponível.</p>';
+                    } else {
+                        body.innerHTML = `<div class="alert alert-danger">${json.error}</div>`;
+                    }
+                })
+                .catch(() => {
+                    body.innerHTML = '<div class="alert alert-danger">Erro ao carregar QR Code.</div>';
+                });
+        }
+
+        function copiarPix() {
+            const input = document.getElementById('pixPayload');
+            if (!input) return;
+            input.select();
+            navigator.clipboard.writeText(input.value).catch(() => document.execCommand('copy'));
+        }
+    </script>
+}

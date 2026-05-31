@@ -158,7 +158,7 @@ public class FinanceiroController : BaseController
         await _servico.AtualizarParcela(id, dto);
         await RegistrarLog(
             "AtualizarParcelaApp",
-            $"Parcela atualizada pelo app | Parcela: {id} | Vencimento: {dto.Vencimento:dd/MM/yyyy} | Observacao: {dto.Observacao ?? "-"}");
+            $"Parcela atualizada pelo app | Parcela: {id} | Vencimento: {dto.Vencimento:dd/MM/yyyy} | Observação: {dto.Observacao ?? "-"}");
         return NoContent();
     }
 

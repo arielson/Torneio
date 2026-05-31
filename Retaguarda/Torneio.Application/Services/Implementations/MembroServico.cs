@@ -185,9 +185,12 @@ public class MembroServico : IMembroServico
         Nome = e.Nome,
         FotoUrl = e.FotoUrl,
         Celular = e.Celular,
+        Cpf = e.Cpf,
         TamanhoCamisa = e.TamanhoCamisa,
         Usuario = e.Usuario,
-        PossuiSenha = !string.IsNullOrWhiteSpace(e.SenhaHash)
+        PossuiSenha = !string.IsNullOrWhiteSpace(e.SenhaHash),
+        CodigoSms = e.CodigoSms,
+        CodigoSmsExpiracao = e.CodigoSmsExpiracao
     };
 
     private async Task ValidarUsuarioDisponivel(Guid torneioId, string? usuario, Guid? membroIdAtual = null)
