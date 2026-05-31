@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Força a mesma versão do EF Core em todos os projetos da solução.
+    Necessário porque pacotes como JwtBearer ou outros podem puxar
+    uma versão transitiva diferente (9.0.0) enquanto Infrastructure usa 9.0.1.
+    Usar "Update" (não "Include") para não adicionar referência onde não existe —
+    apenas sobrescreve a versão onde o pacote já é referenciado (direta ou transitivamente).
+  -->
+  <ItemGroup>
+    <PackageReference Update="Microsoft.EntityFrameworkCore"             Version="9.0.1" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational"  Version="9.0.1" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.1" />
+  </ItemGroup>
+</Project>
