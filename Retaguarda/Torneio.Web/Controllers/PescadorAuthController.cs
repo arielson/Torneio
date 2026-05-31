@@ -48,6 +48,7 @@ public class PescadorAuthController : TorneioBaseController
 
         ViewBag.ReturnUrl = returnUrl;
         ViewBag.Estado = "Celular";
+        ViewBag.LinkWhatsApp = LinkWhatsApp("Olá, preciso de ajuda para acessar o torneio.");
         return View();
     }
 
@@ -286,7 +287,7 @@ public class PescadorAuthController : TorneioBaseController
     public async Task<IActionResult> Sair()
     {
         await HttpContext.SignOutAsync("PescadorAuth");
-        return RedirectToAction(nameof(Entrar), new { slug = Slug });
+        return Redirect($"/{Slug}");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
